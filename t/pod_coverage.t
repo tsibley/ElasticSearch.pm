@@ -13,4 +13,5 @@ my $min_tp = 1.08;
 eval "use Test::Pod::Coverage $min_tp";
 plan skip_all => "Test::Pod::Coverage $min_tp required for testing POD Coverage" if $@;
 
-all_pod_coverage_ok();
+plan tests => 1;
+pod_coverage_ok('ElasticSearch');

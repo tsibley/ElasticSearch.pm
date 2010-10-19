@@ -1,8 +1,30 @@
+bin/bench.pl
+bin/build_thrift.pl
 Build.PL
 Changes
 lib/ElasticSearch.pm
+lib/ElasticSearch/Error.pm
+lib/ElasticSearch/RequestParser.pm
+lib/ElasticSearch/Transport.pm
+lib/ElasticSearch/Transport/HTTP.pm
+lib/ElasticSearch/Transport/HTTPLite.pm
+lib/ElasticSearch/Transport/Thrift.pm
+lib/ElasticSearch/Transport/ThriftBackend/Constants.pm
+lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/BinaryProtocol.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/BufferedTransport.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/FramedTransport.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/HttpClient.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/MemoryBuffer.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/Protocol.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/Server.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/Socket.pm
+lib/ElasticSearch/Transport/ThriftBackend/Thrift/Transport.pm
+lib/ElasticSearch/Transport/ThriftBackend/Types.pm
+lib/ElasticSearch/Util.pm
 Makefile.PL
-MANIFEST			This list of files
+MANIFEST            This list of files
 META.yml
 README
 t/00-load.t

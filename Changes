@@ -1,4 +1,27 @@
 Revision history for ElasticSearch
+0.22    2010-10-19
+        Support ElasticSearch version 0.12.0
+
+        Added the bulk() method, for bulk indexing, creating and deleting
+        Added create_river(), delete_river() and get_river()
+        Added delete_mapping()
+        Added error_trace()
+
+        Completely refactored ElasticSearch to enable pluggable backends:
+         - The request parser methods now live in ElasticSearch/RequestParser.pm
+           although they are loaded into the ElasticSeach namespace
+         - Added ElasticSearch::Transport as a transport base class
+         - Added ElasticSearch::Transport::HTTP (default) as the LWP backend
+         - Added ElasticSearch::Transport::HTTPLite as the HTTP::Lite backend
+         - Added ElasticSearch::Transport::Thrift as the Thrift backend
+         - Added ElasticSearch::Error class for exception objects
+         - Added ElasticSearch::Util with some generally useful utilities
+         - A number of methods have from ElasticSearch to
+           ElasticSearch::transport including current_server(), servers(),
+           refresh_servers()
+         - Removed the debug() method - now use $ElasticSearch::DEBUG instead
+         - Added filter_keywords to ElasticSearch::Util
+
 0.21    2010-09-18
         Supports ElasticSearch version 0.10.0
         Added the _source parameter to put_mapping()

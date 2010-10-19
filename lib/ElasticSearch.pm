@@ -2,1165 +2,37 @@ package ElasticSearch;
 
 use strict;
 use warnings FATAL => 'all';
-use LWP::UserAgent();
-use LWP::ConnCache();
-use HTTP::Request();
-use JSON::XS();
-use Encode qw(decode_utf8);
+use ElasticSearch::Transport();
+use ElasticSearch::Error();
+use ElasticSearch::RequestParser;
+use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.21';
-
-use constant {
-    ONE_REQ     => 1,
-    ONE_OPT     => 2,
-    MULTI_ALL   => 3,
-    MULTI_BLANK => 4,
-};
-
-use constant {
-    CMD_NONE          => [],
-    CMD_INDEX_TYPE_ID => [ index => ONE_REQ, type => ONE_REQ, id => ONE_REQ ],
-    CMD_INDEX_TYPE_id => [ index => ONE_REQ, type => ONE_REQ, id => ONE_OPT ],
-    CMD_index      => [ index => MULTI_BLANK ],
-    CMD_INDEX      => [ index => ONE_REQ ],
-    CMD_INDEX_type => [ index => ONE_REQ, type => MULTI_BLANK ],
-    CMD_index_TYPE => [ index => MULTI_ALL, type => ONE_REQ ],
-    CMD_index_type => [ index => MULTI_ALL, type => MULTI_BLANK ],
-    CMD_nodes      => [ node  => MULTI_BLANK ],
-};
-
-our %QS_Format = (
-    boolean  => '1 | 0',
-    duration => "'5m' | '10s'",
-    fixed    => '',
-    optional => "'scalar value'",
-    flatten  => "'scalar' or ['scalar_1', 'scalar_n']",
-    'int'    => "integer",
-    string   => '"string"',
-    float    => 'float',
-    enum     => '"predefined_value"',
-);
-
-our %QS_Formatter = (
-    fixed   => sub { return $_[1] },
-    boolean => sub { return $_[0] ? $_[1] : $_[2] },
-    duration => sub {
-        my ( $t, $k ) = @_;
-        return unless defined $t;
-        return "$k=$t" if $t =~ /^\d+[smh]$/i;
-        die "$k '$t' is not in the form $QS_Format{duration}\n";
-    },
-    flatten => sub {
-        my $array = shift or return;
-        my $key = shift;
-        return "$key=" . ( ref $array ? join( ',', @$array ) : $array );
-    },
-    'int' => sub {
-        my $int = shift;
-        return unless defined $int;
-        my $key = shift;
-        eval { $int += 0; 1 } or die "'$key' is not an integer";
-        return $key . '=' . $int;
-    },
-    'float' => sub {
-        my $float = shift;
-        return unless defined $float;
-        my $key = shift;
-        eval { $float += 0; 1 } or die "'$key' is not a float";
-        return $key . '=' . $float;
-    },
-    'string' => sub {
-        my $string = shift;
-        return unless defined $string;
-        return shift() . '=' . $string;
-    },
-    'enum' => sub {
-        my $val = shift;
-        return unless defined $val;
-        my $key  = shift;
-        my $vals = $_[0];
-        for (@$vals) {
-            return "${key}=$val" if $val eq $_;
-        }
-        die "Unrecognised value '$val'. Allowed values: "
-            . join( ', ', @$vals );
-    },
-
-);
+our $VERSION = '0.22';
+our $DEBUG   = 0;
 
 #===================================
 sub new {
 #===================================
-    my ( $proto, $params ) = &_params;
-    my $self = {
-        _JSON       => JSON::XS->new(),
-        _base_qs    => [],
-        _camel_case => 0
-    };
+    my ( $proto, $params ) = parse_params(@_);
+    my $self = { _base_qs => {}, };
+
     bless $self, ref $proto || $proto;
-    my $servers = delete $params->{servers};
-    for ( keys %$params ) {
-        $self->$_( $params->{$_} );
-    }
-    $servers = [$servers] unless ref $servers eq 'ARRAY';
-    $self->{_servers}{$$} = $servers;
-    $self->{_default_servers} = [@$servers];
+    $self->{_transport} = ElasticSearch::Transport->new($params);
+    $self->$_( $params->{$_} ) for keys %$params;
     return $self;
 }
 
 #===================================
-sub get { shift()->_do_action( 'get', { cmd => CMD_INDEX_TYPE_ID }, @_ ) }
-#===================================
-
-my %Index_Defn = (
-    cmd => CMD_INDEX_TYPE_id,
-    qs  => {
-        create  => [ 'boolean',  'op_type=create' ],
-        timeout => [ 'duration', 'timeout' ],
-    },
-    data => 'data',
-);
-
-#===================================
-sub index {
-#===================================
-    my ( $self, $params ) = &_params;
-    $self->_index( 'index', \%Index_Defn, $params );
-}
-
-#===================================
-sub set {
-#===================================
-    my ( $self, $params ) = &_params;
-    $self->_index( 'set', \%Index_Defn, $params );
-}
-
-#===================================
-sub create {
-#===================================
-    my ( $self, $params ) = &_params;
-    $self->_index( 'create', { %Index_Defn, postfix => '_create' }, $params );
-}
-
-#===================================
-sub _index {
-#===================================
-    my $self = shift;
-    $_[1]->{method} = $_[2]->{id} ? 'PUT' : 'POST';
-    $self->_do_action(@_);
-}
-
-#===================================
-sub delete {
-#===================================
-    shift()->_do_action(
-        'delete',
-        {   method => 'DELETE',
-            cmd    => CMD_INDEX_TYPE_ID,
-        },
-        @_
-    );
-}
-
-my %Search_Data = (
-    facets        => ['facets'],
-    from          => ['from'],
-    size          => ['size'],
-    explain       => ['explain'],
-    fields        => ['fields'],
-    'sort'        => ['sort'],
-    highlight     => ['highlight'],
-    indices_boost => ['indices_boost'],
-    script_fields => ['script_fields'],
-);
-
-my %Search_Defn = (
-    cmd     => CMD_index_type,
-    postfix => '_search',
-    qs      => {
-        search_type => [
-            'enum',
-            'search_type',
-            [   qw(  dfs_query_then_fetch     dfs_query_and_fetch
-                    query_then_fetch         query_and_fetch)
-            ]
-        ],
-        scroll => [ 'duration', 'scroll' ],
-    },
-    data => { %Search_Data, query => ['query'] }
-);
-
-my %Query_Defn = (
-    bool           => ['bool'],
-    constant_score => ['constant_score'],
-    custom_score   => ['custom_score'],
-    dis_max        => ['dis_max'],
-    field          => ['field'],
-    filtered       => ['filtered'],
-    flt            => [ 'flt', 'fuzzy_like_this' ],
-    flt_field      => [ 'flt_field', 'fuzzy_like_this_field' ],
-    fuzzy          => ['fuzzy'],
-    match_all      => ['match_all'],
-    mlt            => [ 'mlt', 'more_like_this' ],
-    mlt_field      => [ 'mlt_field', 'more_like_this_field' ],
-    prefix         => ['prefix'],
-    query_string   => ['query_string'],
-    range          => ['range'],
-    span_term      => ['span_term'],
-    span_first     => ['span_first'],
-    span_near      => ['span_near'],
-    span_not       => ['span_not'],
-    span_or        => ['span_or'],
-    term           => ['term'],
-    wildcard       => ['wildcard'],
-);
-
-#===================================
-sub search { shift()->_do_action( 'search', \%Search_Defn, @_ ) }
-#===================================
-
-#===================================
-sub scroll {
-#===================================
-    shift()->_do_action(
-        'scroll',
-        {   cmd    => [],
-            prefix => '_search/scroll',
-            qs     => { scroll_id => [ 'string', 'scroll_id' ] }
-        },
-        @_
-    );
-}
-
-#===================================
-sub delete_by_query {
-#===================================
-    shift()->_do_action(
-        'delete_by_query',
-        {   %Search_Defn,
-            method  => 'DELETE',
-            postfix => '_query',
-            data    => \%Query_Defn,
-        },
-        @_
-    );
-}
-
-#===================================
-sub count {
-#===================================
-    shift()->_do_action(
-        'count',
-        {   %Search_Defn,
-            postfix => '_count',
-            data    => \%Query_Defn,
-        },
-        @_
-    );
-}
-
-#===================================
-sub mlt {
-#===================================
-    shift()->_do_action(
-        'mlt',
-        {   cmd    => CMD_INDEX_TYPE_ID,
-            method => 'GET',
-            qs     => {
-                %{ $Search_Defn{qs} },
-                mlt_fields => [ 'flatten', 'mlt_fields' ],
-                pct_terms_to_match => [ 'float', 'percent_terms_to_match ' ],
-                min_term_freq      => [ 'int',   'min_term_freq' ],
-                max_query_terms    => [ 'int',   'max_query_terms' ],
-                stop_words   => [ 'flatten', 'stop_words' ],
-                min_doc_freq => [ 'int',     'min_doc_freq' ],
-                max_doc_freq => [ 'int',     'max_doc_freq' ],
-                min_word_len => [ 'int',     'min_word_len' ],
-                max_word_len => [ 'int',     'max_word_len' ],
-                boost_terms  => [ 'float',   'boost_terms' ],
-            },
-            data    => 'data',
-            postfix => '_mlt',
-            data    => \%Search_Data,
-        },
-        @_
-    );
-}
-
-#===================================
-sub index_status {
-#===================================
-    shift()->_do_action(
-        'index_status',
-        {   cmd     => CMD_index,
-            postfix => '_status'
-        },
-        @_
-    );
-}
-
-#===================================
-sub create_index {
-#===================================
-    shift()->_do_action(
-        'create_index',
-        {   method  => 'PUT',
-            cmd     => CMD_INDEX,
-            postfix => '',
-            data    => { index => ['defn'] },
-        },
-        @_
-    );
-}
-
-#===================================
-sub delete_index {
-#===================================
-    shift()->_do_action(
-        'delete_index',
-        {   method  => 'DELETE',
-            cmd     => CMD_INDEX,
-            postfix => ''
-        },
-        @_
-    );
-}
-
-#===================================
-sub clear_cache {
-#===================================
-    shift()->_do_action(
-        'clear_cache',
-        {   method  => 'POST',
-            cmd     => CMD_index,
-            postfix => '_cache/clear'
-        },
-        @_
-    );
-}
-
-#===================================
-sub aliases {
-#===================================
-    my $self    = shift;
-    my $params  = $self->_params(@_);
-    my $actions = $params->{actions};
-    if ( defined $actions && ref $actions ne 'ARRAY' ) {
-        $params->{actions} = [$actions];
-    }
-
-    $self->_do_action(
-        'aliases',
-        {   prefix => '_aliases',
-            method => 'POST',
-            cmd    => [],
-            data   => { actions => 'actions' },
-        },
-        $params
-    );
-}
-
-#===================================
-sub get_aliases {
-#===================================
-    my ( $self, $params ) = &_params;
-    my $results = $self->index_status($params);
-    my $indices = $results->{indices};
-    my %aliases = ( indices => {}, aliases => {} );
-    foreach my $index ( keys %$indices ) {
-        my $aliases = $indices->{$index}{aliases};
-        $aliases{indices}{$index} = $aliases;
-        for (@$aliases) {
-            push @{ $aliases{aliases}{$_} }, $index;
-        }
-
-    }
-    return \%aliases;
-}
-
-#===================================
-sub flush_index {
-#===================================
-    shift()->_do_action(
-        'flush_index',
-        {   method  => 'POST',
-            cmd     => CMD_index,
-            postfix => '_flush',
-            qs      => {
-                refresh => [ 'boolean', 'refresh=true' ],
-                full    => [ 'boolean', 'full=true' ]
-            },
-        },
-        @_
-    );
-}
-
-#===================================
-sub refresh_index {
-#===================================
-    shift()->_do_action(
-        'refresh_index',
-        {   method  => 'POST',
-            cmd     => CMD_index,
-            postfix => '_refresh'
-        },
-        @_
-    );
-}
-#===================================
-sub optimize_index {
-#===================================
-    shift()->_do_action(
-        'optimize_index',
-        {   method  => 'POST',
-            cmd     => CMD_index,
-            postfix => '_optimize',
-            qs      => {
-                only_deletes => [ 'boolean', 'only_expunge_deletes=true' ],
-                refresh => [ 'boolean', 'refresh=true', 'refresh=false' ],
-                flush => [ 'boolean', 'flush=true', 'flush=false' ]
-            },
-        },
-        @_
-    );
-}
-
-#===================================
-sub snapshot_index {
-#===================================
-    shift()->_do_action(
-        'snapshot_index',
-        {   method  => 'POST',
-            cmd     => CMD_index,
-            postfix => '_gateway/snapshot'
-        },
-        @_
-    );
-}
-
-#===================================
-sub gateway_snapshot {
-#===================================
-    shift()->_do_action(
-        'gateway_snapshot',
-        {   method  => 'POST',
-            cmd     => CMD_index,
-            postfix => '_gateway/snapshot'
-        },
-        @_
-    );
-}
-
-#===================================
-sub put_mapping {
-#===================================
-    my ( $self, $params ) = &_params;
-    my $action = 'put_mapping';
-    my $defn   = {
-        method  => 'PUT',
-        cmd     => CMD_index_TYPE,
-        postfix => '_mapping',
-        qs => { ignore_conflicts => [ 'boolean', 'ignore_conflicts=true' ] },
-        data => {
-            properties => 'properties',
-            _all       => ['_all'],
-            _source    => ['_source'],
-        }
-    };
-
-    my $type_name = $params->{type} || '';
-    my $type_val = {};
-    $type_val->{properties} = delete $params->{properties}
-        or $self->throw(
-        'Param',
-        "Missing required param 'properties'\n"
-            . $self->_usage( $action, $defn ),
-        { params => $params }
-        );
-
-    for (qw(_all _source)) {
-        $type_val->{$_} = delete $params->{$_}
-            if exists $params->{$_};
-    }
-    $params->{$type_name} = $type_val;
-    $defn->{data} = { $type_name => $type_name };
-    $self->_do_action( $action, $defn, $params );
-}
-
-#===================================
-sub mapping {
-#===================================
-    my ( $self, $params ) = &_params;
-    $self->_do_action(
-        'mapping',
-        {   method  => 'GET',
-            cmd     => CMD_index_type,
-            postfix => '_mapping',
-        },
-        $params
-    );
-}
-
-#===================================
-sub update_index_settings {
-#===================================
-    my ( $self, $params ) = &_params;
-    $self->_do_action(
-        'update_settings',
-        {   method  => 'PUT',
-            cmd     => CMD_index,
-            postfix => '_settings',
-            data => { index => 'settings'}
-        },
-        $params
-    );
-}
-
-#===================================
-sub cluster_state {
-#===================================
-    shift()->_do_action(
-        'cluster_state',
-        {   prefix => '_cluster/state',
-            qs     => {
-                filter_nodes    => [ 'boolean', 'filter_nodes=true' ],
-                filter_metadata => [ 'boolean', 'filter_metadata=true' ],
-                filter_routing_table =>
-                    [ 'boolean', 'filter_routing_table=true' ],
-                filter_indices => [ 'flatten', 'filter_indices' ],
-                }
-
-        },
-        @_
-    );
-}
-
-#===================================
-sub current_server_version {
-#===================================
-    shift()
-        ->_do_action( 'current_server_version',
-        { cmd => CMD_NONE, prefix => '' } )->{version};
-}
-
-#===================================
-sub nodes {
-#===================================
-    shift()->_do_action(
-        'nodes',
-        {   prefix => '_cluster/nodes',
-            cmd    => CMD_nodes,
-            qs     => { settings => [ 'boolean', 'settings=true' ] }
-        },
-        @_
-    );
-}
-
-#===================================
-sub nodes_stats {
-#===================================
-    shift()->_do_action(
-        'nodes',
-        {   prefix  => '_cluster/nodes',
-            postfix => 'stats',
-            cmd     => CMD_nodes,
-        },
-        @_
-    );
-}
-
-#===================================
-sub shutdown {
-#===================================
-    shift()->_do_action(
-        'shutdown',
-        {   method  => 'POST',
-            prefix  => '_cluster/nodes',
-            cmd     => CMD_nodes,
-            postfix => '_shutdown',
-            qs      => { delay => [ 'duration', 'delay' ] }
-        },
-        @_
-    );
-}
-
-#===================================
-sub restart {
-#===================================
-    shift()->_do_action(
-        'shutdown',
-        {   method  => 'POST',
-            prefix  => '_cluster/nodes',
-            cmd     => CMD_nodes,
-            postfix => '_restart',
-            qs      => { delay => [ 'duration', 'delay' ] }
-        },
-        @_
-    );
-}
-
-#===================================
-sub cluster_health {
-#===================================
-    shift()->_do_action(
-        'cluster_health',
-        {   prefix => '_cluster/health',
-            cmd    => CMD_index,
-            qs     => {
-                level => [ 'enum', 'level', [qw(cluster indices shards)] ],
-                wait_for_status =>
-                    [ 'enum', 'wait_for_status', [qw(green yellow red)] ],
-                wait_for_relocating_shards =>
-                    [ 'int', 'wait_for_relocating_shards' ],
-                wait_for_nodes => [ 'string',   'wait_for_nodes' ],
-                timeout        => [ 'duration', 'timeout' ]
-            }
-        },
-        @_
-    );
-}
-
-#===================================
-sub camel_case {
-#===================================
-    my $self = shift;
-    if (@_) {
-        if ( shift() ) {
-            $self->{_camel_case} = 1;
-            $self->{_base_qs}    = ['case=camelCase'];
-        }
-        else {
-            $self->{_camel_case} = 0;
-            $self->{_base_qs}    = [];
-        }
-    }
-    return $self->{_camel_case};
-}
-
-#===================================
-sub _do_action {
-#===================================
-    my $self            = shift;
-    my $action          = shift || '';
-    my $defn            = shift || {};
-    my $original_params = $self->_params(@_);
-
-    my ( $cmd, $data, $error );
-
-    my $params = {%$original_params};
-    eval {
-        $cmd = join '',
-            grep {defined}
-            $self->_build_cmd( $params, @{$defn}{qw(prefix cmd postfix)} ),
-            $self->_build_qs( $params, $defn->{qs} );
-
-        $data = $self->_build_data( $params, $defn->{data} );
-        die "Unknown parameters: " . join( ', ', keys %$params ) . "\n"
-            if keys %$params;
-        1;
-    } or $error = $@ || 'Unknown error';
-
-    $self->throw(
-        'Param',
-        $error . $self->_usage( $action, $defn ),
-        { params => $original_params }
-    ) if $error;
-
-    return $self->request( {
-            method => $defn->{method} || 'GET',
-            cmd    => $cmd,
-            data   => $data,
-        }
-    );
-}
-
-#===================================
-sub _usage {
-#===================================
-    my $self   = shift;
-    my $action = shift;
-    my $defn   = shift;
-
-    my $usage = "Usage for '$action()':\n";
-    my @cmd = @{ $defn->{cmd} || [] };
-    while ( my $key = shift @cmd ) {
-        my $type = shift @cmd;
-        my $arg_format
-            = $type == ONE_REQ ? "\$$key"
-            : $type == ONE_OPT ? "\$$key"
-            :                    "\$$key | [\$${key}_1,\$${key}_n]";
-
-        my $required = $type == ONE_REQ ? 'required' : 'optional';
-        $usage .= sprintf( "  - %-20s =>  %-45s # %s\n",
-            $key, $arg_format, $required );
-    }
-    if ( my $qs = $defn->{qs} ) {
-        for ( sort keys %$qs ) {
-            my $arg_format = $QS_Format{ $qs->{$_}[0] };
-            $usage .= sprintf( "  - %-20s =>  %-45s # optional\n", $_,
-                $arg_format );
-        }
-    }
-
-    if ( my $data = $defn->{data} ) {
-        $data = { data => $data } unless ref $data eq 'HASH';
-        my @keys = sort { $a->[0] cmp $b->[0] }
-            map { ref $_ ? [ $_->[0], 'optional' ] : [ $_, 'required' ] }
-            values %$data;
-
-        for (@keys) {
-            $usage .= sprintf(
-                "  - %-20s =>  %-45s # %s\n",
-                $_->[0], '{' . $_->[0] . '}',
-                $_->[1]
-            );
-        }
-    }
-    return $usage;
-}
-
-#===================================
-sub _build_qs {
-#===================================
-    my $self   = shift;
-    my $params = shift;
-    my $defn   = shift or return;
-    my @qs     = ( @{ $self->{_base_qs} } );
-    foreach my $key ( keys %$defn ) {
-        my ( $format_name, @args ) = @{ $defn->{$key} || [] };
-        $format_name ||= '';
-
-        next unless exists $params->{$key} || $format_name eq 'fixed';
-
-        my $formatter = $QS_Formatter{$format_name}
-            or die "Unknown QS formatter '$format_name'";
-
-        my $val = $formatter->( delete $params->{$key}, @args );
-        push @qs, $val if defined $val;
-    }
-    return unless @qs;
-    return '?' . join '&', @qs;
-}
-
-#===================================
-sub _build_data {
-#===================================
-    my $self   = shift;
-    my $params = shift;
-    my $defn   = shift or return;
-
-    my $top_level;
-    if ( ref $defn ne 'HASH' ) {
-        $top_level = 1;
-        $defn = { data => $defn };
-    }
-
-    my %data;
-KEY: while ( my ( $key, $source ) = each %$defn ) {
-        if ( ref $source eq 'ARRAY' ) {
-            foreach (@$source) {
-                my $val = delete $params->{$_};
-                next unless defined $val;
-                $data{$key} = $val;
-                next KEY;
-            }
-        }
-        else {
-            $data{$key} = delete $params->{$source}
-                or die "Missing required param '$source'\n";
-        }
-    }
-    if ($top_level) {
-        die "Param '$defn' is not a HASH ref"
-            unless ref $data{data} eq 'HASH';
-        return $data{data};
-    }
-    return \%data;
-}
-
-#===================================
-sub _build_cmd {
-#===================================
-    my $self   = shift;
-    my $params = shift;
-    my ( $prefix, $defn, $postfix ) = @_;
-
-    my @defn = ( @{ $defn || [] } );
-    my @cmd;
-    while (@defn) {
-        my $key  = shift @defn;
-        my $type = shift @defn;
-
-        my $val = delete $params->{$key};
-        if ( defined $val ) {
-            if ( ref $val eq 'ARRAY' ) {
-                die "'$key' must be a single value\n"
-                    if $type == ONE_REQ || $type == ONE_OPT;
-                $val = join ',', @$val;
-            }
-        }
-        else {
-            next if $type == ONE_OPT || $type == MULTI_BLANK;
-            die "Param '$key' is required\n"
-                if $type == ONE_REQ;
-            $val = '_all';
-        }
-        push @cmd, $val;
-    }
-
-    return join '/', '', grep {defined} ( $prefix, @cmd, $postfix );
-}
-
-#===================================
-sub servers { shift->{_servers}{$$} || [] }
-#===================================
-
-#===================================
-sub refresh_servers {
-#===================================
-    my $self = shift;
-    my @servers = ( @{ $self->servers }, @{ $self->{_default_servers} } );
-
-    my @live_servers;
-    foreach my $server (@servers) {
-        next unless $server;
-        $server = 'http://' . $server
-            unless $server =~ m{^http(?:s)?://};
-        $server =~ s{/+$}{};
-
-        my $nodes = eval {
-            my $result = $self->_request( $server, 'GET', '/_cluster/nodes' );
-            return $result->{nodes};
-        } or next;
-
-        @live_servers = grep {$_}
-            map { $_->{http_address} || $_->{httpAddress} } values %$nodes;
-        last if @live_servers;
-    }
-
-    $self->throw(
-        'NoServers',
-        "Could not retrieve a list of active servers: $@",
-        { servers => \@servers }
-    ) unless @live_servers;
-    for (@live_servers) {
-        $_ =~ m{inet\[(\S*)/(\S+):(\d+)\]};
-        $_ = 'http://' . ( $1 || $2 ) . ':' . $3;
-    }
-
-    $self->{_servers} = { $$ => \@live_servers };
-    $self->{_current_server}
-        = { $$ => $live_servers[ int( rand(@live_servers) ) ] };
-}
-
-#===================================
-sub current_server {
-#===================================
-    my $self = shift;
-    unless ( $self->{_current_server}{$$} ) {
-        $self->refresh_servers;
-    }
-    return $self->{_current_server}{$$};
-}
-
-#===================================
-sub ua {
-#===================================
-    my $self = shift;
-    unless ( $self->{_ua}{$$} ) {
-        my $ua = $self->{_ua} = LWP::UserAgent->new( %{ $self->ua_options } );
-        $ua->conn_cache( LWP::ConnCache->new );
-        $self->{_ua} = { $$ => $ua };
-    }
-    return $self->{_ua}{$$};
-}
-
-#===================================
-sub ua_options {
-#===================================
-    my $self = shift;
-    if (@_) {
-        ( undef, my $params ) = $self->_params(@_);
-        $self->{_ua_options} = $params;
-    }
-    return $self->{_ua_options} ||= {};
-}
-
-#===================================
-sub JSON { shift()->{_JSON} }
-#===================================
-
-#===================================
 sub request {
 #===================================
-    my $self   = shift;
-    my $params = shift;
-    my $method = $params->{method} || 'GET';
-    my $cmd    = $params->{cmd}
-        || $self->throw( 'Request', "No cmd specified" );
-
-    my $data = $params->{data};
-    my $json = $self->JSON;
-    $data = $json->encode($data)
-        if defined $data;
-
-    while (1) {
-        my $current_server = $self->current_server;
-        my ( $result, $error );
-        eval {
-            $result
-                = $self->_request( $current_server, $method, $cmd, $data );
-            1;
-        } or $error = $@ || 'Unknown error';
-
-        return $result unless $error;
-
-        if ( ref $error ) {
-            my $code = $error->{-vars}{status_code} || 0;
-            my $msg  = $error->{-vars}{status_msg}  || '';
-            if (   $code == 500
-                && $msg =~ /Can't connect|Server closed connection/ )
-            {
-                warn "Error connecting to '$current_server' : $msg";
-                $self->refresh_servers;
-                next;
-            }
-            $error->{-vars}{request} = $params;
-            die $error;
-        }
-
-        $self->throw( 'Request', $error, { request => $params } );
-    }
+    my ( $self, $params ) = parse_params(@_);
+    return $self->transport->request($params);
 }
 
 #===================================
-sub _request {
+sub transport   { shift()->{_transport} }
+sub trace_calls { shift->transport->trace_calls(@_) }
 #===================================
-    my $self           = shift;
-    my $current_server = shift;
-    my $method         = shift;
-    my $cmd            = shift;
-    my $data           = shift;
-
-    my $request = HTTP::Request->new( $method, $current_server . $cmd );
-
-    $request->add_content_utf8($data)
-        if defined $data;
-
-    $self->_log_request( $method, $current_server, $cmd, $data );
-
-    my $server_response = $self->ua->request($request);
-
-    my $content = $server_response->decoded_content;
-    $content = decode_utf8($content);
-
-    my ( $result, $json_error );
-    eval { $result = $self->JSON->decode($content); 1 }
-        or $json_error = ( $@ || 'Unknown JSON error' );
-
-    $self->_log_result( $result || $content );
-
-    my $success = $server_response->is_success;
-
-    return $result if $success && !$json_error;
-
-    my $error_params = {
-        server      => $current_server,
-        response    => $json_error ? $content : $result,
-        status_code => $server_response->code,
-        status_msg  => $server_response->message,
-
-    };
-
-    my ( $error_type, $error_msg );
-    if ( $success && $json_error ) {
-        $error_type = 'JSON';
-        $error_msg  = $json_error;
-    }
-    else {
-        $error_type
-            = $error_params->{status_msg} eq 'read timeout'
-            ? 'Timeout'
-            : 'Request';
-        $error_msg
-            = $result && $result->{error}
-            ? $result->{error}
-            : $error_params->{status_msg} . ' ('
-            . $error_params->{status_code} . ')';
-    }
-
-    $self->throw( $error_type, $error_msg, $error_params );
-}
-
-#===================================
-sub _log_request {
-#===================================
-    my $self = shift;
-    my $log = $self->trace_calls or return;
-    my ( $method, $current_server, $cmd, $data ) = @_;
-    if ( defined $data ) {
-        $data =~ s/'/\\u0027/g;
-        $data = " -d '\n${data}'";
-    }
-    else {
-        $data = '';
-    }
-    print $log "curl -X${method} '${current_server}${cmd}' ${data}\n";
-
-}
-
-#===================================
-sub _log_result {
-#===================================
-    my $self    = shift;
-    my $log     = $self->trace_calls or return;
-    my $content = shift;
-    my $out     = ref $content ? $self->JSON->encode($content) : $content;
-    my @lines   = split /\n/, $out;
-    while (@lines) {
-        my $line = shift @lines;
-        if ( length $line > 65 ) {
-            my ($spaces) = ( $line =~ /^(?:> )?(\s*)/ );
-            $spaces = substr( $spaces, 0, 20 ) if length $spaces > 20;
-            unshift @lines, '> ' . $spaces . substr( $line, 65 );
-            $line = substr $line, 0, 65;
-        }
-        print $log "# $line\n";
-    }
-    print $log "\n\n";
-}
-
-#===================================
-sub _params {
-#===================================
-    my $self = shift;
-    my $params;
-    if ( @_ % 2 ) {
-        $self->throw(
-            "Param",
-            'Expecting a HASH ref or a list of key-value pairs',
-            { params => \@_ }
-        ) unless ref $_[0] eq 'HASH';
-        $params = shift;
-    }
-    else {
-        $params = {@_};
-    }
-    return ( $self, $params );
-}
-#===================================
-sub throw {
-#===================================
-    my $self = shift;
-    my $type = shift;
-    my $msg  = shift;
-    my $vars = shift;
-
-    my $class = ref $self || $self;
-    my $error_class = $class . '::Error::' . $type;
-
-    $msg = 'Unknown error' unless defined $msg;
-    $msg =~ s/\n/\n    /g;
-
-    my $debug = ref $self ? $self->debug : 1;
-    my ( undef, $file, $line ) = caller(0);
-    my $error = bless {
-        -text       => $msg,
-        -line       => $line,
-        -file       => $file,
-        -vars       => $vars,
-        -stacktrace => $debug ? _stack_trace() : ''
-    }, $error_class;
-
-    die $error;
-}
-
-#===================================
-sub _stack_trace {
-#===================================
-    my $i    = 2;
-    my $line = ( '-' x 60 ) . "\n";
-    my $o    = $line
-        . sprintf( "%-4s %-30s %-5s %s\n",
-        ( '#', 'Package', 'Line', 'Sub-routine' ) )
-        . $line;
-    while ( my @caller = caller($i) ) {
-        $o .= sprintf( "%-4d %-30s %4d  %s\n", $i++, @caller[ 0, 2, 3 ] );
-        last if $caller[3] eq '(eval)';
-    }
-    return $o .= $line;
-}
-
-#===================================
-sub debug {
-#===================================
-    my $self = shift;
-    if (@_) { $self->{_debug} = !!shift() }
-    return $self->{_debug};
-}
-
-#===================================
-sub trace_calls {
-#===================================
-    my $self = shift;
-    if (@_) {
-        if ( my $file = shift ) {
-            $file = '&STDERR' if $file eq "1";
-
-            open my $fh, ">>$file"
-                or $self->throw( 'Internal',
-                "Couldn't open '$file' for trace logging: $!" );
-            binmode( $fh, ':utf8' );
-            $fh->autoflush(1);
-            $self->JSON->pretty(1);
-            $self->{_trace_file} = $fh;
-        }
-        else {
-            $self->{_trace_file} = undef;
-            $self->JSON->pretty(0);
-        }
-    }
-    return $self->{_trace_file};
-}
-
-#===================================
-#===================================
-package ElasticSearch::Error;
-#===================================
-#===================================
-@ElasticSearch::Error::Internal::ISA  = __PACKAGE__;
-@ElasticSearch::Error::Param::ISA     = __PACKAGE__;
-@ElasticSearch::Error::NoServers::ISA = __PACKAGE__;
-@ElasticSearch::Error::Request::ISA   = __PACKAGE__;
-@ElasticSearch::Error::Timeout::ISA   = __PACKAGE__;
-@ElasticSearch::Error::JSON::ISA      = __PACKAGE__;
-
-use strict;
-use warnings FATAL => 'all', NONFATAL => 'redefine';
-
-use overload ( '""' => 'stringify' );
-use Data::Dumper;
-
-#===================================
-sub stringify {
-#===================================
-    my $error     = shift;
-    my $object_id = $error->{-object_id};
-
-    my $msg
-        = '[ERROR] ** '
-        . ( ref($error) || 'ElasticSearch::Error' ) . ' at '
-        . $error->{-file}
-        . ' line '
-        . $error->{-line} . " : \n"
-        . ( $error->{-text} || 'Missing error message' ) . "\n"
-        . (
-        $error->{-vars}
-        ? "With vars:\n" . Dumper( $error->{-vars} ) . "\n"
-        : ''
-        ) . $error->{-stacktrace};
-    return $msg;
-}
 
 =head1 NAME
 
@@ -1168,14 +40,10 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.21, tested against ElasticSearch server version 0.10.0.
+Version 0.22, tested against ElasticSearch server version 0.12.0.
 
-NOTE: Various features present in older versions of the ElasticSearch server
-which have been removed from ElasticSearch 0.10.0 have also been removed from
-this module.  If you are still using ElasticSearch 0.8.0 or older (and I highly
-recommned upgrading!), then you should use ElasticSearch.pm version 0.16.
-
-=cut
+NOTE: This version has been completely refactored, to provide multiple
+Transport backends, and some methods have moved to subclasses.
 
 =head1 DESCRIPTION
 
@@ -1202,8 +70,8 @@ a randomly chosen node in the list.
     use ElasticSearch;
     my $e = ElasticSearch->new(
         servers     => 'search.foo.com:9200',
+        transport   => 'http' | 'httplite' | 'thrift', # default 'http'
         trace_calls => 'log_file',
-        debug       => 1,
     );
 
     $e->index(
@@ -1246,28 +114,8 @@ a randomly chosen node in the list.
 You can download the latest released version of ElasticSearch from
 L<http://github.com/elasticsearch/elasticsearch/downloads>.
 
-To build the latest development version from source, you can do
-the following:
-
-    cd ~
-    rm -Rf elasticsearch*
-    wget http://github.com/elasticsearch/elasticsearch/tarball/master
-    tar -xzf elasticsearch*.gz
-    cd elasticsearch*
-    ./gradlew
-
-    cd /path/where/you/want/elasticsearch
-    unzip ~/elasticsearch/build/distributions/elasticsearch*
-
-To start a test server in the foreground:
-
-   ./bin/elasticsearch -f
-
-You can start multiple servers by repeating this command - they will
-autodiscover each other.
-
-More instructions are available here:
-L<http://www.elasticsearch.com/docs/elasticsearch/setup/installation>
+See here for setup instructions:
+L<http://github.com/elasticsearch/elasticsearch/wiki/Setting-up-ElasticSearch>
 
 =cut
 
@@ -1317,7 +165,7 @@ a non-existent index.
                                'es2.foo.com:9200'],     # multiple servers
             trace_calls => 1 | '/path/to/log/file',
             debug       => 1 | 0,
-            ua_options  => { LWP::UserAgent options},
+            timeout     => 30,
 
      );
 
@@ -1326,7 +174,7 @@ ARRAY ref with a list of servers.  These servers are used to retrieve a list
 of all servers in the cluster, after which one is chosen at random to be
 the L</"current_server()">.
 
-See also: L</"debug()">, L</"ua_options()">, L</"trace_calls()">,
+See also: L</"debug()">, L</"timeout()">, L</"trace_calls()">,
           L</"refresh_servers()">, L</"servers()">, L</"current_server()">
 
 =cut
@@ -1344,7 +192,8 @@ See also: L</"debug()">, L</"ua_options()">, L</"trace_calls()">,
             ...
         },
         timeout => eg '1m' or '10s'     # optional
-        create  => 1 |0                 # optional
+        create  => 1 | 0                # optional
+        refresh => 1 | 0                # optional
     );
 
 eg:
@@ -1382,8 +231,8 @@ to exists in the index.
 
 =back
 
-See also: L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/index>
-and L</"put_mapping()">
+See also: L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/index>,
+L</"bulk()"> and L</"put_mapping()">
 
 
 =head3 C<set()>
@@ -1422,7 +271,7 @@ Example:
       _type   => "tweet",
     }
 
-See also: L<KNOWN ISSUES>,
+See also: L</"bulk()">, L<KNOWN ISSUES>,
           L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/get>
 
 =head3 C<delete()>
@@ -1431,6 +280,7 @@ See also: L<KNOWN ISSUES>,
         index   => single,
         type    => single,
         id      => single,
+        refresh => 1 | 0                # optional
     );
 
 Deletes the document stored at C<index/type/id> or throws an exception if
@@ -1440,7 +290,71 @@ Example:
 
     $e->delete( index => 'twitter', type => 'tweet', id => 1);
 
-See also: L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/delete>
+See also: L</"bulk()">,
+L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/delete>
+
+=head3 C<bulk()>
+
+    $result = $e->bulk([
+        { create => { index => 'foo', type => 'bar', id => 123,
+                      data => { text => 'foo bar'}              }},
+        { index  => { index => 'foo', type => 'bar', id => 123,
+                      data => { text => 'foo bar'}              }},
+        { delete => { index => 'foo', type => 'bar', id => 123  }},
+    ]);
+
+Perform multiple C<index>,C<create> or C<delete> operations in a single
+request.  In my benchmarks, this is 10 times faster than serial operations.
+
+For the above example, the C<$result> will look like:
+
+    {
+        actions => [ the list of actions you passed in ],
+        results => [
+                 { create => { id => 123, index => "foo", type => "bar" } },
+                 { index  => { id => 123, index => "foo", type => "bar" } },
+                 { delete => { id => 123, index => "foo", type => "bar" } },
+        ]
+    }
+
+where each row in C<results> corresponds to the same row in C<actions>.
+If there are any errors for individual rows, then the C<$result> will contain
+a key C<errors> which contains an array of each error and the associated
+action, eg:
+
+    $result = {
+        actions => [
+
+            ## NOTE - num is numeric
+            {   index => { index => 'bar', type  => 'bar', id => 123,
+                           data  => { num => 123 } } },
+
+            ## NOTE - num is a string
+            {   index => { index => 'bar', type  => 'bar', id => 123,
+                           data  => { num => 'foo bar' } } },
+        ],
+        errors => [
+            {
+                action => {
+                    index => { index => 'bar', type  => 'bar', id => 123,
+                               data  => { num => 'text foo' } }
+                },
+                error => "MapperParsingException[Failed to parse [num]]; ...",
+            },
+        ],
+        results => [
+            { index => { id => 123, index => "bar", type => "bar" } },
+            {   index => {
+                    error => "MapperParsingException[Failed to parse [num]];...",
+                    id    => 123, index => "bar", type  => "bar",
+                },
+            },
+        ],
+
+    };
+
+See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/bulk> for
+more details.
 
 =cut
 
@@ -1486,7 +400,7 @@ If a search has been executed with a C<scroll> parameter, then the returned
 C<scroll_id> can be used like a cursor to scroll through the rest of the
 results.
 
-Note - this doesn't seem to work correctly in version 0.10.1 of ElasticSearch.
+Note - this doesn't seem to work correctly in version 0.12.0 of ElasticSearch.
 
 See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/search/#Scrolling>
 
@@ -1827,7 +741,7 @@ to specify an official C<mapping> instead, eg:
     $result = $e->put_mapping(
         index   => ['twitter','buzz'],
         type    => 'tweet',
-        source  => { compress => 1 },
+        _source => { compress => 1 },
         properties  =>  {
             user        =>  {type  =>  "string", index      =>  "not_analyzed"},
             message     =>  {type  =>  "string", null_value =>  "na"},
@@ -1839,6 +753,16 @@ to specify an official C<mapping> instead, eg:
 
 See also: L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/indices/put_mapping>
 and L<http://www.elasticsearch.com/docs/elasticsearch/mapping>
+
+=head3 C<delete_mapping()>
+
+    $result = $e->delete_mapping(
+        index   => multi,
+        type    => single,
+    );
+
+Deletes a mapping/type in one or more indices.
+See also L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/indices/delete_mapping>
 
 =head3 C<mapping()>
 
@@ -1867,6 +791,60 @@ index (or indices) that the alias points to.
 
 
 =cut
+
+=head2 River admin methods
+
+=head3 C<create_river()>
+
+    $result = $e->create_river(
+        river   => $river_name,     # required
+        type    => $type,           # required
+        $type   => {...},           # depends on river type
+        index   => {...},           # depends on river type
+    );
+
+Creates a new river with name C<$name>, eg:
+
+    $result = $e->create_river(
+        river   => 'my_twitter_river',
+        type    => 'twitter',
+        twitter => {
+            user        => 'user',
+            password    => 'password',
+        },
+        index   => {
+            index       => 'my_twitter_index',
+            type        => 'status',
+            bulk_size   => 100
+        }
+    )
+
+See L<http://www.elasticsearch.com/docs/elasticsearch/river/>
+and L<http://www.elasticsearch.com/docs/elasticsearch/river/twitter/>.
+
+
+=head3 C<get_river()>
+
+    $result = $e->get_river( river => $river_name );
+
+Returns the river details eg
+
+    $result = $e->get_river ( river => 'my_twitter_river' )
+
+Throws an exception if the river doesn't exist.
+
+See L<http://www.elasticsearch.com/docs/elasticsearch/river/>.
+
+
+=head3 C<delete_river()>
+
+    $result = $e->delete_river( river => $river_name );
+
+Deletes the corresponding river, eg:
+
+    $result = $e->delete_river ( river => 'my_twitter_river' )
+
+Throws an exception if the river doesn't exist.
 
 =head2 Cluster admin methods
 
@@ -1971,50 +949,6 @@ C<node> can also have the values C<_local>, C<_master> or C<_all>.
 
 See: L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/cluster/nodes_restart>
 
-=cut
-
-=head2 Module-specific methods
-
-=head3 C<servers()>
-
-    $servers = $e->servers
-
-Returns a list of the servers/nodes known to be in the cluster the last time
-that L</"refresh_servers()"> was called.
-
-=head3 C<refresh_servers()>
-
-    $e->refresh_servers( $server | [$server_1, ...$server_n])
-    $e->refresh_servers()
-
-Tries to contact each server in the list to retrieve a list of servers/nodes
-currently in the cluster. If it succeeds, then it updates L</"servers()"> and
-randomly selects one server to be the L</"current_server()">
-
-If no servers are passed in, then it uses the list from L</"servers()"> (ie
-the last known good list) instead.
-
-Throws an exception if no servers can be found.
-
-C<refresh_server> is called:
-
-=over
-
-=item the first time that L</"request()"> or L</"current_server()"> is called
-
-=item if any L</"request()"> fails to connect to the current server
-
-=item if the process forks and the PID changes
-
-=back
-
-=head3 C<current_server()>
-
-    $current_server = $e->current_server()
-
-Returns the current server for the current PID, or if none is set, then it
-tries to get a new current server by calling L</"refresh_servers()">.
-
 =head3 C<current_server_version()>
 
     $version = $e->current_server_version()
@@ -2022,41 +956,46 @@ tries to get a new current server by calling L</"refresh_servers()">.
 Returns a HASH containing the version C<number> string, the build C<date> and
 whether or not the current server is a C<snapshot_build>.
 
-=head3 C<ua()>
-
-    $ua = $e->ua
-
-Returns the current L<LWP::UserAgent> instance for the current PID.  If there is
-none, then it creates a new instance, with any options specified in
-L</"ua_options()">
-
-C<Keep-alive> is used by default (via L<LWP::ConnCache>).
-
-=head3 C<ua_options()>
-
-    $ua_options = $e->ua({....})
-
-Get/sets the current list of options to be used when creating a new
-C<LWP::UserAgent> instance.  You may, for instance, want to set C<timeout>
-
-This is best set when creating a new instance of ElasticSearch with L</"new()">.
-
 =cut
 
-=head3 C<JSON()>
 
-    $json_xs = $e->JSON
+=head2 Other methods
 
-Returns the current L<JSON::XS> object which is used to encode and decode
-all JSON when communicating with ElasticSearch.
+=head3 C<trace_calls()>
 
-If you need to change the JSON settings you can do (eg):
+    $es->trace_calls(1);            # log to STDERR
+    $es->trace_calls($filename);    # log to $filename.$PID
+    $es->trace_calls(0 | undef);    # disable logging
 
-    $e->JSON->utf8
+C<trace_calls()> is used for debugging.  All requests to the cluster
+are logged either to C<STDERR> or the specified filename, with the
+current $PID appended, in a form that can be rerun with curl.
 
-It is probably better not to fiddle with this!  ElasticSearch expects all
-data to be provided as Perl strings (not as UTF8 encoded byte strings) and
-returns all data from ElasticSearch as Perl strings.
+The cluster response will also be logged, and commented out.
+
+Example: C<< $e->cluster_health >> is logged as:
+
+    # [Tue Oct 19 15:32:31 2010] Protocol: http, Server: 127.0.0.1:9200
+    curl -XGET 'http://127.0.0.1:9200/_cluster/health'
+
+    # [Tue Oct 19 15:32:31 2010] Response:
+    # {
+    #    "relocating_shards" : 0,
+    #    "active_shards" : 0,
+    #    "status" : "green",
+    #    "cluster_name" : "elasticsearch",
+    #    "active_primary_shards" : 0,
+    #    "timed_out" : false,
+    #    "initializing_shards" : 0,
+    #    "number_of_nodes" : 1,
+    #    "unassigned_shards" : 0
+    # }
+
+=head3 C<transport()>
+
+    $transport = $e->transport
+
+Returns the Transport object, eg L<ElasticSearch::Transport::HTTP>.
 
 =head3 C<camel_case()>
 
@@ -2070,77 +1009,22 @@ Defaults to false.
 
 =cut
 
-=head3 C<request()>
+=head3 C<error_trace()>
 
-    $result = $e->request({
-        method  => 'GET|PUT|POST|DELETE',
-        cmd     => url,                     # eg '/twitter/tweet/123'
-        data    => $hash_ref                # converted to JSON document
-    })
+    $bool = $e->error_trace($bool)
 
-The C<request()> method is used to communicate with the ElasticSearch
-L</"current_server()">.  If any request fails with a C<Can't connect> error,
-then C<request()> tries to refresh the server list, and repeats the request.
-
-Any other error will throw an exception.
-
-=head3 C<throw()>
-
-    $e->throw('ErrorType','ErrorMsg', {vars})
-
-Throws an exception of C<ref $e . '::Error::' . $error_type>, eg:
-
-    $e->throw('Param', 'Missing required param', { params => $params})
-
-... will thrown an error of class C<ElasticSearch::Error::Param>.
-
-Any vars passed in will be available as C<< $error->{-vars} >>.
-
-If L</"debug()"> is C<true>, then C<< $error->{-stacktrace} >> will contain a
-stacktrace.
-
-=head3 C<debug()>
-
-    $e->debug(1|0);
-
-If C<debug()> is C<true>, then exceptions include a stack trace.
-
-=head3 C<trace_calls()>
-
-    $es->trace_calls(1);            # log to STDERR
-    $es->trace_calls($filename);    # log to $filename
-    $es->trace_calls(0 | undef);    # disable logging
-
-C<trace_calls()> is used for debugging.  All requests to the cluster
-are logged either to C<STDERR> or the specified file, in a form that can
-be rerun with curl.
-
-The cluster response will also be logged, and commented out.
-
-Example: C<< $e->cluster_state(level=>'indices') >> is logged as:
-
-    curl -XGET 'http://127.0.0.1:9200/_cluster/health?level=indices'
-    # {
-    #    "active_primary_shards" : 5,
-    #    "timed_out" : false,
-    #    "relocating_shards" : 0,
-    #    "active_shards" : 5,
-    #    "status" : "yellow",
-    #    "number_of_nodes" : 1,
-    #    "indices" : {
-    #       "foo" : {
-    #          "active_primary_shards" : 5,
-    #          "relocating_shards" : 0,
-    #          "number_of_replicas" : 1,
-    #          "active_shards" : 5,
-    #          "status" : "yellow",
-    #          "number_of_shards" : 5
-    #       }
-    #    }
-    # }
-
+If the ElasticSearch server is returning an error, setting C<error_trace>
+to true will return some internal information about where the error originates.
+Mostly useful for debugging.
 
 =cut
+
+=head2 GLOBAL VARIABLES
+
+    $Elasticsearch::DEBUG = 0 | 1;
+
+If C<$Elasticsearch::DEBUG> is set to true, then ElasticSearch exceptions
+will include a stack trace.
 
 =head1 AUTHOR
 
@@ -2179,7 +1063,7 @@ Any documents indexed via this module will be not susceptible to this problem.
 
 =item L</"scroll()">
 
-C<scroll()> is broken in version 0.10.1 and earlier versions of ElasticSearch.
+C<scroll()> is broken in version 0.12.0 and earlier versions of ElasticSearch.
 
 See L<http://github.com/elasticsearch/elasticsearch/issues/issue/136>
 
@@ -2201,10 +1085,8 @@ Hopefully I'll be adding an ElasticSearch::Abstract (similar to
 L<SQL::Abstract>) which will make it easier to generate valid queries
 for ElasticSearch.
 
-Also planned are support for different transport modules, using eg
-L<HTTP::Lite> (much faster than C<LWP::Request>) or L<Memcached> (faster still,
-but with more limited server responses). Also, a non-blocking L<AnyEvent> module
-would be good.
+Also, a non-blocking L<AnyEvent> module has been written, but needs
+integrating with the new L<ElasticSearch::Transport>.
 
 =head1 SUPPORT
 

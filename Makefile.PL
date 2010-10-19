@@ -8,16 +8,20 @@ WriteMakefile
                            'Data::Dumper' => 0,
                            'Encode' => 0,
                            'File::Temp' => '0.22',
+                           'HTTP::Lite' => 0,
                            'HTTP::Request' => 0,
                            'IO::Socket' => 0,
-                           'JSON::XS' => 0,
+                           'JSON' => 0,
                            'LWP::ConnCache' => 0,
                            'LWP::UserAgent' => 0,
                            'POSIX' => 0,
                            'Test::Most' => 0
                          },
           'INSTALLDIRS' => 'site',
-          'EXE_FILES' => [],
+          'EXE_FILES' => [
+                           'bin/bench.pl',
+                           'bin/build_thrift.pl'
+                         ],
           'PL_FILES' => {}
         )
 ;

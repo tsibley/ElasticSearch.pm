@@ -1,3 +1,5 @@
+bin/bench.pl
+bin/build_thrift.pl
 
 #!start included /usr/lib/perl5/5.10.0/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.

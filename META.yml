@@ -18,16 +18,99 @@ name: ElasticSearch
 provides:
   ElasticSearch:
     file: lib/ElasticSearch.pm
-    version: 0.21
+    version: 0.22
   ElasticSearch::Error:
-    file: lib/ElasticSearch.pm
+    file: lib/ElasticSearch/Error.pm
+  ElasticSearch::Transport:
+    file: lib/ElasticSearch/Transport.pm
+  ElasticSearch::Transport::HTTP:
+    file: lib/ElasticSearch/Transport/HTTP.pm
+  ElasticSearch::Transport::HTTPLite:
+    file: lib/ElasticSearch/Transport/HTTPLite.pm
+  ElasticSearch::Transport::Thrift:
+    file: lib/ElasticSearch/Transport/Thrift.pm
+  ElasticSearch::Transport::ThriftBackend::Constants:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Constants.pm
+  ElasticSearch::Transport::ThriftBackend::Method:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Types.pm
+  ElasticSearch::Transport::ThriftBackend::RestClient:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+  ElasticSearch::Transport::ThriftBackend::RestIf:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+  ElasticSearch::Transport::ThriftBackend::RestProcessor:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+  ElasticSearch::Transport::ThriftBackend::RestRequest:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Types.pm
+  ElasticSearch::Transport::ThriftBackend::RestResponse:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Types.pm
+  ElasticSearch::Transport::ThriftBackend::RestRest:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+  ElasticSearch::Transport::ThriftBackend::Rest_execute_args:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+  ElasticSearch::Transport::ThriftBackend::Rest_execute_result:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Rest.pm
+  ElasticSearch::Transport::ThriftBackend::Status:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Types.pm
+  ElasticSearch::Transport::ThriftBackend::TApplicationException:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift.pm
+  ElasticSearch::Transport::ThriftBackend::TMessageType:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift.pm
+  ElasticSearch::Transport::ThriftBackend::TProtocolException:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Protocol.pm
+  ElasticSearch::Transport::ThriftBackend::TProtocolFactory:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Protocol.pm
+  ElasticSearch::Transport::ThriftBackend::TTransportException:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Transport.pm
+  ElasticSearch::Transport::ThriftBackend::TType:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::BinaryProtocol:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/BinaryProtocol.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::BinaryProtocolFactory:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/BinaryProtocol.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::BufferedTransport:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/BufferedTransport.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::BufferedTransportFactory:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/BufferedTransport.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::ForkingServer:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Server.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::FramedTransport:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/FramedTransport.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::HttpClient:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/HttpClient.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::MemoryBuffer:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/MemoryBuffer.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::Protocol:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Protocol.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::Server:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Server.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::ServerSocket:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Socket.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::ServerTransport:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Transport.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::SimpleServer:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Server.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::Socket:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Socket.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::TException:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::Transport:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Transport.pm
+  ElasticSearch::Transport::ThriftBackend::Thrift::TransportFactory:
+    file: lib/ElasticSearch/Transport/ThriftBackend/Thrift/Transport.pm
+  ElasticSearch::Util:
+    file: lib/ElasticSearch/Util.pm
+recommends:
+  Bit::Vector: 0
+  Class::Accessor: 0
+  JSON::XS: 0
 requires:
   Data::Dumper: 0
   Encode: 0
+  HTTP::Lite: 0
   HTTP::Request: 0
-  JSON::XS: 0
+  JSON: 0
   LWP::ConnCache: 0
   LWP::UserAgent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.21
+version: 0.22

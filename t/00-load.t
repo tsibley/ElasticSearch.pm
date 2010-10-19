@@ -2,7 +2,7 @@
 
 #use Test::Most qw(defer_plan);
 our $test_num;
-BEGIN { $test_num = 179 }
+BEGIN { $test_num = 196 }
 
 use Test::Most tests => $test_num;
 use Module::Build;
@@ -10,6 +10,9 @@ use File::Spec::Functions qw(catfile);
 use POSIX 'setsid';
 use IO::Socket();
 use File::Temp();
+
+my $transport = $ENV{ES_TRANSPORT} || 'http';
+$transport = 'http' unless $ElasticSearch::Transport::Transport{$transport};
 
 my $instances = 3;
 my $Index     = 'es_test_1';
@@ -20,6 +23,7 @@ BEGIN {
 }
 
 diag("Testing ElasticSearch $ElasticSearch::VERSION, Perl $], $^X");
+diag("Transport: $transport (Set ES_TRANSPORT=http|httplite|thrift)");
 
 local $SIG{INT} = sub { shutdown_servers(); };
 
@@ -29,10 +33,10 @@ SKIP: {
         unless $es;
 
     ok $es, 'Connected to an ES cluster';
-    like $es->current_server, qr{http://}, 'Current server set';
+    ok $es->transport->current_server, 'Current server set';
 
     ### CLUSTER STATE ###
-    wait_for_es();
+    wait_for_es(3);
 
     my $r;
 
@@ -89,6 +93,18 @@ SKIP: {
     ok $es->nodes->{nodes}{$node_id}{httpAddress}, ' - got camel case';
     ok $es->camel_case(0) == 0, ' - camel case off';
     ok $es->nodes->{nodes}{$node_id}{http_address}, ' - got underscores';
+
+    # error_trace
+    ok $es->error_trace(1), 'Error trace on';
+    eval {
+        $es->transport->request(
+            { cmd => '/_search', data => \'foo', qs => { error_trace => 1 } }
+        );
+    };
+    my $e = $@;
+    isa_ok $e, 'ElasticSearch::Error::Request';
+    ok $e->{-vars}{error_trace}, ' - has error_trace';
+    ok $es->error_trace(0) == 0, ' error_trace off';
 
     # drop index in case rerunning test
     drop_indices();
@@ -301,7 +317,7 @@ SKIP: {
         1,
         ' - now only single copy';
 
-    ### PUT MAPPING ###
+    ### MAPPING ###
     drop_indices();
     $es->create_index( index => $_ ) for ( $Index, $Index_2 );
 
@@ -373,6 +389,71 @@ SKIP: {
     ok 0 ==
         keys %{ $es->mapping( index => $Index, type => 'test_3' )->{$Index} },
         ' - get unknown mapping';
+
+    ok $es->delete_mapping( index => $Index, type => 'test_2' )->{ok},
+        'Delete mapping';
+    ok !$es->mapping->{$Index}{test2}, ' - mapping gone';
+
+    ### RIVER ###
+    ok $es->create_river( type => 'dummy', river => 'foo' )->{ok},
+        'Create river';
+    wait_for_es(1);
+    is $es->get_river( river => 'foo' )->{_type}, 'foo', 'Get river';
+    ok $es->delete_river( river => 'foo' )->{ok}, 'Delete river';
+    throws_ok { $es->get_river( river => 'foo' ) } qr/404/,
+        ' - river deleted';
+
+    ### BULK INDEXING ###
+    drop_indices();
+    $es->create_index( index => $Index );
+    wait_for_es();
+    $es->put_mapping(
+        index => $Index,
+        type  => 'test',
+        properties =>
+            { text => { type => 'string' }, num => { type => 'integer' } }
+    );
+    wait_for_es();
+    ok $r= $es->bulk( {
+            index => {
+                index => $Index,
+                type  => 'test',
+                id    => 1,
+                data  => { text => 'foo', num => 1 }
+            }
+        },
+        {   index => {
+                index => $Index,
+                type  => 'test',
+                id    => 2,
+                data  => { text => 'foo', num => 1 }
+            }
+        },
+        {   create => {
+                index => $Index,
+                type  => 'test',
+                id    => 3,
+                data  => { text => 'foo', num => 1 }
+            }
+        },
+        {   index => {
+                index => $Index,
+                type  => 'test',
+                id    => 4,
+                data  => { text => 'foo', num => 'bar' }
+            }
+        },
+        { delete => { index => $Index, type => 'test', id => 2 } },
+        ),
+        'Bulk actions';
+    wait_for_es();
+    is @{ $r->{actions} }, 5, ' - 5 actions';
+    is @{ $r->{results} }, 5, ' - 5 results';
+    is @{ $r->{errors} },  1, ' - 1 error';
+    ok $r->{errors}[0]{action}, ' - error has action';
+    like( $r->{errors}[0]{error},
+        qr/NumberFormatException/, ' - error has message' );
+    is $es->count( match_all => {} )->{count}, 2, ' - 2 docs indexed';
 
     ### QUERY TESTS ###
     index_test_docs();
@@ -554,7 +635,7 @@ SKIP: {
         size   => 2
         ),
         'Scroll search';
-    my $scroll_id = $r->{_scrollId};
+    my $scroll_id = $r->{_scroll_id};
     ok $scroll_id, ' - has scroll ID';
     is $r->{hits}{hits}[0]{_id}, 1, ' - first hit is ID 1';
     is $r->{hits}{hits}[1]{_id}, 2, ' - second hit is ID 2';
@@ -868,7 +949,8 @@ sub connect_to_es {
         return;
         };
 
-    my @servers = map {"127.0.0.1:920$_"} 0 .. $instances - 1;
+    my $port = $transport eq 'thrift' ? 9500 : 9200;
+    my @servers = map {"127.0.0.1:$_"} $port .. $port + $instances - 1;
     foreach (@servers) {
         if ( IO::Socket::INET->new($_) ) {
             diag "";
@@ -899,7 +981,7 @@ cluster:    {name: es_test}
 gateway:    {type: none}
 node:       {data: true}
 http:       {enabled: true}
-path:       {work: $work_dir}
+#path:       {work: $work_path}
 network:
     host:   127.0.0.1
 
@@ -937,7 +1019,8 @@ CONFIG
     my $es = eval {
         ElasticSearch->new(
             servers     => $server,
-            trace_calls => 'log'
+            trace_calls => 'log',
+            transport   => $transport,
         );
         }
         or diag("**** Couldn't connect to ElasticSearch at $server ****");
