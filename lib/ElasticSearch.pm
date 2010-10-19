@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 our $DEBUG   = 0;
 
 #===================================
@@ -40,7 +40,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.22, tested against ElasticSearch server version 0.12.0.
+Version 0.23, tested against ElasticSearch server version 0.12.0.
 
 NOTE: This version has been completely refactored, to provide multiple
 Transport backends, and some methods have moved to subclasses.
@@ -160,13 +160,12 @@ a non-existent index.
 =head3 C<new()>
 
     $e = ElasticSearch->new(
+            transport   =>  'http|httplite|thrift',     # default 'http'
             servers     =>  '127.0.0.1:9200'            # single server
                             | ['es1.foo.com:9200',
                                'es2.foo.com:9200'],     # multiple servers
             trace_calls => 1 | '/path/to/log/file',
-            debug       => 1 | 0,
             timeout     => 30,
-
      );
 
 C<servers> is a required parameter and can be either a single server or an
@@ -174,8 +173,20 @@ ARRAY ref with a list of servers.  These servers are used to retrieve a list
 of all servers in the cluster, after which one is chosen at random to be
 the L</"current_server()">.
 
-See also: L</"debug()">, L</"timeout()">, L</"trace_calls()">,
-          L</"refresh_servers()">, L</"servers()">, L</"current_server()">
+There are various C<transport> backends that ElasticSearch can use:
+C<http> (the default, based on LWP), C<httplite> (based on L<HTTP::Lite>)
+or C<thrift> (which uses the Thrift protocol).
+
+Although the C<thrift> interface has the right buzzwords (binary, compact,
+sockets), the generated Perl code is very slow. Until that is improved, I
+recommend one of the C<http> backends instead.
+
+The C<httplite> backend is about 30% faster than the default C<http> backend,
+and will probably become the default after more testing in production.
+
+See also: L<ElasticSearch::Transport>, L</"timeout()">, L</"trace_calls()">,
+L<http://www.elasticsearch.com/docs/elasticsearch/modules/http>
+and L<http://www.elasticsearch.com/docs/elasticsearch/modules/thrift>
 
 =cut
 

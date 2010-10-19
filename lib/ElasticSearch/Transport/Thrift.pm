@@ -185,8 +185,8 @@ ElasticSearch::Transport::Thrift uses the Thrift to talk to ElasticSearch
 over sockets.
 
 Although the C<thrift> interface has the right buzzwords (binary, compact,
-sockets), the Perl backend is very slow. Until that is improved, I recommend
-one of the C<http> backends instead.
+sockets), the generated Perl code is very slow. Until that is improved, I
+recommend one of the C<http> backends instead.
 
 =head1 SYNOPSIS
 
@@ -196,6 +196,9 @@ one of the C<http> backends instead.
         transport   => 'thrift',
         timeout     => '10',
     );
+
+You need to have the C<transport-thrift> plugin installed on your
+ElasticSearch server for this to work.
 
 =head1 SEE ALSO
 

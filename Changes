@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.23    2010-10-19
+        POD corrections
+
 0.22    2010-10-19
         Support ElasticSearch version 0.12.0
 

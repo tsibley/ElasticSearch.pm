@@ -358,7 +358,9 @@ See L<ElasticSearch::Transport::HTTPLite>
 =item * C<thrift>
 
 Uses C<thrift>  to communicate using a compact binary protocol over sockets.
-See L<ElasticSearch::Transport::Thrift>
+See L<ElasticSearch::Transport::Thrift>. You need to have the
+C<transport-thrift> plugin installed on your ElasticSearch server for this
+to work.
 
 =back
 
@@ -396,8 +398,8 @@ happens via the main L<ElasticSearch> class.
 =head1 WHICH TRANSPORT SHOULD YOU USE
 
 Although the C<thrift> interface has the right buzzwords (binary, compact,
-sockets), the Perl backend is very slow. Until that is improved, I recommend
-one of the C<http> backends instead.
+sockets), the generated Perl code is very slow. Until that is improved, I
+recommend one of the C<http> backends instead.
 
 The C<httplite> backend is about 30% faster than the default C<http> backend,
 and will probably become the default after more testing in production.
@@ -405,6 +407,8 @@ and will probably become the default after more testing in production.
 Note: my experience with L<HTTP::Lite> so far has been flawless - I'm just
 being cautious.
 
+See also: L<http://www.elasticsearch.com/docs/elasticsearch/modules/http>
+and L<http://www.elasticsearch.com/docs/elasticsearch/modules/thrift>
 
 =head1 SUBCLASSING TRANSPORT
 
