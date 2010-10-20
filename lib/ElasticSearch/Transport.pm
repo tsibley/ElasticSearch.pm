@@ -250,7 +250,7 @@ sub log_request {
 
     printf $log (
         "# [%s] Protocol: %s, Server: %s\n",
-        localtime . '',
+        scalar localtime(),
         $self->protocol, ${server}
     );
     my $uri = $self->http_uri( '127.0.0.1:9200', @{$params}{ 'cmd', 'qs' } );

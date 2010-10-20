@@ -1,5 +1,6 @@
 Build.PL
 Changes
+examples/search_issues.pl
 lib/ElasticSearch.pm
 lib/ElasticSearch/Error.pm
 lib/ElasticSearch/RequestParser.pm
@@ -22,7 +23,7 @@ lib/ElasticSearch/Transport/ThriftBackend/Thrift/Transport.pm
 lib/ElasticSearch/Transport/ThriftBackend/Types.pm
 lib/ElasticSearch/Util.pm
 Makefile.PL
-MANIFEST            This list of files
+MANIFEST			This list of files
 META.yml
 README
 t/00-load.t

@@ -23,7 +23,6 @@ BEGIN {
 }
 
 diag("Testing ElasticSearch $ElasticSearch::VERSION, Perl $], $^X");
-diag("Transport: $transport (Set ES_TRANSPORT=http|httplite|thrift)");
 
 local $SIG{INT} = sub { shutdown_servers(); };
 
@@ -31,6 +30,8 @@ my $es = connect_to_es();
 SKIP: {
     skip "ElasticSearch server not available for testing", $test_num - 1
         unless $es;
+
+    diag("Transport: $transport (Set ES_TRANSPORT=http|httplite|thrift)");
 
     ok $es, 'Connected to an ES cluster';
     ok $es->transport->current_server, 'Current server set';

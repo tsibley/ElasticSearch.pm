@@ -3,7 +3,7 @@
 use JSON::XS;
 use ElasticSearch;
 
-open $fh, '<', 'data' or die $!;
+open $fh, '<', 'data' or die "Couldn't open file 'data': $!";
 my @data = @{ decode_json( join( '', <$fh> ) ) };
 
 print "Rows: " . ( 0 + @data ) . "\n";
@@ -39,7 +39,7 @@ my %subs = (
     bulk_10000 => sub { bulk( @_, 10000 ) },
 );
 
-eval { $es{thrift}->delete_index( index => 'foo' ) };
+eval { $es{http}->delete_index( index => 'foo' ) };
 print "Initializing\n";
 run( $es{http}, $subs{index} );
 
@@ -79,23 +79,29 @@ sub bulk {
 #===================================
 sub run {
 #===================================
-    my $es  = shift;
+    my $es = shift;
+
     my $sub = shift;
     print " - creating index\n";
     $es->create_index( 'index' => 'foo' );
     sleep 3;
+
     my $start = time();
     print " - indexing\n";
     my $time = timeit( 5, sub { $sub->($es) } );
     printf " - indexing time: %.2f\n", time() - $start;
+
     $start = time();
     $es->refresh_index;
     printf " - refresh time: %.2f\n", time() - $start;
     printf " - records indexed: %d\n", $es->count( match_all => {} )->{count};
     sleep 2;
+
+    # make sure really refreshed
     $es->refresh_index;
     printf " - records indexed: %d\n", $es->count( match_all => {} )->{count};
     print " - deleting index\n";
+
     $es->delete_index( index => 'foo' );
     sleep 2;
     return $time;

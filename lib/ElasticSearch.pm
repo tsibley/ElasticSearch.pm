@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 our $DEBUG   = 0;
 
 #===================================
@@ -40,7 +40,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.23, tested against ElasticSearch server version 0.12.0.
+Version 0.24, tested against ElasticSearch server version 0.12.0.
 
 NOTE: This version has been completely refactored, to provide multiple
 Transport backends, and some methods have moved to subclasses.
@@ -106,6 +106,8 @@ a randomly chosen node in the list.
             query_string => { query => 'kimchy' },
         }
     );
+
+See the C<examples/> directory for a simple working example.
 
 =cut
 
@@ -1036,6 +1038,8 @@ Mostly useful for debugging.
 
 If C<$Elasticsearch::DEBUG> is set to true, then ElasticSearch exceptions
 will include a stack trace.
+
+=cut
 
 =head1 AUTHOR
 
