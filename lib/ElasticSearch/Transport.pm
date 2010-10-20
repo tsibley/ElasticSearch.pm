@@ -267,7 +267,7 @@ sub log_response {
     my $content = shift;
     my $out     = ref $content ? $self->JSON->encode($content) : $content;
     my @lines   = split /\n/, $out;
-    printf $log ( "# [%s] Response:\n", localtime . '' );
+    printf $log ( "# [%s] Response:\n", scalar localtime() );
     while (@lines) {
         my $line = shift @lines;
         if ( length $line > 65 ) {
