@@ -15,7 +15,8 @@ WriteMakefile
                            'LWP::ConnCache' => 0,
                            'LWP::UserAgent' => 0,
                            'POSIX' => 0,
-                           'Test::Most' => 0
+                           'Test::Most' => 0,
+                           'parent' => 0
                          },
           'INSTALLDIRS' => 'site',
           'EXE_FILES' => [

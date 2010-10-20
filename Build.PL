@@ -23,6 +23,7 @@ my $builder = Module::Build->new(
         'Data::Dumper'   => 0,
         'Encode'         => 0,
         'HTTP::Lite'     => 0,
+        'parent'         => 0,
     },
     recommends => {
         'Bit::Vector'     => 0,
