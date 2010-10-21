@@ -127,10 +127,12 @@ sub refresh_servers {
             = eval { $self->request( { cmd => '/_cluster/nodes' }, $server ) }
             or next;
 
-        my @servers = map {m{/([^]]+)}}
+        my @servers = grep {$_}
+            map {m{/([^]]+)}}
             map {
                    $_->{ $protocol . '_address' }
                 || $_->{ $protocol . 'Address' }
+                || ''
             } values %{ $nodes->{nodes} };
         next unless @servers;
 

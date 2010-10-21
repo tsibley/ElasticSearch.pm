@@ -18,7 +18,7 @@ name: ElasticSearch
 provides:
   ElasticSearch:
     file: lib/ElasticSearch.pm
-    version: 0.26
+    version: 0.27
   ElasticSearch::Error:
     file: lib/ElasticSearch/Error.pm
   ElasticSearch::Transport:
@@ -114,4 +114,4 @@ requires:
   parent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.26
+version: 0.27

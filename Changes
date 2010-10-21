@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+0.27    2010-10-21
+        Fixed an undefined bug in Transport::refresh_servers which would
+        die if no nodes were found
+
 0.26    2010-10-20
         Added a missing dependency on parent.pm
 
