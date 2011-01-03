@@ -507,6 +507,32 @@ sub delete_index {
 }
 
 #===================================
+sub open_index {
+#===================================
+    shift()->_do_action(
+        'open_index',
+        {   method  => 'POST',
+            cmd     => CMD_INDEX,
+            postfix => '_open'
+        },
+        @_
+    );
+}
+
+#===================================
+sub close_index {
+#===================================
+    shift()->_do_action(
+        'close_index',
+        {   method  => 'POST',
+            cmd     => CMD_INDEX,
+            postfix => '_close'
+        },
+        @_
+    );
+}
+
+#===================================
 sub aliases {
 #===================================
     my ( $self, $params ) = parse_params(@_);

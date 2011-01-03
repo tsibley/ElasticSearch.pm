@@ -754,6 +754,29 @@ If you pass in the optional C<index> argument, which can be an index name
 or an alias name, then it will only return the indices and aliases related
 to that argument.
 
+=head3 C<open_index()>
+
+    $result = $e->open_index( index => single);
+
+Opens a closed index.
+
+The open and close index APIs allow you to close an index, and later on open
+it.
+
+A closed index has almost no overhead on the cluster (except for maintaining
+its metadata), and is blocked for read/write operations. A closed index can
+be opened which will then go through the normal recovery process.
+
+See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/indices/open_close/> for more
+
+=head3 C<close_index()>
+
+    $result = $e->close_index( index => single);
+
+Closes an open index.  See
+L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/indices/open_close/> for more
+
+
 =head3 C<flush_index()>
 
     $result = $e->flush_index(
