@@ -35,13 +35,21 @@ sub trace_calls { shift->transport->trace_calls(@_) }
 sub timeout     { shift->transport->timeout(@_) }
 #===================================
 
+#===================================
+sub query_parser {
+#===================================
+    require ElasticSearch::QueryParser;
+    shift;            # drop class/$self
+    ElasticSearch::QueryParser->new(@_);
+}
+
 =head1 NAME
 
 ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.27, tested against ElasticSearch server version 0.12.0.
+Version 0.28, tested against ElasticSearch server version 0.14.1.
 
 NOTE: This version has been completely refactored, to provide multiple
 Transport backends, and some methods have moved to subclasses.
@@ -105,6 +113,17 @@ a randomly chosen node in the list.
         type  => 'tweet',
         query => {
             query_string => { query => 'kimchy' },
+        }
+    );
+
+    $dodgy_qs = "foo AND AND bar";
+    $results = $e->search(
+        index => 'twitter',
+        type  => 'tweet',
+        query => {
+            query_string => {
+                query => $e->query_parser->filter($dodgy_qs)
+            },
         }
     );
 
@@ -1004,6 +1023,15 @@ Example: C<< $e->cluster_health >> is logged as:
     #    "number_of_nodes" : 1,
     #    "unassigned_shards" : 0
     # }
+
+=head3 C<query_parser()>
+
+    $qp = $e->query_parser(%opts);
+
+Returns an L<ElasticSearch::QueryParser> object for tidying up
+query strings so that they won't cause an error when passed to ElasticSearch.
+
+See L<ElasticSearch::QueryParser> for more information.
 
 =head3 C<transport()>
 

@@ -2,13 +2,14 @@
 package ElasticSearch::Error;
 #===================================
 
-@ElasticSearch::Error::Internal::ISA   = __PACKAGE__;
-@ElasticSearch::Error::Param::ISA      = __PACKAGE__;
-@ElasticSearch::Error::NoServers::ISA  = __PACKAGE__;
-@ElasticSearch::Error::Request::ISA    = __PACKAGE__;
-@ElasticSearch::Error::Timeout::ISA    = __PACKAGE__;
-@ElasticSearch::Error::Connection::ISA = __PACKAGE__;
-@ElasticSearch::Error::JSON::ISA       = __PACKAGE__;
+@ElasticSearch::Error::Internal::ISA    = __PACKAGE__;
+@ElasticSearch::Error::Param::ISA       = __PACKAGE__;
+@ElasticSearch::Error::NoServers::ISA   = __PACKAGE__;
+@ElasticSearch::Error::Request::ISA     = __PACKAGE__;
+@ElasticSearch::Error::Timeout::ISA     = __PACKAGE__;
+@ElasticSearch::Error::Connection::ISA  = __PACKAGE__;
+@ElasticSearch::Error::JSON::ISA        = __PACKAGE__;
+@ElasticSearch::Error::QueryParser::ISA = __PACKAGE__;
 
 use strict;
 use warnings FATAL => 'all', NONFATAL => 'redefine';
@@ -30,10 +31,9 @@ sub stringify {
         . ' line '
         . $error->{-line} . " : \n"
         . ( $error->{-text} || 'Missing error message' ) . "\n"
-        . (
-        $error->{-vars}
-        ? "\nWith vars:" . Dumper( $error->{-vars} ) . "\n"
-        : ''
+        . ( $error->{-vars}
+            ? "\nWith vars:" . Dumper( $error->{-vars} ) . "\n"
+            : ''
         ) . ( $error->{'-stacktrace'} || '' );
     return $msg;
 }
