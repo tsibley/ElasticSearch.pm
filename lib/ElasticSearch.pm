@@ -226,7 +226,9 @@ and L<http://www.elasticsearch.com/docs/elasticsearch/modules/thrift>
         },
         timeout => eg '1m' or '10s'     # optional
         create  => 1 | 0                # optional
+        parent  => $parent,             # optional
         refresh => 1 | 0                # optional
+        routing => $routing,            # optional
     );
 
 eg:

@@ -107,6 +107,8 @@ my %Index_Defn = (
         create  => [ 'boolean', [ op_type => 'create' ] ],
         refresh => [ 'boolean', [ refresh => 'true' ] ],
         timeout => [ 'duration', 'timeout' ],
+        routing => [ 'string',   'routing' ],
+        parent  => [ 'string',   'parent' ],
     },
     data => 'data',
 );
