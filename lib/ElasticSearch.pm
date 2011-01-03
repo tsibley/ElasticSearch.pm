@@ -776,6 +776,46 @@ See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/indices/ope
 Closes an open index.  See
 L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/admin/indices/open_close/> for more
 
+=head3 C<create_index_template()>
+
+    $result = $e->create_index_template(
+        name     => single,
+        template => $template,  # required
+        mappings => {...},      # optional
+        settings => {...},      # optional
+    );
+
+Index templates allow you to define templates that will automatically be
+applied to newly created indices. You can specify both C<settings> and
+C<mappings>, and a simple pattern C<template> that controls whether
+the template will be applied to a new index.
+
+For example:
+
+    $result = $e->create_index_template(
+        name        => 'my_template',
+        template    => 'small_*',
+        settings    =>  { number_of_shards => 1 }
+    );
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/issue/540> for more.
+
+=head3 C<index_tempalte()>
+
+    $result = $e->index_template(
+        name    => single
+    );
+
+Retrieves the named index template.
+
+=head3 C<delete_index_template()>
+
+    $result = $e->delete_index_template(
+        name    => single
+    );
+
+Deletes the named index template.
+
 
 =head3 C<flush_index()>
 

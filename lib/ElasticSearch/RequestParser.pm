@@ -21,6 +21,7 @@ use constant {
     CMD_index_type => [ index => MULTI_ALL, type => MULTI_BLANK ],
     CMD_RIVER      => [ river => ONE_REQ ],
     CMD_nodes      => [ node  => MULTI_BLANK ],
+    CMD_NAME       => [ name  => ONE_REQ ],
 };
 
 our %QS_Format = (
@@ -569,6 +570,50 @@ sub get_aliases {
 
     }
     return \%aliases;
+}
+
+#===================================
+sub create_index_template {
+#===================================
+    shift()->_do_action(
+        'create_index_template',
+        {   method => 'PUT',
+            cmd    => CMD_NAME,
+            prefix => '_template',
+            data   => {
+                template => 'template',
+                settings => ['settings'],
+                mappings => ['mappings']
+            },
+        },
+        @_
+    );
+}
+
+#===================================
+sub delete_index_template {
+#===================================
+    shift()->_do_action(
+        'delete_index_template',
+        {   method => 'DELETE',
+            cmd    => CMD_NAME,
+            prefix => '_template',
+        },
+        @_
+    );
+}
+
+#===================================
+sub index_template {
+#===================================
+    shift()->_do_action(
+        'index_template',
+        {   method => 'GET',
+            cmd    => CMD_NAME,
+            prefix => '_template',
+        },
+        @_
+    );
 }
 
 #===================================
