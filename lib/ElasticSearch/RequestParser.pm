@@ -253,6 +253,24 @@ sub bulk {
 }
 
 #===================================
+sub bulk_index  { shift->_bulk_action( 'index',  @_ ) }
+sub bulk_create { shift->_bulk_action( 'create', @_ ) }
+sub bulk_delete { shift->_bulk_action( 'delete', @_ ) }
+#===================================
+
+#===================================
+sub _bulk_action {
+#===================================
+    my $self    = shift;
+    my $action  = shift;
+    my $docs    = ref $_[0] eq 'ARRAY' ? shift : [@_];
+    my @actions = map {
+        { $action => $_ }
+    } @$docs;
+    return $self->bulk( \@actions, @_ );
+}
+
+#===================================
 sub _build_bulk_query {
 #===================================
     my $self    = shift;

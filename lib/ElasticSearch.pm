@@ -407,6 +407,28 @@ for an example script.
 See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/bulk> for
 more details.
 
+=head3 C<bulk_index()>, C<bulk_create()>, C<bulk_delete()>
+
+These are convenience methods which allow you to pass just the data, without
+the C<index>, C<create> or C<index> action for each record, eg:
+
+    $e->bulk_index([
+        { id => 123, index => 'bar', type => 'bar', data => { text=>'foo'} },
+        { id => 124, index => 'bar', type => 'bar', data => { text=>'bar'} },
+    ]);
+
+is the equivalent of:
+
+    $e->bulk([
+        { index =>
+            { id => 123, index => 'bar', type => 'bar', data => { text=>'foo'}}
+        },
+        { index =>
+            { id => 124, index => 'bar', type => 'bar', data => { text=>'bar'}}
+        }
+    ]);
+
+
 =head3 C<analyze()>
 
     $result = $e->analyze(
