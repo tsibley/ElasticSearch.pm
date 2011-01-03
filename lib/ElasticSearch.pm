@@ -32,6 +32,7 @@ sub request {
 #===================================
 sub transport   { shift()->{_transport} }
 sub trace_calls { shift->transport->trace_calls(@_) }
+sub timeout     { shift->transport->timeout(@_) }
 #===================================
 
 =head1 NAME
@@ -1009,6 +1010,14 @@ Example: C<< $e->cluster_health >> is logged as:
     $transport = $e->transport
 
 Returns the Transport object, eg L<ElasticSearch::Transport::HTTP>.
+
+=head3 C<timeout()>
+
+    $timeout = $e->timeout($timeout)
+
+Convenience method which does the same as:
+
+   $e->transport->timeout($timeout)
 
 =head3 C<camel_case()>
 
