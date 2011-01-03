@@ -231,6 +231,7 @@ sub bulk {
     my $results = $self->request( {
             method => 'POST',
             cmd    => '/_bulk',
+            qs     => $qs,
             data   => $json_docs
         }
     );
@@ -271,9 +272,11 @@ sub _build_bulk_query {
 
         my %metadata;
         $params = {%$params};
+        delete @{$params}{qw(_score sort)};
+        $params->{data} ||= delete $params->{_source};
 
         for my $key ( keys %$defn ) {
-            my $val = delete $params->{$key};
+            my $val = delete $params->{$key} || delete $params->{"_$key"};
             unless ( defined $val ) {
                 next if $defn->{$key} == ONE_OPT;
                 $self->throw(

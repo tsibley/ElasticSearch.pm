@@ -333,13 +333,21 @@ L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/delete>
 
 =head3 C<bulk()>
 
-    $result = $e->bulk([
-        { create => { index => 'foo', type => 'bar', id => 123,
-                      data => { text => 'foo bar'}              }},
-        { index  => { index => 'foo', type => 'bar', id => 123,
-                      data => { text => 'foo bar'}              }},
-        { delete => { index => 'foo', type => 'bar', id => 123  }},
-    ]);
+    $result = $e->bulk(
+        [
+            { create => { index => 'foo', type => 'bar', id => 123,
+                          routing => $routing, parent => $parent,   # optional
+                          data => { text => 'foo bar'}              }},
+
+            { index  => { index => 'foo', type => 'bar', id => 123,
+                          routing => $routing, parent => $parent,   # optional
+                          data => { text => 'foo bar'}              }},
+
+            { delete => { index => 'foo', type => 'bar', id => 123  }},
+
+        ],
+        refresh => 1 | 0  # optional
+    );
 
 Perform multiple C<index>,C<create> or C<delete> operations in a single
 request.  In my benchmarks, this is 10 times faster than serial operations.
@@ -390,6 +398,11 @@ action, eg:
         ],
 
     };
+
+NOTE: C<bulk()> also accepts the C<index>, C<type>, C<id>, C<parent> and
+C<routing> parameters with leading underscores (ie C<_index>) so that you
+can pass search results directly to C<bulk()>.  See L<examples/reindex.pl>
+for an example script.
 
 See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/bulk> for
 more details.
