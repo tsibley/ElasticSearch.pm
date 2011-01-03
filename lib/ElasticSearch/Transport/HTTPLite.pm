@@ -34,9 +34,9 @@ sub send_request {
 
     $msg ||= $client->status_message || 'read timeout';
     my $type
-        = $msg eq 'read timeout' ? 'Timeout'
-        : $msg =~ /Connection (?:reset|refused)/ ? 'Connection'
-        :                                          'Request';
+        = $msg =~ /read timeout|temporarily unavailable/        ? 'Timeout'
+        : $msg =~ /Connection re(?:set|fused)|No route to host/ ? 'Connection'
+        :                                                         'Request';
     my $error_params = {
         server      => $server,
         status_code => $code,
