@@ -525,6 +525,9 @@ and L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/query_dsl/>
     $result = $e->delete_by_query(
         index           => multi,
         type            => multi,
+        consistency     => 'one' | 'quorum' | 'all' # optional
+        replication     => 'async' | 'sync'         # optional
+        routing         => [$routing,...]           # optional
 
         bool
       | constant_score
