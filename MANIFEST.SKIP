@@ -1,5 +1,5 @@
-bin/bench.pl
-bin/build_thrift.pl
+build_scripts/bench.pl
+build_scripts/build_thrift.pl
 log.*
 data
 #!start included /usr/lib/perl5/5.10.0/ExtUtils/MANIFEST.SKIP
