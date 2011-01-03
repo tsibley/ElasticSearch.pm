@@ -487,9 +487,11 @@ See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/search/#Scrolling
       | custom_score
       | dis_max
       | field
+      | field_masking_span
       | filtered
       | flt
       | flt_field
+      | has_child
       | fuzzy
       | match_all
       | mlt
@@ -503,6 +505,7 @@ See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/search/#Scrolling
       | span_not
       | span_or
       | term
+      | top_children
       | wildcard
     );
 
@@ -534,9 +537,11 @@ and L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/query_dsl/>
       | custom_score
       | dis_max
       | field
+      | field_masking_span
       | filtered
       | flt
       | flt_field
+      | has_child
       | fuzzy
       | match_all
       | mlt
@@ -550,6 +555,7 @@ and L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/query_dsl/>
       | span_not
       | span_or
       | term
+      | top_children
       | wildcard
     );
 
