@@ -150,7 +150,14 @@ sub delete {
         'delete',
         {   method => 'DELETE',
             cmd    => CMD_INDEX_TYPE_ID,
-            qs     => { refresh => [ 'boolean', [ refresh => 'true' ] ], }
+            qs     => {
+                refresh => [ 'boolean', [ refresh => 'true' ] ],
+                routing => [ 'string', 'routing' ],
+            }
+        },
+        @_
+    );
+}
         },
         @_
     );

@@ -315,6 +315,7 @@ See also: L</"bulk()">, L<KNOWN ISSUES>,
         index   => single,
         type    => single,
         id      => single,
+        routing => $routing,            # optional
         refresh => 1 | 0                # optional
     );
 
