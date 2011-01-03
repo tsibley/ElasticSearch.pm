@@ -844,6 +844,21 @@ sub delete_river {
     );
 }
 
+#===================================
+sub river_status {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+    $self->_do_action(
+        'river_status',
+        {   method  => 'GET',
+            prefix  => '_river',
+            cmd     => CMD_RIVER,
+            postfix => '_status',
+        },
+        $params
+    );
+}
+
 ##################################
 ## CLUSTER MANAGEMENT
 ##################################

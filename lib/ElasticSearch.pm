@@ -1025,6 +1025,14 @@ Deletes the corresponding river, eg:
 
 Throws an exception if the river doesn't exist.
 
+=head3 C<river_status()>
+
+    $result = $e->river_status( river => $river_name );
+
+Returns the status doc for the named river.
+
+See L<http://www.elasticsearch.com/docs/elasticsearch/river/#Status> for more
+
 =head2 Cluster admin methods
 
 =head3 C<cluster_state()>
