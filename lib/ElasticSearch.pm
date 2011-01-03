@@ -435,17 +435,19 @@ more.
         index           => multi,
         type            => multi,
         query           => {query},
-        search_type     => $search_type             # optional
         explain         => 1 | 0                    # optional
         facets          => { facets }               # optional
         fields          => [$field_1,$field_n]      # optional
         from            => $start_from              # optional
+        highlight       => { highlight }            # optional
+        indices_boost   => { index_1 => 1.5,... }   # optional
+        routing         => [$routing,...]           # optional
         script_fields   => { script_fields }        # optional
+        search_type     => $search_type             # optional
         size            => $no_of_results           # optional
         sort            => ['_score',$field_1]      # optional
         scroll          => '5m' | '30s'             # optional
-        highlight       => { highlight }            # optional
-        indices_boost   => { index_1 => 1.5,... }   # optional
+        timeout         => '10s'                    # optional
     );
 
 Searches for all documents matching the query. Documents can be matched
