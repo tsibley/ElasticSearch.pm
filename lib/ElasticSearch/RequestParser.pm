@@ -41,7 +41,7 @@ our %QS_Formatter = (
     duration => sub {
         my ( $t, $k ) = @_;
         return unless defined $t;
-        return [ $k, $t ] if $t =~ /^\d+[smh]$/i;
+        return [ $k, $t ] if $t =~ /^\d+([smh]|ms)$/i;
         die "$k '$t' is not in the form $QS_Format{duration}\n";
     },
     flatten => sub {
