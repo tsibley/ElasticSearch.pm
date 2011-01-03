@@ -284,6 +284,8 @@ whether the doc already exists. This speeds up the indexing process.
         index   => single,
         type    => single,
         id      => single,
+        routing => $routing,        # optional
+        refresh => 1 | 0,           # optional
     );
 
 Returns the document stored at C<index/type/id> or throws an exception if

@@ -87,8 +87,19 @@ our %QS_Formatter = (
 ##################################
 
 #===================================
-sub get { shift()->_do_action( 'get', { cmd => CMD_INDEX_TYPE_ID }, @_ ) }
+sub get {
 #===================================
+    shift()->_do_action(
+        'get',
+        {   cmd => CMD_INDEX_TYPE_ID,
+            qs  => {
+                routing => [ 'string', 'routing' ],
+                refresh => [ 'boolean', [ refresh => 'true' ] ]
+            },
+        },
+        @_
+    );
+}
 
 my %Index_Defn = (
     cmd => CMD_INDEX_TYPE_id,
