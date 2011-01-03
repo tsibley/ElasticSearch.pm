@@ -394,6 +394,37 @@ action, eg:
 See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/bulk> for
 more details.
 
+=head3 C<analyze()>
+
+    $result = $e->analyze(
+      index         =>  single,
+      text          =>  $text_to_analyze,           # required
+      analyzer      =>  $analyzer,                  # optional
+      format        =>  'detailed' | 'text'         # optional
+    );
+
+The C<analyze()> method allows you to see how ElasticSearch is analyzing
+the text that you pass in, eg:
+
+    $result = $e->analyze( text => 'The Man', index => 'foo')
+
+returns:
+
+    {
+      tokens => [
+        {
+          end_offset        => 7,
+          position          => 2,
+          start_offset      => 4,
+          token             => "man",
+          type              => "<ALPHANUM>",
+        },
+      ],
+    }
+
+See L<http://github.com/elasticsearch/elasticsearch/issues/issue/529> for
+more.
+
 =cut
 
 =head2 Query commands

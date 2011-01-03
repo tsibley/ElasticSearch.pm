@@ -160,6 +160,20 @@ sub delete {
         @_
     );
 }
+
+#===================================
+sub analyze {
+#===================================
+    shift()->_do_action(
+        'analyze',
+        {   method  => 'GET',
+            cmd     => CMD_INDEX,
+            postfix => '_analyze',
+            qs      => {
+                text     => [ 'string', 'text' ],
+                analyzer => [ 'string', 'analyzer' ],
+                format   => [ 'enum',   'format', [ 'detailed', 'text' ] ]
+            }
         },
         @_
     );
@@ -170,18 +184,40 @@ sub delete {
 ##################################
 
 my %Bulk_Actions = (
-    'delete' => { index => ONE_REQ, type => ONE_REQ, id => ONE_REQ },
-    'create' =>
-        { index => ONE_REQ, type => ONE_REQ, id => ONE_OPT, data => ONE_REQ },
-    'index' =>
-        { index => ONE_REQ, type => ONE_REQ, id => ONE_OPT, data => ONE_REQ },
+    'delete' => {
+        index   => ONE_REQ,
+        type    => ONE_REQ,
+        id      => ONE_REQ,
+        routing => ONE_OPT
+    },
+    'index' => {
+        index   => ONE_REQ,
+        type    => ONE_REQ,
+        id      => ONE_OPT,
+        data    => ONE_REQ,
+        routing => ONE_OPT,
+        parent  => ONE_OPT
+    },
 );
+$Bulk_Actions{create} = $Bulk_Actions{index};
 
+my %Bulk_QS = ( refresh => [ 'boolean', [ refresh => 'true' ] ], );
+
+### ADD refresh and _routing and should handle _index _id etc
+### for round tripping
 #===================================
 sub bulk {
 #===================================
     my $self = shift;
-    my $actions = ref $_[0] eq 'ARRAY' ? shift() : [@_];
+    my ( $actions, $qs );
+    if ( ref $_[0] eq 'ARRAY' ) {
+        $actions = shift;
+        my $params = ref $_[0] eq 'HASH' ? shift : {@_};
+        $qs = $self->_build_qs( $params, \%Bulk_QS );
+    }
+    else {
+        $actions = [@_];
+    }
 
     return { actions => [], results => [] } unless @$actions;
 
