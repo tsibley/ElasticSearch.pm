@@ -480,6 +480,7 @@ See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/search/#Scrolling
     $result = $e->count(
         index           => multi,
         type            => multi,
+        routing         => [$routing,...]           # optional
 
         bool
       | constant_score

@@ -398,6 +398,7 @@ sub count {
         {   %Search_Defn,
             postfix => '_count',
             data    => \%Query_Defn,
+            qs      => { routing => [ 'flatten', 'routing' ] },
         },
         @_
     );
