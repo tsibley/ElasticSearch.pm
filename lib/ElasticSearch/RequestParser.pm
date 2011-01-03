@@ -204,8 +204,6 @@ $Bulk_Actions{create} = $Bulk_Actions{index};
 
 my %Bulk_QS = ( refresh => [ 'boolean', [ refresh => 'true' ] ], );
 
-### ADD refresh and _routing and should handle _index _id etc
-### for round tripping
 #===================================
 sub bulk {
 #===================================
