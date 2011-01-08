@@ -3,7 +3,8 @@
 use JSON::XS;
 use ElasticSearch;
 
-open $fh, '<', 'data' or die "Couldn't open file 'data': $!";
+open $fh, '<', 'bench_data.json'
+    or die "Couldn't open file 'bench_data.json': $!";
 my @data = @{ decode_json( join( '', <$fh> ) ) };
 
 print "Rows: " . ( 0 + @data ) . "\n";
