@@ -154,8 +154,11 @@ sub delete {
         {   method => 'DELETE',
             cmd    => CMD_INDEX_TYPE_ID,
             qs     => {
+                consistency =>
+                    [ 'enum', 'consistency', [ 'one', 'quorom', 'all' ] ],
                 refresh => [ 'boolean', [ refresh => 'true' ] ],
                 routing => [ 'string', 'routing' ],
+                replication => [ 'enum', 'replication', [ 'async', 'sync' ] ],
             }
         },
         @_

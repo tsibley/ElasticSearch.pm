@@ -314,11 +314,13 @@ See also: L</"bulk()">, L<KNOWN ISSUES>,
 =head3 C<delete()>
 
     $result = $e->delete(
-        index   => single,
-        type    => single,
-        id      => single,
-        routing => $routing,            # optional
-        refresh => 1 | 0                # optional
+        index           => single,
+        type            => single,
+        id              => single,
+        consistency     => 'one' | 'quorum' | 'all'     # optional
+        routing         => $routing,                    # optional
+        refresh         => 1 | 0                        # optional
+        replication     => 'async' | 'sync'             # optional
     );
 
 Deletes the document stored at C<index/type/id> or throws an exception if
