@@ -33,10 +33,13 @@ sub send_request {
     return $content if $code && $code == 200;
 
     $msg ||= $client->status_message || 'read timeout';
-    my $type
-        = $msg =~ /read timeout|temporarily unavailable/        ? 'Timeout'
-        : $msg =~ /Connection re(?:set|fused)|No route to host/ ? 'Connection'
-        :                                                         'Request';
+    my $type = $msg =~ / Connection.(?:timed.out|re(?:set|fused))
+                       | No.route.to.host
+                       | temporarily.unavailable
+                       /x
+        ? 'Connection'
+        : $msg =~ /read timeout/ ? 'Timeout'
+        :                          'Request';
     my $error_params = {
         server      => $server,
         status_code => $code,
