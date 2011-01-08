@@ -14,7 +14,20 @@ my $install_dir      = dir( $cwd, 'lib', @Thrift_Namespace );
 my $Thrift_File_URL
     = 'http://github.com/elasticsearch/elasticsearch/raw/master/plugins/transport/thrift/elasticsearch.thrift';
 my $Thrift_URL
-    = 'http://apache.rediris.es/incubator/thrift/0.4.0-incubating/thrift-0.4.0.tar.gz';
+    = 'http://apache.rediris.es//incubator/thrift/0.5.0-incubating/thrift-0.5.0.tar.gz';
+
+my @Thrift_Opts = qw(
+    --disable-gen-cpp         --disable-gen-java          --disable-gen-as3
+    --disable-gen-csharp      --disable-gen-py            --disable-gen-rb
+    --disable-gen-php         --disable-gen-erl           --disable-gen-cocoa
+    --disable-gen-st          --disable-gen-ocaml         --disable-gen-hs
+    --disable-gen-xsd         --disable-gen-html          --disable-gen-js
+    --disable-gen-javame      --without-pic               --without-gnu-ld
+    --without-cpp             --without-boost             --without-libevent
+    --without-zlib            --without-csharp            --without-java
+    --without-python          --without-php               --without-php_extension
+    --without-ruby            --without-haskell
+);
 
 my $temp_dir = File::Temp->newdir();
 chdir $temp_dir or die $!;
@@ -41,6 +54,7 @@ sub fetch_thrift_file {
 #===================================
     my $thrift_file = fetch_file( $Thrift_File_URL, 'elasticsearch.thrift' );
     my $namespace = join( '.', @Thrift_Namespace );
+    patch_file($thrift_file,'/^namespace (?!perl).+$//mg');
     patch_file( $thrift_file, "/perl .*/perl $namespace/" );
     return $thrift_file;
 }
@@ -63,8 +77,8 @@ sub install_thrift {
     print "Compiling thrift\n";
 
     chdir $unzip_dir or die $!;
-    $ENV{"${_}_PREFIX"} = "$build_dir" for qw(PY JAVA RUBY PHP PERL);
-    system( './configure', '--prefix=' . $build_dir ) == 0
+    $ENV{"PERL_PREFIX"} = "$build_dir";
+    system( './configure', '--prefix=' . $build_dir, @Thrift_Opts ) == 0
         or die "Couldn't configure thrift";
     system( 'make', 'install' ) == 0 or die "Couldn't make install  thrift";
 
