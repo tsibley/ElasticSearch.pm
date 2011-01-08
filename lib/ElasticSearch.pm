@@ -49,7 +49,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.28, tested against ElasticSearch server version 0.14.1.
+Version 0.28, tested against ElasticSearch server version 0.14.2.
 
 NOTE: This version has been completely refactored, to provide multiple
 Transport backends, and some methods have moved to subclasses.
@@ -506,7 +506,7 @@ If a search has been executed with a C<scroll> parameter, then the returned
 C<scroll_id> can be used like a cursor to scroll through the rest of the
 results.
 
-Note - this doesn't seem to work correctly in version 0.12.0 of ElasticSearch.
+Note - this doesn't seem to work correctly in version 0.14.2 of ElasticSearch.
 
 See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/search/#Scrolling>
 
@@ -1064,11 +1064,11 @@ returned status means:
 
 =over
 
-=item red: Data not allocated
+=item C<red>: Data not allocated
 
-=item yellow: Primary shard allocated
+=item C<yellow>: Primary shard allocated
 
-=item green: All shards allocated
+=item C<green>: All shards allocated
 
 =back
 
@@ -1144,7 +1144,6 @@ Returns a HASH containing the version C<number> string, the build C<date> and
 whether or not the current server is a C<snapshot_build>.
 
 =cut
-
 
 =head2 Other methods
 
@@ -1269,9 +1268,9 @@ Any documents indexed via this module will be not susceptible to this problem.
 
 =item L</"scroll()">
 
-C<scroll()> is broken in version 0.12.0 and earlier versions of ElasticSearch.
+C<scroll()> is broken in version 0.14.2 and earlier versions of ElasticSearch.
 
-See L<http://github.com/elasticsearch/elasticsearch/issues/issue/136>
+See L<http://github.com/elasticsearch/elasticsearch/issues/issue/589>
 
 =back
 
