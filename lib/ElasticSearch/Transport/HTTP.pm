@@ -67,7 +67,6 @@ sub client {
     return $self->{_client}{$$};
 }
 
-
 =head1 NAME
 
 ElasticSearch::Transport::HTTP - LWP based HTTP backend
@@ -78,7 +77,7 @@ ElasticSearch::Transport::HTTP uses L<LWP> to talk to ElasticSearch
 over HTTP.
 
 It is currently the default backend if no C<transport> is specified, but
-consider trying L<ElasticSearch::Transport.:HTTPLite> instead - it is
+consider trying L<ElasticSearch::Transport:HTTPLite> instead - it is
 30% faster.
 
 
