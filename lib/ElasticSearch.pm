@@ -348,7 +348,8 @@ L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/delete>
             { delete => { index => 'foo', type => 'bar', id => 123  }},
 
         ],
-        refresh => 1 | 0  # optional
+        consistency     => 'one' | 'quorum' | 'all'     # optional
+        refresh         => 1 | 0                        # optional
     );
 
 Perform multiple C<index>,C<create> or C<delete> operations in a single
@@ -401,10 +402,9 @@ action, eg:
 
     };
 
-NOTE: C<bulk()> also accepts the C<index>, C<type>, C<id>, C<parent> and
-C<routing> parameters with leading underscores (ie C<_index>) so that you
-can pass search results directly to C<bulk()>.  See L<examples/reindex.pl>
-for an example script.
+NOTE: C<bulk()> also accepts the C<_index>, C<_type>, C<_id>, C<_source>,
+C<_parent> and C<_routing> parameters so that you can pass search results
+directly to C<bulk()>.  See L<examples/reindex.pl> for an example script.
 
 See L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/bulk> for
 more details.
@@ -417,7 +417,7 @@ the C<index>, C<create> or C<index> action for each record, eg:
     $e->bulk_index([
         { id => 123, index => 'bar', type => 'bar', data => { text=>'foo'} },
         { id => 124, index => 'bar', type => 'bar', data => { text=>'bar'} },
-    ]);
+    ],  { refresh => 1 });
 
 is the equivalent of:
 
@@ -428,7 +428,7 @@ is the equivalent of:
         { index =>
             { id => 124, index => 'bar', type => 'bar', data => { text=>'bar'}}
         }
-    ]);
+    ],  { refresh => 1 });
 
 
 =head3 C<analyze()>

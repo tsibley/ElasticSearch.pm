@@ -205,7 +205,10 @@ my %Bulk_Actions = (
 );
 $Bulk_Actions{create} = $Bulk_Actions{index};
 
-my %Bulk_QS = ( refresh => [ 'boolean', [ refresh => 'true' ] ], );
+my %Bulk_QS = (
+    consistency => [ 'enum', 'consistency', [ 'one', 'quorom', 'all' ] ],
+    refresh => [ 'boolean', [ refresh => 'true' ] ],
+);
 
 #===================================
 sub bulk {
