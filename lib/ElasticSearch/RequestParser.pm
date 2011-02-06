@@ -335,15 +335,16 @@ sub _build_bulk_query {
 ##################################
 
 my %Search_Data = (
-    facets        => ['facets'],
-    from          => ['from'],
-    size          => ['size'],
     explain       => ['explain'],
+    facets        => ['facets'],
     fields        => ['fields'],
-    'sort'        => ['sort'],
+    filter        => ['filter'],
+    from          => ['from'],
     highlight     => ['highlight'],
     indices_boost => ['indices_boost'],
     script_fields => ['script_fields'],
+    size          => ['size'],
+    'sort'        => ['sort'],
 );
 
 my %Search_Defn = (
@@ -375,7 +376,6 @@ my %Query_Defn = (
     flt                => [ 'flt', 'fuzzy_like_this' ],
     flt_field          => [ 'flt_field', 'fuzzy_like_this_field' ],
     fuzzy              => ['fuzzy'],
-    has_child          => ['has_child'],
     match_all          => ['match_all'],
     mlt                => [ 'mlt', 'more_like_this' ],
     mlt_field          => [ 'mlt_field', 'more_like_this_field' ],
@@ -389,7 +389,6 @@ my %Query_Defn = (
     span_or            => ['span_or'],
     term               => ['term'],
     terms              => [ 'terms', 'in' ],
-    top_children       => ['top_children'],
     wildcard           => ['wildcard'],
 );
 
@@ -464,7 +463,6 @@ sub mlt {
                 max_word_len => [ 'int',     'max_word_len' ],
                 boost_terms  => [ 'float',   'boost_terms' ],
             },
-            data    => 'data',
             postfix => '_mlt',
             data    => \%Search_Data,
         },
