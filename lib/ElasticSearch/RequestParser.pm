@@ -180,7 +180,8 @@ sub analyze {
             qs      => {
                 text     => [ 'string', 'text' ],
                 analyzer => [ 'string', 'analyzer' ],
-                format   => [ 'enum',   'format', [ 'detailed', 'text' ] ]
+                format   => [ 'enum',   'format', [ 'detailed', 'text' ] ],
+                prefer_local => [ 'boolean', [ 'prefer_local' => 'true' ] ],
             }
         },
         @_
