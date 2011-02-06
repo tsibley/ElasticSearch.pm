@@ -707,7 +707,8 @@ sub delete_index_template {
         {   method => 'DELETE',
             cmd    => CMD_NAME,
             prefix => '_template',
-            qs {ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ]
+            qs     => {
+                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ]
             },
         },
         @_
