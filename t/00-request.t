@@ -75,16 +75,11 @@ SKIP: {
     isa_ok $es->nodes( settings => 1 )->{nodes}{ $nodes[0] }{settings},
         'HASH', ' - node settings';
 
-SKIP: {
-        skip "Requires more than 2 nodes ", 3 unless $num_nodes > 2;
-
-        # remove one, so we're not just retrieving all nodes
-        shift @nodes;
-        isa_ok $r = $es->nodes( node => \@nodes ), 'HASH', ' - nodes by name';
-        is keys %{ $r->{nodes} }, @nodes, ' - retrieved same number of nodes';
-        is_deeply [ keys %{ $r->{nodes} } ],
-            \@nodes, ' - retrieved the same nodes';
-    }
+    shift @nodes;
+    isa_ok $r = $es->nodes( node => \@nodes ), 'HASH', ' - nodes by name';
+    is keys %{ $r->{nodes} }, @nodes, ' - retrieved same number of nodes';
+    is_deeply [ keys %{ $r->{nodes} } ],
+        \@nodes, ' - retrieved the same nodes';
 
     isa_ok $r= $es->nodes_stats->{nodes}, 'HASH', ' - nodes_stats';
     my ($node_id) = ( keys %$r );
