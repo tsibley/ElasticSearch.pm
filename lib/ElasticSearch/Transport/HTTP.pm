@@ -59,7 +59,9 @@ sub client {
         $self->{_client} = {
             $$ => LWP::UserAgent->new(
                 timeout    => $self->timeout,
-                conn_cache => LWP::ConnCache->new
+                conn_cache => LWP::ConnCache->new(
+                    total_capacity => 0 + $self->servers
+                )
             )
         };
 
