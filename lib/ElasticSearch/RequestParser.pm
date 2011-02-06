@@ -311,7 +311,8 @@ sub _build_bulk_query {
         my %metadata;
         $params = {%$params};
         delete @{$params}{qw(_score sort)};
-        $params->{data} ||= delete $params->{_source};
+        $params->{data} ||= delete $params->{_source}
+            if $params->{_source};
 
         for my $key ( keys %$defn ) {
             my $val = delete $params->{$key} || delete $params->{"_$key"};
