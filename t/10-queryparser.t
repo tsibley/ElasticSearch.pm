@@ -2,7 +2,7 @@
 
 #use Test::Most qw(defer_plan);
 
-use Test::Most tests => 201;
+use Test::Most tests => 207;
 
 use ElasticSearch::QueryParser;
 
@@ -203,6 +203,9 @@ test( 'Range - 8',  '["a b"]',       '', 'Malformed' );
 test( 'Range - 9',  '["a b"',        '"a b"', 'Reserved' );
 test( 'Range - 10', 'foo:[a b]^2',   'foo:[a TO b]^2', '', fields => 1 );
 test( 'Range - 11', '[ab]^2 bar', 'bar', 'Malformed' );
+test('Range - 12','[* TO b]','[* TO b]');
+test('Range - 13','[a TO *]','[a TO *]');
+test('Range - 13','[* TO *]','[* TO *]');
 
 #===================================
 # Fields
