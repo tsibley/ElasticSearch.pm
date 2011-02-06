@@ -267,6 +267,7 @@ sub bulk {
         actions => $actions,
         results => $items,
         matches => \%matches,
+        took    => $results->{took},
         ( @errors ? ( errors => \@errors ) : () )
     };
 }
