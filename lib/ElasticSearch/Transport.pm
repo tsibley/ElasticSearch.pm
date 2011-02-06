@@ -97,6 +97,9 @@ ATTEMPT:
                     delete $error->{-vars}{content};
                 }
             }
+            return { missing => 1}
+                if $error->isa('ElasticSearch::Error::Missing')
+                    && $args->{qs}{ignore_missing};
             die $error;
         }
         $self->throw( 'Request', $error, { request => $params } );

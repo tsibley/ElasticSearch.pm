@@ -156,6 +156,7 @@ sub delete {
             qs     => {
                 consistency =>
                     [ 'enum', 'consistency', [ 'one', 'quorom', 'all' ] ],
+                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
                 refresh => [ 'boolean', [ refresh => 'true' ] ],
                 routing => [ 'string', 'routing' ],
                 replication => [ 'enum', 'replication', [ 'async', 'sync' ] ],
@@ -503,8 +504,11 @@ sub delete_index {
 #===================================
     shift()->_do_action(
         'delete_index',
-        {   method  => 'DELETE',
-            cmd     => CMD_INDEX,
+        {   method => 'DELETE',
+            cmd    => CMD_INDEX,
+            qs     => {
+                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
+            },
             postfix => ''
         },
         @_
@@ -602,6 +606,8 @@ sub delete_index_template {
         {   method => 'DELETE',
             cmd    => CMD_NAME,
             prefix => '_template',
+            qs {ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ]
+            },
         },
         @_
     );
@@ -747,6 +753,9 @@ sub delete_mapping {
         'delete_mapping',
         {   method => 'DELETE',
             cmd    => CMD_index_TYPE,
+            qs     => {
+                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
+            }
         },
         $params
     );
@@ -843,6 +852,9 @@ sub delete_river {
         {   method => 'DELETE',
             prefix => '_river',
             cmd    => CMD_RIVER,
+            qs     => {
+                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
+            }
         },
         $params
     );
