@@ -107,9 +107,10 @@ my %Index_Defn = (
     qs  => {
         create  => [ 'boolean', [ op_type => 'create' ] ],
         refresh => [ 'boolean', [ refresh => 'true' ] ],
-        timeout => [ 'duration', 'timeout' ],
-        routing => [ 'string',   'routing' ],
-        parent  => [ 'string',   'parent' ],
+        timeout   => [ 'duration', 'timeout' ],
+        routing   => [ 'string',   'routing' ],
+        parent    => [ 'string',   'parent' ],
+        version   => [ 'string',   'version' ],
     },
     data => 'data',
 );
@@ -193,15 +194,17 @@ my %Bulk_Actions = (
         index   => ONE_REQ,
         type    => ONE_REQ,
         id      => ONE_REQ,
-        routing => ONE_OPT
+        routing => ONE_OPT,
+        version => ONE_OPT,
     },
     'index' => {
-        index   => ONE_REQ,
-        type    => ONE_REQ,
-        id      => ONE_OPT,
-        data    => ONE_REQ,
-        routing => ONE_OPT,
-        parent  => ONE_OPT
+        index     => ONE_REQ,
+        type      => ONE_REQ,
+        id        => ONE_OPT,
+        data      => ONE_REQ,
+        routing   => ONE_OPT,
+        parent    => ONE_OPT,
+        version   => ONE_OPT,
     },
 );
 $Bulk_Actions{create} = $Bulk_Actions{index};
