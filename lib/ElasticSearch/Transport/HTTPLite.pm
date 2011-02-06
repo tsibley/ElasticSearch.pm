@@ -59,7 +59,6 @@ sub client {
     my $self = shift;
     unless ( $self->{_client}{$$} ) {
         my $client = HTTP::Lite->new;
-        $client->http11_mode(1);
         $client->{timeout} = $self->timeout || 10000;
         $self->{_client}{$$} = $client;
     }
