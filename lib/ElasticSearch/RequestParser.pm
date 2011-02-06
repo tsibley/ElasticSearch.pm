@@ -22,6 +22,7 @@ use constant {
     CMD_RIVER      => [ river => ONE_REQ ],
     CMD_nodes      => [ node  => MULTI_BLANK ],
     CMD_NAME       => [ name  => ONE_REQ ],
+    CMD_INDEX_PERC => [ index => ONE_REQ, percolator => ONE_REQ ],
 };
 
 our %QS_Format = (
@@ -110,6 +111,7 @@ my %Index_Defn = (
         timeout   => [ 'duration', 'timeout' ],
         routing   => [ 'string',   'routing' ],
         parent    => [ 'string',   'parent' ],
+        percolate => [ 'string',   'percolate' ],
         version   => [ 'string',   'version' ],
     },
     data => 'data',
@@ -204,6 +206,7 @@ my %Bulk_Actions = (
         data      => ONE_REQ,
         routing   => ONE_OPT,
         parent    => ONE_OPT,
+        percolate => ONE_OPT,
         version   => ONE_OPT,
     },
 );
@@ -247,16 +250,22 @@ sub bulk {
     my $items = $results->{items}
         || $self->throw( 'Request', 'Malformed response to bulk query',
         $results );
-    my @errors;
+
+    my ( @errors, %matches );
 
     for ( my $i = 0; $i < @$actions; $i++ ) {
-        my ($action) = ( keys %{ $items->[$i] } );
+        my ( $action, $item ) = ( %{ $items->[$i] } );
+        if ( my $match = $item->{matches} ) {
+            push @{ $matches{$_} }, $item for @$match;
+        }
         my $error = $items->[$i]{$action}{error} or next;
         push @errors, { action => $actions->[$i], error => $error };
     }
+
     return {
         actions => $actions,
         results => $items,
+        matches => \%matches,
         ( @errors ? ( errors => \@errors ) : () )
     };
 }
@@ -312,7 +321,10 @@ sub _build_bulk_query {
                     $data
                 );
             }
-            $metadata{ '_' . $key } = $val;
+            $metadata{"_$key"} = $val;
+        }
+        if ( exists $metadata{_percolate} ) {
+            $metadata{percolate} = delete $metadata{_percolate};
         }
         $self->throw(
             'Param',
@@ -465,6 +477,91 @@ sub mlt {
             },
             postfix => '_mlt',
             data    => \%Search_Data,
+        },
+        @_
+    );
+}
+
+##################################
+## PERCOLATOR
+##################################
+#===================================
+sub create_percolator {
+#===================================
+    shift()->_do_action(
+        'create_percolator',
+        {   cmd    => CMD_INDEX_PERC,
+            prefix => '_percolator',
+            method => 'PUT',
+            data   => { query => 'query', data => ['data'] },
+            fixup  => sub {
+                my $args = shift;
+                die 'The "data" param cannot include a "query" key'
+                    if $args->{data}{data}{query};
+                $args->{data} = {
+                    query => $args->{data}{query},
+                    %{ $args->{data}{data} }
+                };
+                }
+        },
+        @_
+    );
+
+}
+
+#===================================
+sub delete_percolator {
+#===================================
+    shift()->_do_action(
+        'delete_percolator',
+        {   cmd    => CMD_INDEX_PERC,
+            prefix => '_percolator',
+            method => 'DELETE',
+            qs     => {
+                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
+
+            }
+        },
+        @_
+    );
+}
+
+#===================================
+sub get_percolator {
+#===================================
+    my $result = shift()->_do_action(
+        'get_percolator',
+        {   cmd    => CMD_INDEX_PERC,
+            prefix => '_percolator',
+            method => 'GET',
+        },
+        @_
+    );
+    return {
+        index      => $result->{_type},
+        percolator => $result->{_id},
+        query      => delete $result->{_source}{query},
+        data       => $result->{_source},
+    };
+}
+
+#===================================
+sub percolate {
+#===================================
+    shift()->_do_action(
+        'percolate',
+        {   cmd     => CMD_INDEX,
+            postfix => '_percolate',
+            method  => 'GET',
+            qs      => {
+                prefer_local => [ 'boolean', [ 'prefer_local' => 'true' ] ]
+            },
+            data  => { data => 'data', type => 'type' },
+            fixup => sub {
+                my $args = shift;
+                $args->{data} = {
+                    doc => { delete @{ $args->{data} }{ 'type', 'data' } } };
+                }
         },
         @_
     );
