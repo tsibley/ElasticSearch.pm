@@ -36,7 +36,9 @@ sub send_request {
     my $msg  = $server_response->message;
     my $code = $server_response->code;
     my $type
-        = $msg eq 'read timeout' ? 'Timeout'
+        = $code eq '409'          ? 'Conflict'
+        : $code eq '404'          ? 'Missing'
+        : $msg  eq 'read timeout' ? 'Timeout'
         : $msg =~ /Can't connect|Server closed connection/ ? 'Connection'
         :                                                    'Request';
     my $error_params = {
@@ -45,7 +47,7 @@ sub send_request {
         status_msg  => $msg,
     };
 
-    if ( $type eq 'Request' ) {
+    if ( $type eq 'Request' or $type eq 'Conflict' or $type eq 'Missing' ) {
         $error_params->{content} = $content;
     }
     $self->throw( $type, $msg . ' (' . $code . ')', $error_params );

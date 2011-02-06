@@ -7,6 +7,11 @@ use Encode qw(decode_utf8);
 
 use parent 'ElasticSearch::Transport';
 
+my $Connection_Error = qr/ Connection.(?:timed.out|re(?:set|fused))
+                       | No.route.to.host
+                       | temporarily.unavailable
+                       /x;
+
 #===================================
 sub protocol {'http'}
 #===================================
@@ -33,20 +38,19 @@ sub send_request {
     return $content if $code && $code == 200;
 
     $msg ||= $client->status_message || 'read timeout';
-    my $type = $msg =~ / Connection.(?:timed.out|re(?:set|fused))
-                       | No.route.to.host
-                       | temporarily.unavailable
-                       /x
-        ? 'Connection'
-        : $msg =~ /read timeout/ ? 'Timeout'
-        :                          'Request';
+    my $type
+        = $code eq '409' ? 'Conflict'
+        : $code eq '404' ? 'Missing'
+        : $msg =~ /$Connection_Error/ ? 'Connection'
+        : $msg =~ /read timeout/      ? 'Timeout'
+        :                               'Request';
     my $error_params = {
         server      => $server,
         status_code => $code,
         status_msg  => $msg,
     };
 
-    if ( $type eq 'Request' ) {
+    if ( $type eq 'Request' or $type eq 'Conflict' or $type eq 'Missing' ) {
         $error_params->{content} = $content;
     }
     $self->throw( $type, $msg . ' (' . ( $code || 500 ) . ')',

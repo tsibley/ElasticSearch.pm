@@ -1,6 +1,4 @@
-#===================================
 package ElasticSearch::Error;
-#===================================
 
 @ElasticSearch::Error::Internal::ISA    = __PACKAGE__;
 @ElasticSearch::Error::Param::ISA       = __PACKAGE__;
@@ -10,6 +8,10 @@ package ElasticSearch::Error;
 @ElasticSearch::Error::Connection::ISA  = __PACKAGE__;
 @ElasticSearch::Error::JSON::ISA        = __PACKAGE__;
 @ElasticSearch::Error::QueryParser::ISA = __PACKAGE__;
+@ElasticSearch::Error::Conflict::ISA
+    = ( 'ElasticSearch::Error::Request', __PACKAGE__ );
+@ElasticSearch::Error::Missing::ISA
+    = ( 'ElasticSearch::Error::Request', __PACKAGE__ );
 
 use strict;
 use warnings FATAL => 'all', NONFATAL => 'redefine';
@@ -31,9 +33,10 @@ sub stringify {
         . ' line '
         . $error->{-line} . " : \n"
         . ( $error->{-text} || 'Missing error message' ) . "\n"
-        . ( $error->{-vars}
-            ? "\nWith vars:" . Dumper( $error->{-vars} ) . "\n"
-            : ''
+        . (
+        $error->{-vars}
+        ? "\nWith vars:" . Dumper( $error->{-vars} ) . "\n"
+        : ''
         ) . ( $error->{'-stacktrace'} || '' );
     return $msg;
 }
@@ -81,6 +84,18 @@ There was an error connecting to the current server
 =item * ElasticSearch::Error::Request
 
 There was some other error performing the request
+
+=item * ElasticSearch::Error::Conflict
+
+There was a versioning conflict while performing an index/create/delete
+operation.  C<ElasticSearch::Error::Conflict> inherits from
+C<ElasticSearch::Error::Request>.
+
+=item * ElasticSearch::Error::Missing
+
+Tried to get/delete a document or index that doesn't exist.
+C<ElasticSearch::Error::Missing> inherits from
+C<ElasticSearch::Error::Request>.
 
 =item * ElasticSearch::Error::NoServers
 

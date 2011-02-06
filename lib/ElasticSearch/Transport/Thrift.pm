@@ -114,7 +114,8 @@ sub send_request {
     return $content if $msg eq 'OK';
 
     my $type
-        = $code eq 'CONFLICT' ? 'Conflict'
+        = $code eq 'CONFLICT'  ? 'Conflict'
+        : $code eq 'NOT_FOUND' ? 'Missing'
         : $msg eq 'REQUEST_TIMEOUT' || $msg eq 'GATEWAY_TIMEOUT' ? 'Timeout'
         :                                                          'Request';
     my $error_params = {
@@ -123,7 +124,7 @@ sub send_request {
         status_msg  => $msg,
     };
 
-    if ( $type eq 'Request' or $type eq 'Conflict' ) {
+    if ( $type eq 'Request' or $type eq 'Conflict' or $type eq 'Missing' ) {
         $error_params->{content} = $content;
     }
     $self->throw( $type, $msg . ' (' . $code . ')', $error_params );
