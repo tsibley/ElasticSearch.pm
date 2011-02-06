@@ -709,39 +709,37 @@ sub gateway_snapshot {
 sub put_mapping {
 #===================================
     my ( $self, $params ) = parse_params(@_);
+    $self->_do_action(
+        'put_mapping',
+        {   method  => 'PUT',
+            cmd     => CMD_index_TYPE,
+            postfix => '_mapping',
+            qs      => {
+                ignore_conflicts =>
+                    [ 'boolean', [ ignore_conflicts => 'true' ] ]
+            },
+            data => {
+                dynamic    => ['dynamic'],
+                properties => 'properties',
+                _all       => ['_all'],
+                _analyzer  => ['_analyzer'],
+                _boost     => ['_boost'],
+                _id        => ['_id'],
+                _index     => ['_index'],
+                _meta      => ['_meta'],
+                _parent    => ['_parent'],
+                _routing   => ['_routing'],
+                _source    => ['_source'],
+            },
+            fixup => sub {
+                my $args = shift;
+                $args->{data} = { $params->{type} => $args->{data} };
+                }
 
-    my $action = 'put_mapping';
-    my $defn   = {
-        method  => 'PUT',
-        cmd     => CMD_index_TYPE,
-        postfix => '_mapping',
-        qs      => {
-            ignore_conflicts => [ 'boolean', [ ignore_conflicts => 'true' ] ]
         },
-        data => {
-            properties => 'properties',
-            _all       => ['_all'],
-            _source    => ['_source'],
-        }
-    };
+        $params
+    );
 
-    my $type_name = $params->{type} || '';
-    my $type_val = {};
-    $type_val->{properties} = delete $params->{properties}
-        or $self->throw(
-        'Param',
-        "Missing required param 'properties'\n"
-            . $self->_usage( $action, $defn ),
-        { params => $params }
-        );
-
-    for (qw(_all _source)) {
-        $type_val->{$_} = delete $params->{$_}
-            if exists $params->{$_};
-    }
-    $params->{$type_name} = $type_val;
-    $defn->{data} = { $type_name => $type_name };
-    $self->_do_action( $action, $defn, $params );
 }
 
 #===================================
@@ -1025,7 +1023,7 @@ sub _do_action {
     my $defn            = shift || {};
     my $original_params = $self->parse_params(@_);
 
-    my ( $cmd, $data, $error );
+    my $error;
 
     my $params = {%$original_params};
     my %args = ( method => $defn->{method} || 'GET' );
@@ -1035,7 +1033,9 @@ sub _do_action {
             = $self->_build_cmd( $params, @{$defn}{qw(prefix cmd postfix)} );
         $args{qs} = $self->_build_qs( $params, $defn->{qs} );
         $args{data} = $self->_build_data( $params, $defn->{data} );
-
+        if ( my $fixup = $defn->{fixup} ) {
+            $fixup->( \%args );
+        }
         die "Unknown parameters: " . join( ', ', keys %$params ) . "\n"
             if keys %$params;
         1;
