@@ -35,7 +35,7 @@ sub send_request {
     my $code    = $client->request($uri) || 500;
     my $msg     = $!;
     my $content = decode_utf8( $client->body || '' );
-    return $content if $code && $code == 200;
+    return $content if $code && $code >= 200 && $code <= 209;
 
     $msg ||= $client->status_message || 'read timeout';
     my $type

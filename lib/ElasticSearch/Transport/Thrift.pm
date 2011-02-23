@@ -109,9 +109,9 @@ sub send_request {
     $content = decode_utf8($content) if defined $content;
 
     my $code = $response->status;
-    my $msg  = $Statuses{$code};
+    return $content if $code && $code >= 200 && $code <= 209;
 
-    return $content if $msg eq 'OK';
+    my $msg = $Statuses{$code};
 
     my $type
         = $code eq 'CONFLICT'  ? 'Conflict'
