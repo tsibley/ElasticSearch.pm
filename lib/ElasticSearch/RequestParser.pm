@@ -400,6 +400,7 @@ my %Query_Defn = (
     flt_field          => [ 'flt_field', 'fuzzy_like_this_field' ],
     fuzzy              => ['fuzzy'],
     match_all          => ['match_all'],
+    min_score          => ['min_score'],
     mlt                => [ 'mlt', 'more_like_this' ],
     mlt_field          => [ 'mlt_field', 'more_like_this_field' ],
     prefix             => ['prefix'],
