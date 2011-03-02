@@ -375,9 +375,9 @@ my %Search_Defn = (
     qs      => {
         search_type => [
             'enum',
-            'search_type',
             [   qw( dfs_query_then_fetch    dfs_query_and_fetch
-                    query_then_fetch         query_and_fetch)
+                    query_then_fetch         query_and_fetch
+                    count                   scan)
             ]
         ],
         routing => [ 'flatten', ],
