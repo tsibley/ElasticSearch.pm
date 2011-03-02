@@ -97,7 +97,7 @@ ATTEMPT:
                     delete $error->{-vars}{content};
                 }
             }
-            return { missing => 1}
+            return { missing => 1 }
                 if $error->isa('ElasticSearch::Error::Missing')
                     && $args->{qs}{ignore_missing};
             die $error;
@@ -245,7 +245,7 @@ sub log_request {
     my $params = shift;
 
     my $data = $params->{data};
-    if ( defined $data ) {
+    if ( defined $data and $data ne "{}\n" ) {
         $data =~ s/'/\\u0027/g;
         $data = " -d '\n${data}'";
     }
