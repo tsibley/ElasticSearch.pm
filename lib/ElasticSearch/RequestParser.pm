@@ -243,8 +243,10 @@ sub bulk {
     my $indenting = $json->get_indent;
     $json->indent(0);
 
-    my $json_docs = eval { $self->_build_bulk_query($actions) }
-        || do { $json->indent($indenting); die $@ };
+    my $json_docs = eval { $self->_build_bulk_query($actions) };
+    my $error = $@;
+    $json->indent($indenting);
+    die $error unless $json_docs;
 
     my $results = $self->request( {
             method => 'POST',
