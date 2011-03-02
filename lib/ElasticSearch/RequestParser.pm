@@ -16,6 +16,7 @@ use constant {
     CMD_INDEX_TYPE_id => [ index => ONE_REQ, type => ONE_REQ, id => ONE_OPT ],
     CMD_index      => [ index => MULTI_BLANK ],
     CMD_INDEX      => [ index => ONE_REQ ],
+    CMD_INDEX_TYPE => [ index => ONE_REQ, type => ONE_REQ ],
     CMD_INDEX_type => [ index => ONE_REQ, type => MULTI_BLANK ],
     CMD_index_TYPE => [ index => MULTI_ALL, type => ONE_REQ ],
     CMD_index_type => [ index => MULTI_ALL, type => MULTI_BLANK ],
