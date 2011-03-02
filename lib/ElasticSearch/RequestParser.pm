@@ -600,7 +600,10 @@ sub create_index {
         {   method  => 'PUT',
             cmd     => CMD_INDEX,
             postfix => '',
-            data    => { index => ['defn'] },
+            data    => {
+                settings => ['settings','defn'],
+                mappings => ['mappings'],
+            },
         },
         @_
     );
