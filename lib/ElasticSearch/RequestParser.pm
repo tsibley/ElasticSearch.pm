@@ -601,7 +601,7 @@ sub create_index {
             cmd     => CMD_INDEX,
             postfix => '',
             data    => {
-                settings => ['settings','defn'],
+                settings => [ 'settings', 'defn' ],
                 mappings => ['mappings'],
             },
         },
