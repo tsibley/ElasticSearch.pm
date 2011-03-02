@@ -37,36 +37,43 @@ our %QS_Format = (
 );
 
 our %QS_Formatter = (
-    boolean => sub { return $_[0] ? $_[1] : $_[2] },
+    boolean => sub {
+        my $key = shift;
+        my $val = $_[0] ? $_[1] : $_[2];
+        return unless defined $val;
+        return ref $val ? $val : [ $key, $val ? 'true' : 'false' ];
+    },
     duration => sub {
-        my ( $t, $k ) = @_;
+        my ( $k, $t ) = @_;
         return unless defined $t;
         return [ $k, $t ] if $t =~ /^\d+([smh]|ms)$/i;
         die "$k '$t' is not in the form $QS_Format{duration}\n";
     },
     flatten => sub {
-        my $array = shift or return;
         my $key = shift;
+        my $array = shift or return;
         return [ $key, ref $array ? join( ',', @$array ) : $array ];
     },
     'int' => sub {
+        my $key = shift;
         my $int = shift;
         return unless defined $int;
-        my $key = shift;
         eval { $int += 0; 1 } or die "'$key' is not an integer";
         return [ $key, $int ];
     },
     'float' => sub {
+        my $key   = shift;
         my $float = shift;
         return unless defined $float;
-        my $key = shift;
+        $key = shift if @_;
         eval { $float += 0; 1 } or die "'$key' is not a float";
         return [ $key, $float ];
     },
     'string' => sub {
+        my $key    = shift;
         my $string = shift;
         return unless defined $string;
-        return [ shift(), $string ];
+        return [ $key, $string ];
     },
     'enum' => sub {
         my $val = shift;
@@ -93,8 +100,8 @@ sub get {
         'get',
         {   cmd => CMD_INDEX_TYPE_ID,
             qs  => {
-                routing => [ 'string', 'routing' ],
-                refresh => [ 'boolean', [ refresh => 'true' ] ]
+                routing => ['string'],
+                refresh => [ 'boolean', 1 ]
             },
         },
         @_
@@ -104,13 +111,13 @@ sub get {
 my %Index_Defn = (
     cmd => CMD_INDEX_TYPE_id,
     qs  => {
-        create  => [ 'boolean', [ op_type => 'create' ] ],
-        refresh => [ 'boolean', [ refresh => 'true' ] ],
-        timeout   => [ 'duration', 'timeout' ],
-        routing   => [ 'string',   'routing' ],
-        parent    => [ 'string',   'parent' ],
-        percolate => [ 'string',   'percolate' ],
-        version   => [ 'string',   'version' ],
+        create => [ 'boolean', [ op_type => 'create' ] ],
+        refresh   => [ 'boolean', 1 ],
+        timeout   => ['duration'],
+        routing   => [ 'string', ],
+        parent    => [ 'string', ],
+        percolate => [ 'string', ],
+        version   => [ 'string', ],
     },
     data => 'data',
 );
@@ -155,12 +162,11 @@ sub delete {
         {   method => 'DELETE',
             cmd    => CMD_INDEX_TYPE_ID,
             qs     => {
-                consistency =>
-                    [ 'enum', 'consistency', [ 'one', 'quorom', 'all' ] ],
-                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
-                refresh => [ 'boolean', [ refresh => 'true' ] ],
-                routing => [ 'string', 'routing' ],
-                replication => [ 'enum', 'replication', [ 'async', 'sync' ] ],
+                consistency => [ 'enum', [ 'one', 'quorom', 'all' ] ],
+                ignore_missing => [ 'boolean', 1 ],
+                refresh        => [ 'boolean', 1 ],
+                routing        => ['string'],
+                replication => [ 'enum', [ 'async', 'sync' ] ],
             }
         },
         @_
@@ -176,10 +182,10 @@ sub analyze {
             cmd     => CMD_INDEX,
             postfix => '_analyze',
             qs      => {
-                text     => [ 'string', 'text' ],
-                analyzer => [ 'string', 'analyzer' ],
-                format   => [ 'enum',   'format', [ 'detailed', 'text' ] ],
-                prefer_local => [ 'boolean', [ 'prefer_local' => 'true' ] ],
+                text     => ['string'],
+                analyzer => ['string'],
+                format   => [ 'enum', [ 'detailed', 'text' ] ],
+                prefer_local => [ 'boolean',, 1 ],
             }
         },
         @_
@@ -212,8 +218,8 @@ my %Bulk_Actions = (
 $Bulk_Actions{create} = $Bulk_Actions{index};
 
 my %Bulk_QS = (
-    consistency => [ 'enum', 'consistency', [ 'one', 'quorom', 'all' ] ],
-    refresh => [ 'boolean', [ refresh => 'true' ] ],
+    consistency => [ 'enum', [ 'one', 'quorom', 'all' ] ],
+    refresh => [ 'boolean', 1 ],
 );
 
 #===================================
@@ -371,9 +377,10 @@ my %Search_Defn = (
                     query_then_fetch         query_and_fetch)
             ]
         ],
-        routing => [ 'flatten',  'routing' ],
-        scroll  => [ 'duration', 'scroll' ],
-        timeout => [ 'duration', 'timeout' ]
+        routing => [ 'flatten', ],
+        scroll  => ['duration'],
+        timeout => ['duration'],
+        version => [ 'boolean', 1 ],
     },
     data => { %Search_Data, query => ['query'] }
 );
@@ -416,7 +423,7 @@ sub scroll {
         'scroll',
         {   cmd    => [],
             prefix => '_search/scroll',
-            qs     => { scroll_id => [ 'string', 'scroll_id' ] }
+            qs     => { scroll_id => ['string'] }
         },
         @_
     );
@@ -431,10 +438,9 @@ sub delete_by_query {
             method  => 'DELETE',
             postfix => '_query',
             qs      => {
-                consistency =>
-                    [ 'enum', 'consistency', [ 'one', 'quorom', 'all' ] ],
-                replication => [ 'enum', 'replication', [ 'async', 'sync' ] ],
-                routing => [ 'flatten', 'routing' ],
+                consistency => [ 'enum', [ 'one', 'quorom', 'all' ] ],
+                replication => [ 'enum', [ 'async', 'sync' ] ],
+                routing => ['flatten'],
             },
             data => \%Query_Defn,
         },
@@ -450,7 +456,7 @@ sub count {
         {   %Search_Defn,
             postfix => '_count',
             data    => \%Query_Defn,
-            qs      => { routing => [ 'flatten', 'routing' ] },
+            qs      => { routing => ['flatten'] },
         },
         @_
     );
@@ -465,16 +471,16 @@ sub mlt {
             method => 'GET',
             qs     => {
                 %{ $Search_Defn{qs} },
-                mlt_fields => [ 'flatten', 'mlt_fields' ],
-                pct_terms_to_match => [ 'float', 'percent_terms_to_match ' ],
-                min_term_freq      => [ 'int',   'min_term_freq' ],
-                max_query_terms    => [ 'int',   'max_query_terms' ],
-                stop_words   => [ 'flatten', 'stop_words' ],
-                min_doc_freq => [ 'int',     'min_doc_freq' ],
-                max_doc_freq => [ 'int',     'max_doc_freq' ],
-                min_word_len => [ 'int',     'min_word_len' ],
-                max_word_len => [ 'int',     'max_word_len' ],
-                boost_terms  => [ 'float',   'boost_terms' ],
+                mlt_fields         => ['flatten'],
+                pct_terms_to_match => [ 'float', 'percent_terms_to_match' ],
+                min_term_freq      => ['int'],
+                max_query_terms    => ['int'],
+                stop_words         => ['flatten'],
+                min_doc_freq       => ['int'],
+                max_doc_freq       => ['int'],
+                min_word_len       => ['int'],
+                max_word_len       => ['int'],
+                boost_terms        => ['float'],
             },
             postfix => '_mlt',
             data    => \%Search_Data,
@@ -519,7 +525,7 @@ sub delete_percolator {
             prefix => '_percolator',
             method => 'DELETE',
             qs     => {
-                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
+                ignore_missing => [ 'boolean', 1 ],
 
             }
         },
@@ -551,14 +557,12 @@ sub percolate {
 #===================================
     shift()->_do_action(
         'percolate',
-        {   cmd     => CMD_INDEX,
+        {   cmd     => CMD_INDEX_TYPE,
             postfix => '_percolate',
             method  => 'GET',
-            qs      => {
-                prefer_local => [ 'boolean', [ 'prefer_local' => 'true' ] ]
-            },
-            data  => { data => 'data', type => 'type' },
-            fixup => sub {
+            qs      => { prefer_local => [ 'boolean',, 1 ] },
+            data    => { data => 'data', type => 'type' },
+            fixup   => sub {
                 my $args = shift;
                 $args->{data} = {
                     doc => { delete @{ $args->{data} }{ 'type', 'data' } } };
@@ -603,11 +607,9 @@ sub delete_index {
 #===================================
     shift()->_do_action(
         'delete_index',
-        {   method => 'DELETE',
-            cmd    => CMD_INDEX,
-            qs     => {
-                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
-            },
+        {   method  => 'DELETE',
+            cmd     => CMD_INDEX,
+            qs      => { ignore_missing => [ 'boolean', 1 ], },
             postfix => ''
         },
         @_
@@ -705,9 +707,7 @@ sub delete_index_template {
         {   method => 'DELETE',
             cmd    => CMD_NAME,
             prefix => '_template',
-            qs     => {
-                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ]
-            },
+            qs     => { ignore_missing => [ 'boolean', 1 ] },
         },
         @_
     );
@@ -735,8 +735,8 @@ sub flush_index {
             cmd     => CMD_index,
             postfix => '_flush',
             qs      => {
-                refresh => [ 'boolean', [ refresh => 'true' ] ],
-                full    => [ 'boolean', [ full    => 'true' ] ]
+                refresh => [ 'boolean', 1, 0 ],
+                full    => [ 'boolean', 1, 0 ]
             },
         },
         @_
@@ -766,13 +766,8 @@ sub optimize_index {
             qs      => {
                 only_deletes =>
                     [ 'boolean', [ only_expunge_deletes => 'true' ] ],
-                refresh => [
-                    'boolean',
-                    [ refresh => 'true' ],
-                    [ refresh => 'false' ]
-                ],
-                flush =>
-                    [ 'boolean', [ flush => 'true' ], [ flush => 'false' ] ]
+                refresh => [ 'boolean', 1, 0 ],
+                flush   => [ 'boolean', 1, 0 ]
             },
         },
         @_
@@ -814,11 +809,8 @@ sub put_mapping {
         {   method  => 'PUT',
             cmd     => CMD_index_TYPE,
             postfix => '_mapping',
-            qs      => {
-                ignore_conflicts =>
-                    [ 'boolean', [ ignore_conflicts => 'true' ] ]
-            },
-            data => {
+            qs      => { ignore_conflicts => [ 'boolean', 1 ] },
+            data    => {
                 dynamic    => ['dynamic'],
                 properties => 'properties',
                 _all       => ['_all'],
@@ -851,9 +843,7 @@ sub delete_mapping {
         'delete_mapping',
         {   method => 'DELETE',
             cmd    => CMD_index_TYPE,
-            qs     => {
-                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
-            }
+            qs     => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
     );
@@ -950,9 +940,7 @@ sub delete_river {
         {   method => 'DELETE',
             prefix => '_river',
             cmd    => CMD_RIVER,
-            qs     => {
-                ignore_missing => [ 'boolean', [ 'ignore_missing' => 1 ] ],
-            }
+            qs     => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
     );
@@ -984,12 +972,10 @@ sub cluster_state {
         'cluster_state',
         {   prefix => '_cluster/state',
             qs     => {
-                filter_nodes => [ 'boolean', [ filter_nodes => 'true' ] ],
-                filter_metadata =>
-                    [ 'boolean', [ filter_metadata => 'true' ] ],
-                filter_routing_table =>
-                    [ 'boolean', [ filter_routing_table => 'true' ] ],
-                filter_indices => [ 'flatten', 'filter_indices' ],
+                filter_nodes         => [ 'boolean', 1 ],
+                filter_metadata      => [ 'boolean', 1 ],
+                filter_routing_table => [ 'boolean', 1 ],
+                filter_indices       => ['flatten'],
                 }
 
         },
@@ -1012,7 +998,7 @@ sub nodes {
         'nodes',
         {   prefix => '_cluster/nodes',
             cmd    => CMD_nodes,
-            qs     => { settings => [ 'boolean', [ settings => 'true' ] ] }
+            qs     => { settings => [ 'boolean', 1 ] }
         },
         @_
     );
@@ -1040,7 +1026,7 @@ sub shutdown {
             prefix  => '_cluster/nodes',
             cmd     => CMD_nodes,
             postfix => '_shutdown',
-            qs      => { delay => [ 'duration', 'delay' ] }
+            qs      => { delay => ['duration'] }
         },
         @_
     );
@@ -1055,7 +1041,7 @@ sub restart {
             prefix  => '_cluster/nodes',
             cmd     => CMD_nodes,
             postfix => '_restart',
-            qs      => { delay => [ 'duration', 'delay' ] }
+            qs      => { delay => ['duration'] }
         },
         @_
     );
@@ -1069,13 +1055,11 @@ sub cluster_health {
         {   prefix => '_cluster/health',
             cmd    => CMD_index,
             qs     => {
-                level => [ 'enum', 'level', [qw(cluster indices shards)] ],
-                wait_for_status =>
-                    [ 'enum', 'wait_for_status', [qw(green yellow red)] ],
-                wait_for_relocating_shards =>
-                    [ 'int', 'wait_for_relocating_shards' ],
-                wait_for_nodes => [ 'string',   'wait_for_nodes' ],
-                timeout        => [ 'duration', 'timeout' ]
+                level           => [ 'enum', [qw(cluster indices shards)] ],
+                wait_for_status => [ 'enum', [qw(green yellow red)] ],
+                wait_for_relocating_shards => ['int'],
+                wait_for_nodes             => ['string'],
+                timeout                    => ['duration']
             }
         },
         @_
@@ -1211,7 +1195,7 @@ sub _build_qs {
         my $formatter = $QS_Formatter{$format_name}
             or die "Unknown QS formatter '$format_name'";
 
-        my $val = $formatter->( delete $params->{$key}, @args )
+        my $val = $formatter->( $key, delete $params->{$key}, @args )
             or next;
         $qs{ $val->[0] } = $val->[1];
     }
