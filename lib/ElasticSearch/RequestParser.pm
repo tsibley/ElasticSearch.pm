@@ -1090,7 +1090,12 @@ sub error_trace {
 #===================================
     my $self = shift;
     if (@_) {
-        $self->{_base_qs}{error_trace} = !!shift();
+        if ( shift() ) {
+            $self->{_base_qs}{error_trace} = 'true';
+        }
+        else {
+            delete $self->{_base_qs}{error_trace};
+        }
     }
     return $self->{_base_qs}{error_trace} ? 1 : 0;
 }
