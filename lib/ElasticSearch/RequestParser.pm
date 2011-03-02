@@ -878,7 +878,13 @@ sub clear_cache {
         'clear_cache',
         {   method  => 'POST',
             cmd     => CMD_index,
-            postfix => '_cache/clear'
+            postfix => '_cache/clear',
+            qs      => {
+                id         => [ 'boolean', 1 ],
+                field      => [ 'boolean', 1 ],
+                field_data => [ 'boolean', 1 ],
+                bloom      => [ 'boolean', 1 ],
+            }
         },
         @_
     );
