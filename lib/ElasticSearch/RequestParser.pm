@@ -28,7 +28,6 @@ use constant {
 our %QS_Format = (
     boolean  => '1 | 0',
     duration => "'5m' | '10s'",
-    fixed    => '',
     optional => "'scalar value'",
     flatten  => "'scalar' or ['scalar_1', 'scalar_n']",
     'int'    => "integer",
@@ -38,7 +37,6 @@ our %QS_Format = (
 );
 
 our %QS_Formatter = (
-    fixed   => sub { return $_[1] },
     boolean => sub { return $_[0] ? $_[1] : $_[2] },
     duration => sub {
         my ( $t, $k ) = @_;
@@ -1208,7 +1206,7 @@ sub _build_qs {
         my ( $format_name, @args ) = @{ $defn->{$key} || [] };
         $format_name ||= '';
 
-        next unless exists $params->{$key} || $format_name eq 'fixed';
+        next unless exists $params->{$key};
 
         my $formatter = $QS_Formatter{$format_name}
             or die "Unknown QS formatter '$format_name'";
