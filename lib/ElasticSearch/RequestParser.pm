@@ -1169,13 +1169,13 @@ sub _usage {
             :                    "\$$key | [\$${key}_1,\$${key}_n]";
 
         my $required = $type == ONE_REQ ? 'required' : 'optional';
-        $usage .= sprintf( "  - %-20s =>  %-45s # %s\n",
+        $usage .= sprintf( "  - %-26s =>  %-45s # %s\n",
             $key, $arg_format, $required );
     }
     if ( my $qs = $defn->{qs} ) {
         for ( sort keys %$qs ) {
             my $arg_format = $QS_Format{ $qs->{$_}[0] };
-            $usage .= sprintf( "  - %-20s =>  %-45s # optional\n", $_,
+            $usage .= sprintf( "  - %-26s =>  %-45s # optional\n", $_,
                 $arg_format );
         }
     }
@@ -1188,7 +1188,7 @@ sub _usage {
 
         for (@keys) {
             $usage .= sprintf(
-                "  - %-20s =>  %-45s # %s\n",
+                "  - %-26s =>  %-45s # %s\n",
                 $_->[0], '{' . $_->[0] . '}',
                 $_->[1]
             );
