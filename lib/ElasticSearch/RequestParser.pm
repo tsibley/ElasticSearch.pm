@@ -77,9 +77,9 @@ our %QS_Formatter = (
         return [ $key, $string ];
     },
     'enum' => sub {
+        my $key = shift;
         my $val = shift;
         return unless defined $val;
-        my $key  = shift;
         my $vals = $_[0];
         for (@$vals) {
             return [ $key, $val ] if $val eq $_;
