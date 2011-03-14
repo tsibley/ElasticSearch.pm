@@ -30,16 +30,17 @@ sub request {
 }
 
 #===================================
-sub transport   { shift()->{_transport} }
-sub trace_calls { shift->transport->trace_calls(@_) }
-sub timeout     { shift->transport->timeout(@_) }
+sub transport       { shift()->{_transport} }
+sub trace_calls     { shift->transport->trace_calls(@_) }
+sub timeout         { shift->transport->timeout(@_) }
+sub refresh_servers { shift->transport->refresh_servers(@_) }
 #===================================
 
 #===================================
 sub query_parser {
 #===================================
     require ElasticSearch::QueryParser;
-    shift;            # drop class/$self
+    shift;    # drop class/$self
     ElasticSearch::QueryParser->new(@_);
 }
 
@@ -49,7 +50,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.28, tested against ElasticSearch server version 0.14.2.
+Version 0.28, tested against ElasticSearch server version 0.15.2.
 
 NOTE: This version has been completely refactored, to provide multiple
 Transport backends, and some methods have moved to subclasses.
@@ -59,14 +60,15 @@ Transport backends, and some methods have moved to subclasses.
 ElasticSearch is an Open Source (Apache 2 license), distributed, RESTful
 Search Engine based on Lucene, and built for the cloud, with a JSON API.
 
-Check out its features: L<http://www.elasticsearch.com/products/elasticsearch/>
+Check out its features: L<http://www.elasticsearch.org/>
 
 This module is a thin API which makes it easy to communicate with an
 ElasticSearch cluster.
 
 It maintains a list of all servers/nodes in the ElasticSearch cluster, and
-spreads the load randomly across these nodes.  If the current active node
-disappears, then it attempts to connect to another node in the list.
+spreads the load across these nodes in round-robin fashion.
+If the current active node disappears, then it attempts to connect to another
+node in the list.
 
 Forking a process triggers a server list refresh, and a new connection to
 a randomly chosen node in the list.
