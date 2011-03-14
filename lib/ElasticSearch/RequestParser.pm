@@ -1002,6 +1002,7 @@ sub cluster_state {
         'cluster_state',
         {   prefix => '_cluster/state',
             qs     => {
+                filter_blocks        => [ 'boolean', 1 ],
                 filter_nodes         => [ 'boolean', 1 ],
                 filter_metadata      => [ 'boolean', 1 ],
                 filter_routing_table => [ 'boolean', 1 ],
