@@ -19,7 +19,7 @@ name: ElasticSearch
 provides:
   ElasticSearch:
     file: lib/ElasticSearch.pm
-    version: 0.28
+    version: 0.29
   ElasticSearch::Error:
     file: lib/ElasticSearch/Error.pm
   ElasticSearch::QueryParser:
@@ -119,4 +119,4 @@ requires:
   parent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.28
+version: 0.29
