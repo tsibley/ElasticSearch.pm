@@ -27,16 +27,22 @@ sub new {
 
     eval "require  $transport_class" or $class->throw( "Internal", $@ );
 
-    my $self = bless { _JSON => JSON->new(), _timeout => 120 },
+    my $self = bless {
+        _JSON         => JSON->new(),
+        _timeout      => 120,
+        _max_requests => 10_000
+        },
         $transport_class;
 
     my $servers = delete $params->{servers}
         or $self->throw( 'Param', 'No servers passed to new' );
 
-    $servers = $self->servers($servers);
-    $self->{_default_servers} = [@$servers];
-    if ( exists $params->{timeout} ) {
-        $self->timeout( delete $params->{timeout} );
+    $self->{_default_servers}
+        = [ ref $servers eq 'ARRAY' ? @$servers : $servers ];
+
+    for (qw(timeout max_requests)) {
+        next unless exists $params->{$_};
+        $self->$_( delete $params->{$_} );
     }
     $self->init($params);
     return $self;
@@ -115,6 +121,7 @@ sub refresh_servers {
 #===================================
     my $self = shift;
 
+    $self->{_refresh_in} = 0;
     delete $self->{_current_server};
 
     my %servers = map { $_ => 1 }
@@ -139,6 +146,7 @@ sub refresh_servers {
             } values %{ $nodes->{nodes} };
         next unless @servers;
 
+        $self->{_refresh_in} = $self->max_requests - 1;
         return $self->servers( \@servers );
     }
 
@@ -152,9 +160,13 @@ sub refresh_servers {
 #===================================
 sub next_server {
 #===================================
-    my $self    = shift;
+    my $self = shift;
+    $self->refresh_servers
+        unless $self->{_refresh_in}--;
+
     my @servers = @{ $self->servers };
-    my $next    = shift @servers;
+    my $next    = shift(@servers);
+
     $self->{_current_server} = { $$ => $next };
     $self->servers( @servers, $next );
     return $next;
@@ -174,7 +186,17 @@ sub servers {
     if (@_) {
         $self->{_servers} = ref $_[0] eq 'ARRAY' ? shift : [@_];
     }
-    return $self->{_servers} || [];
+    return $self->{_servers} ||= [];
+}
+
+#===================================
+sub max_requests {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_max_requests} = shift;
+    }
+    return $self->{_max_requests} || 0;
 }
 
 #===================================
@@ -347,6 +369,10 @@ with the ElasticSearch server.
 It handles failover to the next node in case the current node closes the
 connection. All requests are round-robin'ed to all live servers.
 
+On the first request and every C<max_requests> after that (default 10,000),
+the list of live nodes is automatically refreshed.  This can be disabled
+by setting C<max_requests> to C<0>.
+
 Currently, the available backends are:
 
 =over
@@ -386,6 +412,7 @@ happens via the main L<ElasticSearch> class.
 
     my $t = $e->transport;
 
+    $t->max_requests(5)             # refresh_servers every 5 requests
     $t->protocol                    # eg 'http'
     $t->next_server                 # next node to use
     $t->current_server              # eg '127.0.0.1:9200' ie last used node

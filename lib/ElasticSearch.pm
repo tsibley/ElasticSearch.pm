@@ -78,9 +78,10 @@ a randomly chosen node in the list.
 
     use ElasticSearch;
     my $e = ElasticSearch->new(
-        servers     => 'search.foo.com:9200',
-        transport   => 'http' | 'httplite' | 'thrift', # default 'http'
-        trace_calls => 'log_file',
+        servers      => 'search.foo.com:9200',
+        transport    => 'http' | 'httplite' | 'thrift', # default 'http'
+        max_requests => 10_000,                         # default 10_000
+        trace_calls  => 'log_file',
     );
 
     $e->index(
@@ -182,18 +183,27 @@ a non-existent index.
 =head3 C<new()>
 
     $e = ElasticSearch->new(
-            transport   =>  'http|httplite|thrift',     # default 'http'
-            servers     =>  '127.0.0.1:9200'            # single server
-                            | ['es1.foo.com:9200',
-                               'es2.foo.com:9200'],     # multiple servers
-            trace_calls => 1 | '/path/to/log/file',
-            timeout     => 30,
+            transport    =>  'http|httplite|thrift',    # default 'http'
+            servers      =>  '127.0.0.1:9200'           # single server
+                              | ['es1.foo.com:9200',
+                                 'es2.foo.com:9200'],   # multiple servers
+            trace_calls  => 1 | '/path/to/log/file',
+            timeout      => 30,
+            max_requests => 10_000,                     # refresh server list
+                                                        # after max_requests
      );
 
 C<servers> is a required parameter and can be either a single server or an
-ARRAY ref with a list of servers.  These servers are used to retrieve a list
-of all servers in the cluster, after which one is chosen at random to be
-the L</"current_server()">.
+ARRAY ref with a list of servers.
+
+These servers are used in a round-robin fashion. If any server fails to
+connect, then the other servers in the list are tried, and if any
+succeeds, then a list of all servers/nodes currently known to the
+ElasticSearch cluster are retrieved and stored.
+
+Every C<max_requests> (default 10,000) this list of known nodes is refreshed
+automatically.  To disable this automatic refresh, you can set C<max_requests>
+to C<0>.
 
 There are various C<transport> backends that ElasticSearch can use:
 C<http> (the default, based on LWP), C<httplite> (based on L<HTTP::Lite>)
