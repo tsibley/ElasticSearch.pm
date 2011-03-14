@@ -1,50 +1,66 @@
 Revision history for ElasticSearch
-0.28    2011-01-08
+0.29    2011-03-15
+         - Updated the Changes file
 
-        In ElasticSearch:
-         - added query_parser(), which returns a new ElasticSearch::QueryParser
-           instance
+0.28    2011-03-14
+
+        Support added for:
+         - Percolators
+               - create_percolator()
+               - delete_percolator()
+               - get_percolator()
+               - percolate()
+
+         - Open / Close index
+               - open_index()
+               - close_index()
+
+         - Index templates
+               - create_index_template()
+               - delete_index_template()
+               - index_template()
+
+         - Routing
+         - Parent docs
+         - Versioning
+         - Analyzer
+               - analyze()
+
+         - ElasticSearch::QueryParser
+               - Parses and filters query strings, to ensure that user
+                 data is in an acceptable form for passing to ES
+
+         - ElasticSearch::TestServer
+               - starts a test server for use by the test suite
+               - factored out to make it easier for others to use
+
+        Also:
+         - create_index() now supports adding mappings at the same time
+         - Added bulk_create(), bulk_index() and bulk_delete()
+         - Bulk actions now accept _id and id etc, which means that
+           search results can be passed directly to bulk without renaming
+           these parameters
+         - Added river_status()
+         - New errors
+            - ElasticSearch::Error::Conflict - versioning conflict
+            - ElasticSearch::Error::Missing - requested index/doct etc missing
+            - both these errors inherit from ElasticSearch::Error::Request
+         - Added ignore_missing to many methods which allows you to ignore
+           Missing errors
+         - Added query_parser
          - added timeout() as sugar for $es->transport->timeout()
+         - added refresh_servers() as sugar for $es->transport->refresh_servers()
 
-        In ElasticSearch::RequestParser:
-
-         - Bulk operations:
-             - Made bulk() round-trippable ie the result of
-               $es->search()->{hits}{hits} can be passed directly to
-               bulk() without having to rename "index" -> "_index"
-             - Added consistency, refresh, routing and parent params to bulk().
-             - Added bulk_index(), bulk_create() and bulk_delete() as
-               convenience methods
-
-         - New methods:
-            - river_status()
-            - create_index_template()
-            - index_template()
-            - delete_index_template()
-            - open_index()
-            - close_index()
-            - analyze()
-
-          - New options for existing methods:
-            - index()/create()/set(): parent, routing
-            - get():                  refresh, routing
-            - delete():               consistency, refresh, replication, routing
-            - delete_by_query():      consistency, replication, routing
-            - search():               routing, timeout
-            - count():                routing
-            - put_mapping():          _analyzer, _boost, _id, _index, _meta,
-                                      _parent, _routing
-
-          - Miscellaneous:
-            - parameters of type 'duration' now also accept 'ms' as milliseconds
-            - added field_masking_span, has_child and top_children queries to
-              count() and delete_by_query()
-
-        In ElasticSearch::Transport:
-          - Upgraded Thrift to version 0.5.0
-          - In HTTPLite added "Resource temporarily unavailable",
-            "Connection timeout" and "No route to host" as Connection type
-            errors
+        In ElasticSearch::Transport
+         - added max_requests() to force a refresh of known live nodes
+           every $max_requests
+         - on the first request, the list of live nodes is automatically
+           updated
+         - made httplite recognise more error states as temporary Connection
+           errors
+         - added support for recognising 404 and 409 HTTP codes
+         - upgraded Thrift to version 5.0
+         - improvements to logging
 
         Miscellaneous:
           - added examples/reindex_es.pl
