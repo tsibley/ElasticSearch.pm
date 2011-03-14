@@ -1,4 +1,55 @@
 Revision history for ElasticSearch
+0.28    2011-01-08
+
+        In ElasticSearch:
+         - added query_parser(), which returns a new ElasticSearch::QueryParser
+           instance
+         - added timeout() as sugar for $es->transport->timeout()
+
+        In ElasticSearch::RequestParser:
+
+         - Bulk operations:
+             - Made bulk() round-trippable ie the result of
+               $es->search()->{hits}{hits} can be passed directly to
+               bulk() without having to rename "index" -> "_index"
+             - Added consistency, refresh, routing and parent params to bulk().
+             - Added bulk_index(), bulk_create() and bulk_delete() as
+               convenience methods
+
+         - New methods:
+            - river_status()
+            - create_index_template()
+            - index_template()
+            - delete_index_template()
+            - open_index()
+            - close_index()
+            - analyze()
+
+          - New options for existing methods:
+            - index()/create()/set(): parent, routing
+            - get():                  refresh, routing
+            - delete():               consistency, refresh, replication, routing
+            - delete_by_query():      consistency, replication, routing
+            - search():               routing, timeout
+            - count():                routing
+            - put_mapping():          _analyzer, _boost, _id, _index, _meta,
+                                      _parent, _routing
+
+          - Miscellaneous:
+            - parameters of type 'duration' now also accept 'ms' as milliseconds
+            - added field_masking_span, has_child and top_children queries to
+              count() and delete_by_query()
+
+        In ElasticSearch::Transport:
+          - Upgraded Thrift to version 0.5.0
+          - In HTTPLite added "Resource temporarily unavailable",
+            "Connection timeout" and "No route to host" as Connection type
+            errors
+
+        Miscellaneous:
+          - added examples/reindex_es.pl
+          - fixed a bug in the Makefile.PL
+
 0.27    2010-10-21
         Fixed an undefined bug in Transport::refresh_servers which would
         die if no nodes were found

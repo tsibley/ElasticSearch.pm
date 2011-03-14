@@ -3,13 +3,14 @@ abstract: 'An API for communicating with ElasticSearch'
 author:
   - 'Clinton Gormley <drtech@cpan.org>'
 build_requires:
-  File::Temp: 0.22
+  File::Temp: 0.20
   IO::Socket: 0
   POSIX: 0
-  Test::Most: 0
+  Test::Exception: 0
+  Test::More: 0
 configure_requires:
   Module::Build: 0.36
-generated_by: 'Module::Build version 0.3603'
+generated_by: 'Module::Build version 0.3607'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -18,9 +19,13 @@ name: ElasticSearch
 provides:
   ElasticSearch:
     file: lib/ElasticSearch.pm
-    version: 0.27
+    version: 0.28
   ElasticSearch::Error:
     file: lib/ElasticSearch/Error.pm
+  ElasticSearch::QueryParser:
+    file: lib/ElasticSearch/QueryParser.pm
+  ElasticSearch::TestServer:
+    file: lib/ElasticSearch/TestServer.pm
   ElasticSearch::Transport:
     file: lib/ElasticSearch/Transport.pm
   ElasticSearch::Transport::HTTP:
@@ -102,11 +107,11 @@ provides:
 recommends:
   Bit::Vector: 0
   Class::Accessor: 0
+  HTTP::Lite: 0
   JSON::XS: 0
 requires:
   Data::Dumper: 0
   Encode: 0
-  HTTP::Lite: 0
   HTTP::Request: 0
   JSON: 0
   LWP::ConnCache: 0
@@ -114,4 +119,4 @@ requires:
   parent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.27
+version: 0.28
