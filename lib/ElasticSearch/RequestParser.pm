@@ -117,10 +117,10 @@ my %Index_Defn = (
         create => [ 'boolean', [ op_type => 'create' ] ],
         refresh   => [ 'boolean', 1 ],
         timeout   => ['duration'],
-        routing   => [ 'string', ],
-        parent    => [ 'string', ],
-        percolate => [ 'string', ],
-        version   => [ 'string', ],
+        routing   => ['string'],
+        parent    => ['string'],
+        percolate => ['string'],
+        version   => ['int'],
     },
     data => 'data',
 );
@@ -200,10 +200,10 @@ sub analyze {
             cmd     => CMD_INDEX,
             postfix => '_analyze',
             qs      => {
-                text     => ['string'],
-                analyzer => ['string'],
-                format   => [ 'enum', [ 'detailed', 'text' ] ],
-                prefer_local => [ 'boolean',, 1 ],
+                text         => ['string'],
+                analyzer     => ['string'],
+                format       => [ 'enum', [ 'detailed', 'text' ] ],
+                prefer_local => [ 'boolean', undef, 0 ],
             }
         },
         @_
@@ -329,7 +329,7 @@ sub _build_bulk_query {
             unless ref $data eq 'HASH';
 
         my ( $action, $params ) = %$data;
-
+        $action ||= '';
         my $defn = $Bulk_Actions{$action}
             || $self->throw( "Param", "Unknown bulk action '$action'" );
 
@@ -398,12 +398,12 @@ my %Search_Defn = (
                     count                   scan)
             ]
         ],
-        routing => [ 'flatten', ],
+        routing => ['flatten'],
         scroll  => ['duration'],
         timeout => ['duration'],
         version => [ 'boolean', 1 ],
     },
-    data => { %Search_Data, query => ['query'] }
+    data => { %Search_Data, query => 'query' }
 );
 
 my %Query_Defn = (
@@ -546,10 +546,7 @@ sub delete_percolator {
         {   cmd    => CMD_INDEX_PERC,
             prefix => '_percolator',
             method => 'DELETE',
-            qs     => {
-                ignore_missing => [ 'boolean', 1 ],
-
-            }
+            qs     => { ignore_missing => [ 'boolean', 1 ], }
         },
         @_
     );
@@ -756,8 +753,8 @@ sub flush_index {
             cmd     => CMD_index,
             postfix => '_flush',
             qs      => {
-                refresh => [ 'boolean', 1, 0 ],
-                full    => [ 'boolean', 1, 0 ]
+                refresh => [ 'boolean', 1 ],
+                full    => [ 'boolean', 1 ],
             },
         },
         @_
@@ -897,7 +894,7 @@ sub clear_cache {
             postfix => '_cache/clear',
             qs      => {
                 id         => [ 'boolean', 1 ],
-                field      => [ 'boolean', 1 ],
+                filter     => [ 'boolean', 1 ],
                 field_data => [ 'boolean', 1 ],
                 bloom      => [ 'boolean', 1 ],
             }
@@ -1189,13 +1186,6 @@ sub _usage {
         my $required = $type == ONE_REQ ? 'required' : 'optional';
         $usage .= sprintf( "  - %-26s =>  %-45s # %s\n",
             $key, $arg_format, $required );
-    }
-    if ( my $qs = $defn->{qs} ) {
-        for ( sort keys %$qs ) {
-            my $arg_format = $QS_Format{ $qs->{$_}[0] };
-            $usage .= sprintf( "  - %-26s =>  %-45s # optional\n", $_,
-                $arg_format );
-        }
     }
 
     if ( my $data = $defn->{data} ) {
