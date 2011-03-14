@@ -183,6 +183,7 @@ sub delete {
                 ignore_missing => [ 'boolean', 1 ],
                 refresh        => [ 'boolean', 1 ],
                 routing        => ['string'],
+                version        => ['int'],
                 replication => [ 'enum', [ 'async', 'sync' ] ],
             }
         },
