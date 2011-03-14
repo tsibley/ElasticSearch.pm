@@ -12,6 +12,8 @@ our %Transport = (
     'thrift'   => 'ElasticSearch::Transport::Thrift'
 );
 
+our $Skip_Log;
+
 #===================================
 sub new {
 #===================================
@@ -77,7 +79,7 @@ ATTEMPT:
     while (1) {
         my $server = $single_server || $self->next_server;
 
-        $self->log_request( $server, $args );
+        $self->log_request( $server, $args ) unless $Skip_Log;
 
         $response_json = eval { $self->send_request( $server, $args ) }
             and last ATTEMPT;
@@ -112,7 +114,7 @@ ATTEMPT:
     }
 
     my $result = $json->decode($response_json);
-    $self->log_response( $result || $response_json );
+    $self->log_response( $result || $response_json ) unless $Skip_Log;
     return $result;
 }
 
@@ -129,6 +131,8 @@ sub refresh_servers {
 
     my @all_servers = keys %servers;
     my $protocol    = $self->protocol;
+
+    local $Skip_Log = 1;
 
     foreach my $server (@all_servers) {
         next unless $server;
