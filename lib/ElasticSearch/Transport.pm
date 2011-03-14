@@ -444,8 +444,8 @@ and will probably become the default after more testing in production.
 Note: my experience with L<HTTP::Lite> so far has been flawless - I'm just
 being cautious.
 
-See also: L<http://www.elasticsearch.com/docs/elasticsearch/modules/http>
-and L<http://www.elasticsearch.com/docs/elasticsearch/modules/thrift>
+See also: L<http://www.elasticsearch.org/guide/reference/modules/http.html>
+and L<http://www.elasticsearch.org/guide/reference/modules/thrift.html>
 
 =head1 SUBCLASSING TRANSPORT
 
@@ -522,7 +522,7 @@ You can register your Transport backend as follows:
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Clinton Gormley.
+Copyright 2010 - 2011 Clinton Gormley.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

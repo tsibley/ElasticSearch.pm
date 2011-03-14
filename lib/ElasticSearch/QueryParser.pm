@@ -23,7 +23,7 @@ The L<ElasticSearch::QueryParser> takes care of this for you.
 
 See L<http://lucene.apache.org/java/3_0_3/queryparsersyntax.html>
 for more information about the Lucene Query String syntax, and
-L<http://www.elasticsearch.com/docs/elasticsearch/rest_api/query_dsl/query_string_query/#Syntax_Extension>
+L<http://www.elasticsearch.org/guide/reference/query-dsl/query-string-query.html#Syntax_Extension>
 for custom ElasticSearch extensions to the query string syntax.
 
 =head1 SYNOPSIS
