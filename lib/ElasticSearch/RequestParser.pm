@@ -563,6 +563,7 @@ sub get_percolator {
         {   cmd    => CMD_INDEX_PERC,
             prefix => '_percolator',
             method => 'GET',
+            qs     => { ignore_missing => [ 'boolean', 1 ], }
         },
         @_
     );
