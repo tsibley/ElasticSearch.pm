@@ -1212,6 +1212,15 @@ sub _usage {
             );
         }
     }
+
+    if ( my $qs = $defn->{qs} ) {
+        for ( sort keys %$qs ) {
+            my $arg_format = $QS_Format{ $qs->{$_}[0] };
+            $usage .= sprintf( "  - %-26s =>  %-45s # optional\n", $_,
+                $arg_format );
+        }
+    }
+
     return $usage;
 }
 
@@ -1220,7 +1229,7 @@ sub _build_qs {
 #===================================
     my $self   = shift;
     my $params = shift;
-    my $defn   = shift or return;
+    my $defn   = shift || {};
     my %qs     = %{ $self->{_base_qs} };
     foreach my $key ( keys %$defn ) {
         my ( $format_name, @args ) = @{ $defn->{$key} || [] };
