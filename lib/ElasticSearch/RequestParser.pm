@@ -219,6 +219,7 @@ my %Bulk_Actions = (
         index   => ONE_REQ,
         type    => ONE_REQ,
         id      => ONE_REQ,
+        parent  => ONE_OPT,
         routing => ONE_OPT,
         version => ONE_OPT,
     },
