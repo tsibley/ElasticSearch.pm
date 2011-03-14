@@ -101,8 +101,10 @@ sub get {
         'get',
         {   cmd => CMD_INDEX_TYPE_ID,
             qs  => {
-                routing => ['string'],
-                refresh => [ 'boolean', 1 ]
+                fields         => ['flatten'],
+                ignore_missing => [ 'boolean', 1 ],
+                refresh        => [ 'boolean', 1 ],
+                routing        => ['string'],
             },
         },
         @_
