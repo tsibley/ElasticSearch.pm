@@ -787,8 +787,10 @@ sub optimize_index {
             qs      => {
                 only_deletes =>
                     [ 'boolean', [ only_expunge_deletes => 'true' ] ],
-                refresh => [ 'boolean', 1, 0 ],
-                flush   => [ 'boolean', 1, 0 ]
+                max_num_segments => ['int'],
+                refresh          => [ 'boolean', undef, 0 ],
+                flush            => [ 'boolean', undef, 0 ],
+                wait_for_merge   => [ 'boolean', undef, 0 ],
             },
         },
         @_
