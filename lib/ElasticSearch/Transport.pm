@@ -280,7 +280,8 @@ sub log_request {
         scalar localtime(),
         $self->protocol, ${server}
     );
-    my $uri = $self->http_uri( '127.0.0.1:9200', @{$params}{ 'cmd', 'qs' } );
+    my %qs = ( %{ $params->{qs} }, pretty => 1 );
+    my $uri = $self->http_uri( '127.0.0.1:9200', $params->{cmd}, \%qs );
 
     my $method = $params->{method};
     print $log "curl -X$method '$uri' ${data}\n\n";
