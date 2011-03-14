@@ -583,13 +583,8 @@ sub percolate {
         {   cmd     => CMD_INDEX_TYPE,
             postfix => '_percolate',
             method  => 'GET',
-            qs      => { prefer_local => [ 'boolean',, 1 ] },
-            data    => { data => 'data', type => 'type' },
-            fixup   => sub {
-                my $args = shift;
-                $args->{data} = {
-                    doc => { delete @{ $args->{data} }{ 'type', 'data' } } };
-                }
+            qs      => { prefer_local => [ 'boolean', undef, 0 ] },
+            data    => { doc => 'doc', query => ['query'] },
         },
         @_
     );
