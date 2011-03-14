@@ -239,20 +239,21 @@ sub new {
 #===================================
     my ( $proto, $params ) = parse_params(@_);
     my $class = ref $proto || $proto;
-    $params = { escape_reserved => 0,
-                fields          => 0,
-                wildcard_prefix => 1,
-                allow_bool      => 1,
-                allow_boost     => 1,
-                allow_fuzzy     => 1,
-                allow_slop      => 1,
-                allow_ranges    => 0,
-                %$params,
+    $params = {
+        escape_reserved => 0,
+        fields          => 0,
+        wildcard_prefix => 1,
+        allow_bool      => 1,
+        allow_boost     => 1,
+        allow_fuzzy     => 1,
+        allow_slop      => 1,
+        allow_ranges    => 0,
+        %$params,
     };
-    return
-        bless { _default_opts => $params,
-                _opts         => $params,
-        }, $class;
+    return bless {
+        _default_opts => $params,
+        _opts         => $params,
+    }, $class;
 }
 
 #===================================
@@ -345,50 +346,54 @@ sub _return_token {
 # 0     = Cannot follow, drop token and try next token
 # undef = Cannot follow, stop looking
 
-my %Clauses = ( _LPAREN     => 1,
-                _PLUS_MINUS => 1,
-                _EXISTS     => 1,
-                _FIELD      => 1,
-                _TERM       => 1,
-                _PHRASE     => 1,
-                _WILDTERM   => 1,
-                _RANGE      => 1,
-                _NOT        => 1,
-                _AND_OR     => 1,
-                _SPACE      => 1,
-                _RESERVED   => 1,
-                _ESCAPE     => 1,
+my %Clauses = (
+    _LPAREN     => 1,
+    _PLUS_MINUS => 1,
+    _EXISTS     => 1,
+    _FIELD      => 1,
+    _TERM       => 1,
+    _PHRASE     => 1,
+    _WILDTERM   => 1,
+    _RANGE      => 1,
+    _NOT        => 1,
+    _AND_OR     => 1,
+    _SPACE      => 1,
+    _RESERVED   => 1,
+    _ESCAPE     => 1,
 );
 
 my %Boost = ( _BOOST => 1 );
 
-my %Allowed = ( _CLAUSE     => \%Clauses,
-                _LPAREN     => { %Clauses, _RPAREN => 1 },
-                _AND_OR     => { %Clauses, _AND_OR => 0 },
-                _NOT        => { %Clauses, _NOT => 0, _AND_OR => 0 },
-                _PLUS_MINUS => { %Clauses,
-                                 _NOT        => 0,
-                                 _AND_OR     => 0,
-                                 _PLUS_MINUS => 0,
-                                 _SPACE      => undef,
-                },
-                _FIELD => { _LPAREN   => 1,
-                            _TERM     => 1,
-                            _WILDTERM => 1,
-                            _PHRASE   => 1,
-                            _RANGE    => 1,
-                },
-                _PHRASE   => { _BOOST => 1, _FUZZY => 1 },
-                _TERM     => { _BOOST => 1, _FUZZY => 1 },
-                _WILDTERM => \%Boost,
-                _RANGE    => \%Boost,
-                _FUZZY    => \%Boost,
-                _RPAREN   => \%Boost,
-                _EXISTS   => \%Boost,
-                _BOOST    => {},
-                _SPACE    => {},
-                _RESERVED => {},
-                _ESCAPE   => {},
+my %Allowed = (
+    _CLAUSE     => \%Clauses,
+    _LPAREN     => { %Clauses, _RPAREN => 1 },
+    _AND_OR     => { %Clauses, _AND_OR => 0 },
+    _NOT        => { %Clauses, _NOT => 0, _AND_OR => 0 },
+    _PLUS_MINUS => {
+        %Clauses,
+        _NOT        => 0,
+        _AND_OR     => 0,
+        _PLUS_MINUS => 0,
+        _SPACE      => undef,
+    },
+    _FIELD => {
+        _LPAREN   => 1,
+        _TERM     => 1,
+        _WILDTERM => 1,
+        _PHRASE   => 1,
+        _RANGE    => 1,
+    },
+    _PHRASE   => { _BOOST => 1, _FUZZY => 1 },
+    _TERM     => { _BOOST => 1, _FUZZY => 1 },
+    _WILDTERM => \%Boost,
+    _RANGE    => \%Boost,
+    _FUZZY    => \%Boost,
+    _RPAREN   => \%Boost,
+    _EXISTS   => \%Boost,
+    _BOOST    => {},
+    _SPACE    => {},
+    _RESERVED => {},
+    _ESCAPE   => {},
 );
 
 #===================================
@@ -611,7 +616,7 @@ sub _EXISTS {
     my $opts = $self->{_opts};
     my $next = $self->_parse_context('_EXISTS') || '';
     unless ( $opts->{fields}
-             and ( !ref $opts->{fields} || $opts->{fields}{$field} ) )
+        and ( !ref $opts->{fields} || $opts->{fields}{$field} ) )
     {
         return '' if $opts->{fix};
         die qq("Field "$field" not allowed);
@@ -666,7 +671,8 @@ sub _WILDTERM {
     my $next = $self->_parse_context('_WILDTERM') || '';
     if ( $term !~ /^[^*?]{$min}/ ) {
         die "Wildcard cannot have * or ? "
-            . ($min == 1 ? 'as first character' : "in first $min characters" )
+            . (
+            $min == 1 ? 'as first character' : "in first $min characters" )
             unless $self->{_opts}{fix};
         $term =~ s/[*?].*//;
         return '' unless length $term;
@@ -802,7 +808,7 @@ sub _init_tokeniser {
 =head1 BUGS
 
 This is a new module, so it is likely that there will be bugs, and the list
-of options and how L</"filter()" cleans up the query string may well change.
+of options and how L</"filter()"> cleans up the query string may well change.
 
 If you have any suggestions for improvements, or find any bugs, please report
 them to L<http://github.com/clintongormley/ElasticSearch.pm/issues>.
