@@ -955,6 +955,7 @@ sub get_river {
             prefix  => '_river',
             cmd     => CMD_RIVER,
             postfix => '_meta',
+            qs      => { ignore_missing => [ 'boolean', 1 ] }
         },
         $params
     );
@@ -969,7 +970,6 @@ sub delete_river {
         {   method => 'DELETE',
             prefix => '_river',
             cmd    => CMD_RIVER,
-            qs     => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
     );
@@ -985,6 +985,7 @@ sub river_status {
             prefix  => '_river',
             cmd     => CMD_RIVER,
             postfix => '_status',
+            qs      => { ignore_missing => [ 'boolean', 1 ] }
         },
         $params
     );
