@@ -146,7 +146,21 @@ sub create {
 #===================================
     my ( $self, $params ) = parse_params(@_);
 
-    $self->_index( 'create', { %Index_Defn, postfix => '_create' }, $params );
+    $self->_index(
+        'create',
+        {   cmd     => CMD_INDEX_TYPE_id,
+            data    => 'data',
+            postfix => '_create',
+            qs      => {
+                refresh   => [ 'boolean', 1 ],
+                timeout   => ['duration'],
+                routing   => ['string'],
+                parent    => ['string'],
+                percolate => ['string'],
+            },
+        },
+        $params
+    );
 }
 
 #===================================
