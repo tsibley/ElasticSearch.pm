@@ -1,4 +1,11 @@
 Revision history for ElasticSearch
+0.30    2011-03-16
+
+        - Added some missing requirements to Build.PL
+        - scroll() now accepts a 'scroll' parameter and works (but
+          sorting when scrolling still broken on the server)
+        - reindex_es.pl now also preserves the _parent and _routing fields
+
 0.29    2011-03-15
          - Updated the Changes file
 

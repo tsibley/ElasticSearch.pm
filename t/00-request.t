@@ -112,7 +112,6 @@ SKIP: {
 
     create_indices();
     index_test_docs();
-    run_tests('');
 
     run_tests( qw(
             search_query
