@@ -57,7 +57,7 @@ sub run_tests {
 }
 
 SKIP: {
-    skip "ElasticSearch server not available for testing", $test_num - 1
+    skip "ElasticSearch server not available for testing", $test_num - 2
         unless $es;
 
     ok $es, 'Connected to an ES cluster';

@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+0.31    2011-03-16
+
+        Fixed a bad test plan
+
 0.30    2011-03-16
 
         - Added some missing requirements to Build.PL
