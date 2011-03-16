@@ -393,9 +393,11 @@ my %Search_Defn = (
     qs      => {
         search_type => [
             'enum',
-            [   qw( dfs_query_then_fetch    dfs_query_and_fetch
-                    query_then_fetch         query_and_fetch
-                    count                   scan)
+            [ qw(
+                    dfs_query_then_fetch    dfs_query_and_fetch
+                    query_then_fetch        query_and_fetch
+                    count                   scan
+                    )
             ]
         ],
         routing => ['flatten'],
@@ -445,7 +447,10 @@ sub scroll {
         'scroll',
         {   cmd    => [],
             prefix => '_search/scroll',
-            qs     => { scroll_id => ['string'] }
+            qs     => {
+                scroll_id => ['string'],
+                scroll    => ['duration'],
+            }
         },
         @_
     );

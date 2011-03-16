@@ -605,13 +605,34 @@ L<http://www.elasticsearch.org/guide/reference/query-dsl>
 
 =head3 C<scroll()>
 
-    $result = $e->scroll(scroll_id => $scroll_id );
+    $result = $e->scroll(
+        scroll_id => $scroll_id,
+        scroll    => '5m' | '30s',
+    );
 
 If a search has been executed with a C<scroll> parameter, then the returned
 C<scroll_id> can be used like a cursor to scroll through the rest of the
 results.
 
-Note - this doesn't work correctly in version 0.15.2 of ElasticSearch.
+If a further scroll request will be issued, then the C<scroll> parameter
+should be passed as well.  For instance;
+
+    my $result = $e->search(
+                    query=>{match_all=>{}},
+                    scroll => '5m'
+                 );
+
+    while (1) {
+        my $hits = $result->{hits}{hits};
+        last unless @$hits;                 # if no hits, we're finished
+
+        do_something_with($hits);
+
+        $result = $e->scroll(
+            scroll_id   => $result->{_scroll_id},
+            scroll      => '5m'
+        );
+    }
 
 See L<http://www.elasticsearch.org/guide/reference/api/search/scroll.html>
 
@@ -1556,9 +1577,8 @@ Any documents indexed via this module will be not susceptible to this problem.
 
 =item L</"scroll()">
 
-C<scroll()> is broken in version 0.15.2 and earlier versions of ElasticSearch.
-
-See L<http://github.com/elasticsearch/elasticsearch/issues/issue/589>
+Sorting when C<scroll()> is broken in version 0.15.2 and earlier versions of
+ElasticSearch.
 
 =item L</"restart()">
 
