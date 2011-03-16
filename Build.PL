@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
         'POSIX'           => 0,
         'IO::Socket'      => 0,
         'File::Temp'      => '0.20',
+        'YAML'            => 0,
     },
     add_to_cleanup     => ['ElasticSearch-*'],
     create_makefile_pl => 'traditional',

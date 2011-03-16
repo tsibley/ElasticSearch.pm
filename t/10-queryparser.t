@@ -2,7 +2,7 @@
 
 #use Test::Most qw(defer_plan);
 
-use Test::Most tests => 207;
+use Test::More tests => 207;
 
 use ElasticSearch::QueryParser;
 

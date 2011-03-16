@@ -8,6 +8,7 @@ build_requires:
   POSIX: 0
   Test::Exception: 0
   Test::More: 0
+  YAML: 0
 configure_requires:
   Module::Build: 0.36
 generated_by: 'Module::Build version 0.3607'
