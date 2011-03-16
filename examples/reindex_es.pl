@@ -130,11 +130,12 @@ sub index_docs {
         print ".";
 
         my $objects = $source->search(
-            index => $Source_Index,
-            query => { match_all => {} },
-            sort  => ['_id'],
-            from  => $start,
-            size  => $Rows
+            index  => $Source_Index,
+            query  => { match_all => {} },
+            sort   => ['_id'],
+            fields => [ '_source', '_parent', '_routing' ],
+            from   => $start,
+            size   => $Rows
         )->{hits}{hits};
 
         # Already have _type _id _routing _parent
