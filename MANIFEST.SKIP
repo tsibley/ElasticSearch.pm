@@ -55,4 +55,4 @@ data
 ^.project$
 ^log$
 ^load_data$
-
+^README.pod$
