@@ -11,15 +11,16 @@ my $qp = ElasticSearch::QueryParser->new;
 #===================================
 # TOKENS
 #===================================
-tokens( 'Term',     'foo foo\"',      qw(_TERM _SPACE _TERM) );
-tokens( 'Wildterm', '* ? foo* f?w* ', qw(_WILDTERM _SPACE) x 4 );
-tokens( 'Phrase',   '"foo\""',        '_PHRASE' );
-tokens( 'Boolean',
-        'AND OR && || ! NOT ',
-        qw(_AND_OR _SPACE) x 4,
-        qw(_NOT _SPACE) x 2
+tokens( 'Term', 'foo foo\"', qw(_TERM _SPACE _TERM) );
+tokens( 'Wildterm', '* ? foo* f?w* ', (qw(_WILDTERM _SPACE)) x 4 );
+tokens( 'Phrase', '"foo\""', '_PHRASE' );
+tokens(
+    'Boolean',
+    'AND OR && || ! NOT ',
+    (qw(_AND_OR _SPACE)) x 4,
+    (qw(_NOT _SPACE)) x 2
 );
-tokens( 'PlusMinus', '+-',        qw(_PLUS_MINUS) x 2 );
+tokens( 'PlusMinus', '+-', (qw(_PLUS_MINUS)) x 2 );
 tokens( 'Group',     '(foo)',     qw(_LPAREN _TERM _RPAREN) );
 tokens( 'Modifiers', '^1.1 ~0.1', qw(_BOOST _SPACE _FUZZY) );
 tokens( 'Exists', '_exists_:foo _missing_:foo', qw(_EXISTS _SPACE _EXISTS) );
@@ -41,11 +42,12 @@ test( 'Wildcards - 1', 'foo*',  'foo*',  '' );
 test( 'Wildcards - 2', 'fo?o*', 'fo?o*', '' );
 test( 'Wildcards - 3', '*',     '',      'first character' );
 test( 'Wildcards - 4', '*',     '*',     '', wildcard_prefix => 0 );
-test( 'Wildcards - 5',
-      'foo* fooo* foo?bar fooo?bar',
-      'foo fooo* foo fooo?bar',
-      'first 4',
-      wildcard_prefix => 4
+test(
+    'Wildcards - 5',
+    'foo* fooo* foo?bar fooo?bar',
+    'foo fooo* foo fooo?bar',
+    'first 4',
+    wildcard_prefix => 4
 );
 
 #===================================
@@ -58,16 +60,20 @@ test( 'Phrase - 3', '"foo bar',       'foo bar',         'Reserved' );
 #===================================
 # Boolean
 #===================================
-test( 'Boolean - 1',
-      'foo AND bar OR baz NOT balloo',
-      'foo AND bar OR baz NOT balloo'
+test(
+    'Boolean - 1',
+    'foo AND bar OR baz NOT balloo',
+    'foo AND bar OR baz NOT balloo'
 );
-test( 'Boolean - 2',
-      'foo && bar || baz ! balloo',
-      'foo && bar || baz ! balloo'
+test(
+    'Boolean - 2',
+    'foo && bar || baz ! balloo',
+    'foo && bar || baz ! balloo'
 );
-test( 'Boolean - 3',                'foo&&bar||baz!balloo',
-      'foo && bar || baz ! balloo', '' );
+test(
+    'Boolean - 3',                'foo&&bar||baz!balloo',
+    'foo && bar || baz ! balloo', ''
+);
 test( 'Boolean - 4',  'foo AND OR bar',  'foo AND bar',     'Syntax' );
 test( 'Boolean - 5',  'foo AND AND bar', 'foo AND bar',     'Syntax' );
 test( 'Boolean - 6',  'foo AND NOT bar', 'foo AND NOT bar', '' );
@@ -86,11 +92,12 @@ test( 'Boolean - 18', 'NOT foo',         'NOT foo',         '' );
 test( 'Boolean - 19', 'foo AND',         'foo',             'followed by' );
 test( 'Boolean - 20', 'foo OR',          'foo',             'followed by' );
 test( 'Boolean - 21', 'foo NOT',         'foo',             'followed by' );
-test( 'Boolean - 22',
-      'foo AND bar OR baz NOT balloo',
-      'foo bar baz balloo',
-      'allowed',
-      allow_bool => 0
+test(
+    'Boolean - 22',
+    'foo AND bar OR baz NOT balloo',
+    'foo bar baz balloo',
+    'allowed',
+    allow_bool => 0
 );
 
 #===================================
@@ -101,16 +108,18 @@ test( 'Plus Minus - 2', '+-foo -+bar',  '+foo -bar',    'Syntax' );
 test( 'Plus Minus - 3', 'foo AND -bar', 'foo AND -bar', '' );
 test( 'Plus Minus - 4', 'foo OR -bar',  'foo OR -bar',  '' );
 test( 'Plus Minus - 5', '+ foo - bar',  'foo bar',      'must be followed' );
-test( 'Plus Minus - 6',
-      'foo NOT -bar',
-      'foo NOT bar',
-      'cannot be followed by'
+test(
+    'Plus Minus - 6',
+    'foo NOT -bar',
+    'foo NOT bar',
+    'cannot be followed by'
 );
-test( 'Plus Minus - 7',
-      'foo NOT -bar',
-      'foo -bar',
-      'allowed',
-      allow_bool => 0,
+test(
+    'Plus Minus - 7',
+    'foo NOT -bar',
+    'foo -bar',
+    'allowed',
+    allow_bool => 0,
 );
 
 #===================================
@@ -119,9 +128,10 @@ test( 'Plus Minus - 7',
 test( 'Group - 1', 'foo(bar baz)', 'foo (bar baz)', '' );
 test( 'Group - 2', 'foo(bar baz',  'foo (bar baz)', 'closing parenthesis' );
 test( 'Group - 3', 'foo bar baz)', 'foo bar baz',   'Syntax' );
-test( 'Group - 4',
-      '(foo AND (+bar (baz -balloo)))',
-      '(foo AND (+bar (baz -balloo)))'
+test(
+    'Group - 4',
+    '(foo AND (+bar (baz -balloo)))',
+    '(foo AND (+bar (baz -balloo)))'
 );
 
 #===================================
@@ -134,7 +144,7 @@ test( 'Boost - 4', '^2 foo',      'foo',         'Syntax' );
 test( 'Boost - 5', 'foo^2^3',     'foo^2',       'Syntax' );
 test( 'Boost - 6', '(foo bar)^2', '(foo bar)^2', '' );
 test( 'Boost - 7', 'foo^2 (bar)^3', 'foo (bar)', 'allowed',
-      allow_boost => 0 );
+    allow_boost => 0 );
 
 #===================================
 # Fuzzy
@@ -173,20 +183,22 @@ test( 'Modifiers - 10', '(foo)^2~3', '(foo)^2', 'Syntax' );
 
 # Exists
 test( 'Exists - 1', '_exists_:foo _missing_:bar', '', 'allowed' );
-test( 'Exists - 2',
-      '_exists_:foo _missing_:bar',
-      '_exists_:foo _missing_:bar',
-      '',
-      fields => 1
+test(
+    'Exists - 2',
+    '_exists_:foo _missing_:bar',
+    '_exists_:foo _missing_:bar',
+    '',
+    fields => 1
 );
-test( 'Exists - 3',
-      '_exists_:foo^2 _missing_:bar^2',
-      '_exists_:foo^2',
-      'allowed',
-      fields => { foo => 1 }
+test(
+    'Exists - 3',
+    '_exists_:foo^2 _missing_:bar^2',
+    '_exists_:foo^2',
+    'allowed',
+    fields => { foo => 1 }
 );
 test( 'Exists - 4', '_exists_: foo _missing_: bar',
-      'foo bar', 'Missing', fields => 1 );
+    'foo bar', 'Missing', fields => 1 );
 
 #===================================
 # Ranges
@@ -203,49 +215,54 @@ test( 'Range - 8',  '["a b"]',       '', 'Malformed' );
 test( 'Range - 9',  '["a b"',        '"a b"', 'Reserved' );
 test( 'Range - 10', 'foo:[a b]^2',   'foo:[a TO b]^2', '', fields => 1 );
 test( 'Range - 11', '[ab]^2 bar', 'bar', 'Malformed' );
-test('Range - 12','[* TO b]','[* TO b]');
-test('Range - 13','[a TO *]','[a TO *]');
-test('Range - 13','[* TO *]','[* TO *]');
+test( 'Range - 12', '[* TO b]',   '[* TO b]' );
+test( 'Range - 13', '[a TO *]',   '[a TO *]' );
+test( 'Range - 13', '[* TO *]',   '[* TO *]' );
 
 #===================================
 # Fields
 #===================================
 test( 'Fields - 1', 'foo:bar', 'bar', 'allowed' );
 test( 'Fields - 2', 'foo:bar', 'foo:bar', '', fields => 1 );
-test( 'Fields - 3',
-      'foo:bar baz:balloo',
-      'bar baz:balloo',
-      'allowed',
-      fields => { baz => 1 }
+test(
+    'Fields - 3',
+    'foo:bar baz:balloo',
+    'bar baz:balloo',
+    'allowed',
+    fields => { baz => 1 }
 );
-test( 'Fields - 4',
-      'foo:bar~0.5^2 baz:balloo~0.5^2',
-      'bar~0.5^2 baz:balloo~0.5^2',
-      'allowed',
-      fields => { baz => 1 }
+test(
+    'Fields - 4',
+    'foo:bar~0.5^2 baz:balloo~0.5^2',
+    'bar~0.5^2 baz:balloo~0.5^2',
+    'allowed',
+    fields => { baz => 1 }
 );
-test( 'Fields - 5',
-      'foo:"bar"~5^2 baz:"balloo"~5^2',
-      '"bar"~5^2 baz:"balloo"~5^2',
-      'allowed',
-      fields => { baz => 1 }
+test(
+    'Fields - 5',
+    'foo:"bar"~5^2 baz:"balloo"~5^2',
+    '"bar"~5^2 baz:"balloo"~5^2',
+    'allowed',
+    fields => { baz => 1 }
 );
-test( 'Fields - 6',
-      'foo:(bar)^2 baz:(balloo)^2',
-      '(bar)^2 baz:(balloo)^2',
-      'allowed',
-      fields => { baz => 1 }
+test(
+    'Fields - 6',
+    'foo:(bar)^2 baz:(balloo)^2',
+    '(bar)^2 baz:(balloo)^2',
+    'allowed',
+    fields => { baz => 1 }
 );
 
 #===================================
 # Reserved
 #===================================
 test( 'Reserved - 1', 'foo " bar', 'foo bar', 'Reserved' );
-test( 'Reserved - 2',
-      'foo " bar',
-      'foo \\" bar',
-      'Reserved',
-      escape_reserved => 1
+test(
+    'Reserved - 2',
+    'foo " bar',
+    'foo \\" bar',
+    'Reserved',
+    escape_reserved => 1
 );
 
 #===================================
