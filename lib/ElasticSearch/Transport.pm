@@ -113,9 +113,15 @@ ATTEMPT:
         $self->throw( 'Request', $error, { request => $params } );
     }
 
-    my $result = $json->decode($response_json);
+    my $as_json = $params->{as_json};
+
+    my $result;
+    $result = $json->decode($response_json)
+        unless $as_json && $Skip_Log;
+
     $self->log_response( $result || $response_json ) unless $Skip_Log;
-    return $result;
+
+    return $as_json ? $response_json : $result;
 }
 
 #===================================

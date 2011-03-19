@@ -245,10 +245,11 @@ my %Bulk_QS = (
 sub bulk {
 #===================================
     my $self = shift;
-    my ( $actions, $qs );
+    my ( $actions, $qs, $as_json );
     if ( ref $_[0] eq 'ARRAY' ) {
         $actions = shift;
         my $params = ref $_[0] eq 'HASH' ? shift : {@_};
+        $as_json = delete $params->{as_json};
         $qs = $self->_build_qs( $params, \%Bulk_QS );
     }
     else {
@@ -267,13 +268,15 @@ sub bulk {
     die $error unless $json_docs;
 
     my $results = $self->request( {
-            method => 'POST',
-            cmd    => '/_bulk',
-            qs     => $qs,
-            data   => $json_docs
+            method  => 'POST',
+            cmd     => '/_bulk',
+            qs      => $qs,
+            as_json => $as_json,
+            data    => $json_docs
         }
     );
-    my $items = $results->{items}
+    return $results if $as_json;
+    my $items = ref($results) eq 'HASH' && $results->{items}
         || $self->throw( 'Request', 'Malformed response to bulk query',
         $results );
 
@@ -569,6 +572,8 @@ sub get_percolator {
         },
         @_
     );
+    return $result
+        unless ref $result eq 'HASH';
     return {
         index      => $result->{_type},
         percolator => $result->{_id},
@@ -689,7 +694,8 @@ sub aliases {
 sub get_aliases {
 #===================================
     my ( $self, $params ) = parse_params(@_);
-
+    $self->error("get_aliases() does not support as_json")
+        if $params->{as_json};
     my $results = $self->index_status($params);
     my $indices = $results->{indices};
     my %aliases = ( indices => {}, aliases => {} );
@@ -1149,6 +1155,7 @@ sub _do_action {
 
     my $params = {%$original_params};
     my %args = ( method => $defn->{method} || 'GET' );
+    $args{as_json} = delete $params->{as_json};
 
     eval {
         $args{cmd}

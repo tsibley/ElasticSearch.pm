@@ -165,6 +165,12 @@ C<single> values must be a scalar, and are required parameters
 
       type  => 'tweet'
 
+=head2 as_json
+
+If you pass C<< as_json => 1 >> to any request to the ElasticSearch server,
+it will return the raw UTF8-decodeed JSON response, rather than a Perl
+datastructure.
+
 =cut
 
 =head1 RETURN VALUES AND EXCEPTIONS
@@ -918,6 +924,8 @@ all aliases and their corresponding indices, eg:
 If you pass in the optional C<index> argument, which can be an index name
 or an alias name, then it will only return the indices and aliases related
 to that argument.
+
+Note: C<get_aliases()> does not support L</"as_json">
 
 =head3 C<open_index()>
 

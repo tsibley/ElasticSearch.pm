@@ -1,7 +1,7 @@
 #!perl
 
 our $test_num;
-BEGIN { $test_num = 266 }
+BEGIN { $test_num = 270 }
 
 #use Test::Most qw(defer_plan);
 use Test::More tests => $test_num;
@@ -108,7 +108,7 @@ SKIP: {
     run_tests('mapping');
 
     drop_indices();
-    run_tests('bulk');
+    run_tests( 'bulk', 'as_json' );
 
     create_indices();
     index_test_docs();
