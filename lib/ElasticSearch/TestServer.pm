@@ -121,7 +121,8 @@ RUNNING
 
     for ( 1 .. $instances ) {
         print "Starting test node $_\n";
-        if (fork) {
+        defined( my $pid = fork ) or die "Couldn't fork a new process: $!";
+        if ( $pid == 0 ) {
             die "Can't start a new session: $!" if setsid == -1;
             exec( $cmd, '-p', $pid_file->filename,
                 '-Des.config=' . $config_path );
@@ -158,7 +159,7 @@ RUNNING
             transport   => $transport,
         );
         $es->refresh_servers;
-        }
+    }
         or die("**** Couldn't connect to ElasticSearch at $server ****");
     return $es;
 }
