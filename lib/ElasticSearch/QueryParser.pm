@@ -47,7 +47,7 @@ For example:
 
 =head1 METHODS
 
-=head2 C<new()>
+=head2 new()
 
     my $qp = ElasticSearch::QueryParser->new(%opts);
     my $qp = $es->query_parser(%opts);
@@ -55,7 +55,7 @@ For example:
 Creates a new L<ElasticSearch::QueryParser> object, and sets the passed in
 options (see L</"OPTIONS">).
 
-=head2 C<filter()>
+=head2 filter()
 
     $filtered_query_string = $qp->filter($unchecked_query_string, %opts)
 
@@ -73,7 +73,7 @@ L</"filter()"> does not promise to parse the query string in exactly
 the same way as Lucene, just to clear it up so that it won't throw an
 error when passed to ElasticSearch.
 
-=head2 C<check()>
+=head2 check()
 
     $filtered_query_string = $qp->check($unchecked_query_string, %opts)
 

@@ -132,7 +132,7 @@ exported.
 
 =head1 SUBROUTINES
 
-=head2 C<filter_keywords()>
+=head2 filter_keywords()
 
 This tidies up a string to be used as a query string in (eg)
 L<ElasticSearch/"search()"> so that user input won't cause a search query
