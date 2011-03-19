@@ -36,6 +36,7 @@ t/manifest.t
 t/pod.t
 t/pod_coverage.t
 t/request_tests/analyze.pl
+t/request_tests/as_json.pl
 t/request_tests/bulk.pl
 t/request_tests/clear_cache.pl
 t/request_tests/cluster_health.pl

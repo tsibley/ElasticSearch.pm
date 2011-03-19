@@ -1,4 +1,16 @@
 Revision history for ElasticSearch
+0.32    2011-03-19
+
+         - Added as_json as an arg to all ES requests.
+         - Fixed a logic bug when setting the port manually in
+           ElasticSearch::TestServer
+         - Fixed a bug in ElasticSearch::TestServer which was
+           preventing it from working on OSX
+
+         Thanks to PERLER for the above
+
+          - Changed some query syntax in t/10-queryparser.t for perl 5.8.3
+
 0.31    2011-03-16
 
         Fixed a bad test plan
