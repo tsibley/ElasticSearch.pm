@@ -46,7 +46,7 @@ down at the end, even if your code exits abnormally.
 
 By default, it uses C<http> transport, the C<local> gateway, and
 starts 3 instances on C<localhost>, starting with C<port> 9200 if
-the C<transport> is C<http> or C<httplite>, or 9500 if C<thrift>.
+the C<transport> is C<http>, C<httplite> or C<httptiny>, or 9500 if C<thrift>.
 
 C<connect_to_es> returns an ElasticSearch instance.
 
@@ -161,7 +161,7 @@ RUNNING
             transport   => $transport,
         );
         $es->refresh_servers;
-    }
+        }
         or die("**** Couldn't connect to ElasticSearch at $server ****");
     return $es;
 }

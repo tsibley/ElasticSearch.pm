@@ -11,6 +11,7 @@ lib/ElasticSearch/TestServer.pm
 lib/ElasticSearch/Transport.pm
 lib/ElasticSearch/Transport/HTTP.pm
 lib/ElasticSearch/Transport/HTTPLite.pm
+lib/ElasticSearch/Transport/HTTPTiny.pm
 lib/ElasticSearch/Transport/Thrift.pm
 lib/ElasticSearch/Transport/ThriftBackend/Constants.pm
 lib/ElasticSearch/Transport/ThriftBackend/Rest.pm

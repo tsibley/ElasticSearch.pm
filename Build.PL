@@ -28,6 +28,7 @@ my $builder = Module::Build->new(
     },
     recommends => {
         'HTTP::Lite'      => 0,
+        'HTTP::Tiny'        => 0,
         'Bit::Vector'     => 0,
         'Class::Accessor' => 0,
         'JSON::XS'        => 0,

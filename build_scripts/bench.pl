@@ -18,6 +18,10 @@ my %es = (
         servers   => '127.0.0.1:9200',
         transport => 'httplite'
     ),
+    tiny => ElasticSearch->new(
+        servers   => '127.0.0.1:9200',
+        transport => 'httptiny'
+    ),
     thrift => ElasticSearch->new(
         servers   => '127.0.0.1:9500',
         transport => 'thrift'

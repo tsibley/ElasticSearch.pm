@@ -1,8 +1,8 @@
-package ElasticSearch::Transport::HTTPLite;
+package ElasticSearch::Transport::HTTPTiny;
 
 use strict;
 use warnings FATAL => 'all';
-use HTTP::Lite();
+use HTTP::Tiny();
 use Encode qw(decode_utf8);
 
 use parent 'ElasticSearch::Transport';
@@ -26,24 +26,37 @@ sub send_request {
     my $method = $params->{method};
     my $uri    = $self->http_uri( $server, $params->{cmd}, $params->{qs} );
     my $client = $self->client;
-    $client->method($method);
+
+    my $opts = {};
     if ( my $data = $params->{data} ) {
         utf8::encode($data);
-        $client->{content} = $data;
+        $opts = {
+            content => $data,
+            headers =>
+                { 'content-type' => 'application/x-www-form-urlencoded' }
+        };
     }
 
-    my $code    = $client->request($uri) || 500;
-    my $msg     = $!;
-    my $content = decode_utf8( $client->body || '' );
+    my $response = $client->request( $method, $uri, $opts );
+
+    my $code    = $response->{status};
+    my $msg     = $response->{reason};
+    my $content = decode_utf8( $response->{content} || '' );
+
     return $content if $code && $code >= 200 && $code <= 209;
 
-    $msg ||= $client->status_message || 'read timeout';
+    if ( $code eq '599' ) {
+        $msg     = $content;
+        $content = '';
+    }
+
     my $type
         = $code eq '409' ? 'Conflict'
         : $code eq '404' ? 'Missing'
+        : $msg =~ /Timed out/         ? 'Timeout'
         : $msg =~ /$Connection_Error/ ? 'Connection'
-        : $msg =~ /read timeout/      ? 'Timeout'
         :                               'Request';
+
     my $error_params = {
         server      => $server,
         status_code => $code,
@@ -62,26 +75,22 @@ sub client {
 #===================================
     my $self = shift;
     unless ( $self->{_client}{$$} ) {
-        my $client = HTTP::Lite->new;
-        $client->{timeout} = $self->timeout || 10000;
+        my $client = HTTP::Tiny->new( timeout => $self->timeout || 10000 );
         $self->{_client}{$$} = $client;
     }
-    my $client = $self->{_client}{$$};
-    $client->reset;
-    return $client;
+    return $self->{_client}{$$};
 }
 
 =head1 NAME
 
-ElasticSearch::Transport::HTTPLite - HTTP::Lite based HTTP backend
+ElasticSearch::Transport::HTTPTiny - HTTP::Tiny based HTTP backend
 
 =head1 DESCRIPTION
 
-ElasticSearch::Transport::HTTPLite uses L<HTTP::Lite> to talk to ElasticSearch
+ElasticSearch::Transport::HTTPTiny uses L<HTTP::Tiny> to talk to ElasticSearch
 over HTTP.
 
-It is a new backend and will probably become the default, as it is about 30%
-faster than L<ElasticSearch::Transport.:HTTP>.
+It is slightly (1%) faster thab L<ElasticSearch::Transport::HTTPLite>.
 
 
 =head1 SYNOPSIS
@@ -89,7 +98,7 @@ faster than L<ElasticSearch::Transport.:HTTP>.
     use ElasticSearch;
     my $e = ElasticSearch->new(
         servers     => 'search.foo.com:9200',
-        transport   => 'httplite',
+        transport   => 'httptiny',
         timeout     => '10',
     );
 
@@ -103,7 +112,7 @@ faster than L<ElasticSearch::Transport.:HTTP>.
 
 =item * L<ElasticSearch::Transport::HTTP>
 
-=item * L<ElasticSearch::Transport::HTTPTiny>
+=item * L<ElasticSearch::Transport::HTTPLite>
 
 =item * L<ElasticSearch::Transport::Thrift>
 

@@ -22,7 +22,7 @@ BEGIN {
 
 diag "";
 diag "Testing ElasticSearch $ElasticSearch::VERSION, Perl $], $^X";
-diag "Transport: $transport (Set ES_TRANSPORT=http|httplite|thrift)";
+diag "Transport: $transport (Set ES_TRANSPORT=http|httplite|httptiny|thrift)";
 diag "";
 
 our $es = eval {

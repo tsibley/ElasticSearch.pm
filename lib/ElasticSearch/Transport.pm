@@ -9,7 +9,8 @@ use JSON();
 our %Transport = (
     'http'     => 'ElasticSearch::Transport::HTTP',
     'httplite' => 'ElasticSearch::Transport::HTTPLite',
-    'thrift'   => 'ElasticSearch::Transport::Thrift'
+    'thrift'   => 'ElasticSearch::Transport::Thrift',
+    'httptiny' => 'ElasticSearch::Transport::HTTPTiny',
 );
 
 our $Skip_Log;
@@ -397,6 +398,11 @@ Uses L<LWP> to communicate using HTTP. See L<ElasticSearch::Transport::HTTP>
 Uses L<HTTP::Lite> to communicate using HTTP.
 See L<ElasticSearch::Transport::HTTPLite>
 
+=item * C<httptiny>
+
+Uses L<HTTP::Tiny> to communicate using HTTP.
+See L<ElasticSearch::Transport::HTTPTiny>
+
 =item * C<thrift>
 
 Uses C<thrift>  to communicate using a compact binary protocol over sockets.
@@ -450,7 +456,11 @@ and will probably become the default after more testing in production.
 Note: my experience with L<HTTP::Lite> so far has been flawless - I'm just
 being cautious.
 
-See also: L<http://www.elasticsearch.org/guide/reference/modules/http.html>
+Also, just added the C<httptiny> backend with L<HTTP::Tiny>, which is 1% faster
+again than the C<httplite> backend, but again needs more testing.
+
+See also:
+L<http://www.elasticsearch.org/guide/reference/modules/http.html>
 and L<http://www.elasticsearch.org/guide/reference/modules/thrift.html>
 
 =head1 SUBCLASSING TRANSPORT
@@ -521,6 +531,8 @@ You can register your Transport backend as follows:
 =item * L<ElasticSearch::Transport::HTTP>
 
 =item * L<ElasticSearch::Transport::HTTPLite>
+
+=item * L<ElasticSearch::Transport::HTTPTiny>
 
 =item * L<ElasticSearch::Transport::Thrift>
 

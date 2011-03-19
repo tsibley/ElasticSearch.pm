@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 our $DEBUG   = 0;
 
 #===================================
@@ -81,8 +81,8 @@ a randomly chosen node in the list.
     use ElasticSearch;
     my $e = ElasticSearch->new(
         servers      => 'search.foo.com:9200',
-        transport    => 'http' | 'httplite' | 'thrift', # default 'http'
-        max_requests => 10_000,                         # default 10_000
+        transport    => 'http' | 'httplite' | 'httptiny' | 'thrift', # default 'http'
+        max_requests => 10_000,                                      # default 10_000
         trace_calls  => 'log_file',
     );
 
@@ -191,14 +191,14 @@ a non-existent index.
 =head3 new()
 
     $e = ElasticSearch->new(
-            transport    =>  'http|httplite|thrift',    # default 'http'
-            servers      =>  '127.0.0.1:9200'           # single server
+            transport    =>  'http|httplite|httptiny|thrift',   # default 'http'
+            servers      =>  '127.0.0.1:9200'                   # single server
                               | ['es1.foo.com:9200',
-                                 'es2.foo.com:9200'],   # multiple servers
+                                 'es2.foo.com:9200'],           # multiple servers
             trace_calls  => 1 | '/path/to/log/file',
             timeout      => 30,
-            max_requests => 10_000,                     # refresh server list
-                                                        # after max_requests
+            max_requests => 10_000,                             # refresh server list
+                                                                # after max_requests
      );
 
 C<servers> is a required parameter and can be either a single server or an
@@ -219,8 +219,9 @@ To force a lookup of live nodes, you can do:
 
 
 There are various C<transport> backends that ElasticSearch can use:
-C<http> (the default, based on LWP), C<httplite> (based on L<HTTP::Lite>)
-or C<thrift> (which uses the Thrift protocol).
+C<http> (the default, based on LWP), C<httplite> (based on L<HTTP::Lite>),
+C<httptiny> (based on L<HTTP::Tiny>) or
+C<thrift> (which uses the Thrift protocol).
 
 Although the C<thrift> interface has the right buzzwords (binary, compact,
 sockets), the generated Perl code is very slow. Until that is improved, I
@@ -228,6 +229,9 @@ recommend one of the C<http> backends instead.
 
 The C<httplite> backend is about 30% faster than the default C<http> backend,
 and will probably become the default after more testing in production.
+
+The C<httptiny> backend is 1% faster again than C<httplite> but has just
+been added and needs more testing before putting it into production.
 
 See also: L<ElasticSearch::Transport>, L</"timeout()">, L</"trace_calls()">,
 L<http://www.elasticsearch.org/guide/reference/modules/http.html>

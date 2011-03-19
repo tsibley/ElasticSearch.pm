@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.33    2011-03-19
+        Added the ElasticSearch::Transport::HTTPTiny backend
+
 0.32    2011-03-19
 
          - Added as_json as an arg to all ES requests.

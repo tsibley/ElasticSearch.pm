@@ -11,7 +11,7 @@ build_requires:
   YAML: 0
 configure_requires:
   Module::Build: 0.36
-generated_by: 'Module::Build version 0.3607'
+generated_by: 'Module::Build version 0.3603'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -20,7 +20,7 @@ name: ElasticSearch
 provides:
   ElasticSearch:
     file: lib/ElasticSearch.pm
-    version: 0.32
+    version: 0.33
   ElasticSearch::Error:
     file: lib/ElasticSearch/Error.pm
   ElasticSearch::QueryParser:
@@ -33,6 +33,8 @@ provides:
     file: lib/ElasticSearch/Transport/HTTP.pm
   ElasticSearch::Transport::HTTPLite:
     file: lib/ElasticSearch/Transport/HTTPLite.pm
+  ElasticSearch::Transport::HTTPTiny:
+    file: lib/ElasticSearch/Transport/HTTPTiny.pm
   ElasticSearch::Transport::Thrift:
     file: lib/ElasticSearch/Transport/Thrift.pm
   ElasticSearch::Transport::ThriftBackend::Constants:
@@ -109,6 +111,7 @@ recommends:
   Bit::Vector: 0
   Class::Accessor: 0
   HTTP::Lite: 0
+  HTTP::Tiny: 0
   JSON::XS: 0
 requires:
   Data::Dumper: 0
@@ -120,4 +123,4 @@ requires:
   parent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.32
+version: 0.33
