@@ -1,4 +1,9 @@
 Revision history for ElasticSearch
+0.34    2011-03-20
+
+        Fixed the tests for scrolling - turns out sorting when scrolling works
+        correctly. It was my tests which were bad.
+
 0.33    2011-03-19
         Added the ElasticSearch::Transport::HTTPTiny backend
 
