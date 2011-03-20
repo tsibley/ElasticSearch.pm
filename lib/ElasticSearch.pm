@@ -1587,11 +1587,6 @@ JSON exception.
 
 Any documents indexed via this module will be not susceptible to this problem.
 
-=item L</"scroll()">
-
-Sorting when C<scroll()> is broken in version 0.15.2 and earlier versions of
-ElasticSearch.
-
 =item L</"restart()">
 
 C<restart()> is currently disabled in ElasticSearch as it doesn't work
