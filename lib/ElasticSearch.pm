@@ -1095,6 +1095,9 @@ Throws a C<Missing> exception if the specified indices do not exist.
 
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-clearcache.html>
 
+=cut
+
+=head2 Mapping methods
 
 =head3 put_mapping()
 
@@ -1114,6 +1117,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-clearcache.
         _routing            => { ... },
         _source             => { ... },
         dynamic             => 1 | 0 | 'strict',
+        dynamic_templates   => [ ... ],
         ignore_conflicts    => 0 | 1,
     );
 
