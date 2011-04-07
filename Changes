@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.35    2011-04-07
+        Added the 'dynamic_templates' option to put_mapping
+
 0.34    2011-03-20
 
         Fixed the tests for scrolling - turns out sorting when scrolling works

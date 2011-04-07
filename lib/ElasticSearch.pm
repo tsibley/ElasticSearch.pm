@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.34';
+our $VERSION = '0.35';
 our $DEBUG   = 0;
 
 #===================================
@@ -574,7 +574,7 @@ more.
 
 =cut
 
-=head2 Query commands
+=head2 Query methods
 
 =head3 search()
 
