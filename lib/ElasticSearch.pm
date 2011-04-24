@@ -833,7 +833,6 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         size                => $no_of_results
         sort                => ['_score:asc','last_modified:desc'],
         scroll              => '5m' | '30s',
-        track_scores        => 0 | 1,
         timeout             => '10s'
         version             => 0 | 1
 
