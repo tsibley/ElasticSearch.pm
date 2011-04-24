@@ -50,6 +50,50 @@ sub use_type {
 }
 
 #===================================
+sub reindex {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+
+    my $source = $params->{source}
+        or $self->throw( 'Param', 'Missing source param' );
+
+    my $transform  = $params->{transform} || sub { shift() };
+    my $verbose    = !$params->{quiet};
+    my $dest_index = $params->{dest_index};
+    my $bulk_size  = $params->{bulk_size} || 1000;
+
+    local $| = $verbose;
+    printf( "Reindexing %d docs\n", $source->total )
+        if $verbose;
+
+    my @docs;
+    while (1) {
+        my $doc = $source->next(1);
+        if ( !$doc or @docs == $bulk_size ) {
+            my $results = $self->bulk_index( \@docs );
+            if ( my $err = $results->{errors} ) {
+                my @errors = splice @$err, 0, 5;
+                push @errors, sprintf "...and %d more", scalar @$err
+                    if @$err;
+                $self->throw( 'Request', "Errors occurred while reindexing:",
+                    \@errors );
+            }
+            @docs = ();
+            print "." if $verbose;
+        }
+        last unless $doc;
+
+        $doc = $transform->($doc) or next;
+        $doc->{version_type} = 'external';
+        $doc->{_index}       = $dest_index
+            if $dest_index;
+        push @docs, $doc;
+    }
+
+    print "\nDone\n" if $verbose;
+}
+
+#===================================
 sub transport       { shift()->{_transport} }
 sub trace_calls     { shift->transport->trace_calls(@_) }
 sub timeout         { shift->transport->timeout(@_) }
@@ -565,7 +609,7 @@ action, eg:
 
 NOTE: C<bulk()> also accepts the C<_index>, C<_type>, C<_id>, C<_source>,
 C<_parent>, C<_routing> and C<_version> parameters so that you can pass search
-results directly to C<bulk()>.  See L<examples/reindex.pl> for an example script.
+results directly to C<bulk()>.
 
 See L<http://www.elasticsearch.org/guide/reference/api/bulk.html> for
 more details.
@@ -591,6 +635,98 @@ is the equivalent of:
         }
     ],  { refresh => 1 });
 
+=head3 reindex()
+
+    $es->reindex(
+        source      => $scrolled_search,
+
+        # optional
+        bulk_size   => 1000,
+        dest_index  => $index,
+        quiet       => 0 | 1,
+        transform   => sub {....},
+    )
+
+C<reindex()> is a utility method which can be used for reindexing data
+from one index to another (eg if the mapping has changed), or copying
+data from one cluster to another.
+
+=head4 Params
+
+=over
+
+=item *
+
+C<source> is a required parameter, and should be an instance of
+L<ElasticSearch::ScrolledSearch>.
+
+=item *
+
+C<dest_index> is the name of the destination index, ie where the docs are
+indexed to.  If you are indexing your data from one cluster to another,
+and you want to use the same index name in your destination cluster, then
+you can leave this blank.
+
+=item *
+
+C<bulk_size> - the number of docs that will be indexed at a time. Defaults
+to 1,000
+
+=item *
+
+Set C<quiet> to C<1> if you don't want any progress information to be
+printed to C<STDOUT>
+
+=item *
+
+C<transform> should be a sub-ref which will be called for each doc, allowing
+you to transform some element of the doc, or to skip the doc by returning
+C<undef>.
+
+=back
+
+=head4 Examples:
+
+To copy the ElasticSearch website index locally, you could do:
+
+    my $local = ElasticSearch->new(
+        servers => 'localhost:9200'
+    );
+    my $remote = ElasticSearch->new(
+        servers    => 'search.elasticsearch.org:80',
+        no_refresh => 1
+    );
+
+    my $source = $remote->scrolled_search(
+        search_type => 'scan',
+        scroll      => '5m'
+    );
+    $local->reindex(source=>$source);
+
+To copy one local index to another, make the title upper case,
+exclude docs of type C<boring>, and to preserve the version numbers
+from the original index:
+
+    my $source = $es->scrolled_search(
+        index       => 'old_index',
+        search_type => 'scan',
+        scroll      => '5m',
+        version     => 1
+    );
+
+    $es->reindex(
+        source      => $source,
+        dest_index  => 'new_index',
+        transform   => sub {
+            my $doc = shift;
+            return if $doc->{_type} eq 'boring';
+            $doc->{_source}{title} = uc( $doc->{_source}{title} );
+            return $doc;
+        }
+    );
+
+See also L</"scrolled_search()">, L<ElasticSearch::ScrolledSearch>,
+and L</"search()">.
 
 =head3 analyze()
 

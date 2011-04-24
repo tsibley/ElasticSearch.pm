@@ -52,7 +52,7 @@ sub new {
     my ( $es, $params ) = parse_params(@_);
 
     my $scroll = $params->{scroll}
-        or $es->throw( 'Param', 'No scroll param specified', $params );
+        or $es->throw( 'Param', 'Missing scroll param', $params );
 
     my $method = $params->{query} ? 'search' : 'searchqs';
 
