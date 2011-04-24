@@ -56,8 +56,8 @@ sub used_caches {
         filter => 0
     );
     for ( values %{ $es->nodes_stats->{nodes} } ) {
-        $cache{field}  += $_->{indices}{field_cache_size_in_bytes};
-        $cache{filter} += $_->{indices}{filter_cache_size_in_bytes};
+        $cache{field}  += $_->{indices}{cache}{field_size_in_bytes};
+        $cache{filter} += $_->{indices}{cache} {filter_size_in_bytes};
     }
     return \%cache;
 }
