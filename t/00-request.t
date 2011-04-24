@@ -1,7 +1,7 @@
 #!perl
 
 our $test_num;
-BEGIN { $test_num = 326 }
+BEGIN { $test_num = 327 }
 
 #use Test::Most qw(defer_plan);
 use Test::More tests => $test_num;
