@@ -38,6 +38,7 @@ our %QS_Format = (
               $k eq 'preference' ? '_local | _primary | $string'
             : $k eq 'percolate' || $k eq 'q' ? '$query_string'
             : $k eq 'scroll_id' ? '$scroll_id'
+            : $k eq 'df'        ? '$default_field'
             :                     '$string';
     },
     float => 'float',
@@ -432,9 +433,22 @@ my %Search_Defn = (
         version => [ 'boolean', 1 ]
     },
 );
+
+my %SearchQS_Defn = (
+    cmd     => CMD_index_type,
+    postfix => '_search',
+    qs      => {
+        %SearchQS,
+        q                => ['string'],
+        df               => ['string'],
+        analyzer         => ['string'],
+        default_operator => [ 'enum', [ 'OR', 'AND' ] ],
+        explain => [ 'boolean', 1 ],
+        fields  => ['flatten'],
+        scroll  => ['duration'],
+        'sort'  => ['flatten'],
         version => [ 'boolean', 1 ],
     },
-    data => { %Search_Data, query => 'query' }
 );
 
 my %Query_Defn = (
@@ -466,7 +480,8 @@ my %Query_Defn = (
 );
 
 #===================================
-sub search { shift()->_do_action( 'search', \%Search_Defn, @_ ) }
+sub search   { shift()->_do_action( 'search',   \%Search_Defn,   @_ ) }
+sub searchqs { shift()->_do_action( 'searchqs', \%SearchQS_Defn, @_ ) }
 #===================================
 
 #===================================

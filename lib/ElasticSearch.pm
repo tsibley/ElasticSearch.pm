@@ -669,8 +669,43 @@ For all of the options that can be included in the C<query> parameter, see
 L<http://www.elasticsearch.org/guide/reference/api/search>,
 L<http://www.elasticsearch.org/guide/reference/api/search/request-body.html>
 and L<http://www.elasticsearch.org/guide/reference/query-dsl>
+
+=head3 searchqs()
+
+    $result = $e->searchqs(
+        index               => multi,
+        type                => multi,
+
+        # optional
+        q                   => $query_string,
+        analyzer            => $analyzer,
+        default_operator    => 'OR | AND ',
+        df                  => $default_field,
+        explain             => 1 | 0,
+        fields              => [$field_1,$field_n],
+        from                => $start_from
+        preference          => '_local' | '_primary' | $string,
+        routing             => [$routing, ...]
+        search_type         => $search_type
+        size                => $no_of_results
+        sort                => ['_score:asc','last_modified:desc'],
+        scroll              => '5m' | '30s',
+        track_scores        => 0 | 1,
+        timeout             => '10s'
+        version             => 0 | 1
+
+Searches for all documents matching the C<q> query_string, with a URI request.
+Documents can be matched against multiple indices and multiple types, eg:
+
+    $result = $e->searchqs(
+        index   => undef,                           # all
+        type    => ['user','tweet'],
+        q       => 'john smith'
+    );
+
+For all of the options that can be included in the C<query> parameter, see
 L<http://www.elasticsearch.org/guide/reference/api/search> and
-L<http://www.elasticsearch.org/guide/reference/query-dsl>
+L<http://www.elasticsearch.org/guide/reference/api/search/uri-request.html>.
 
 =head3 scroll()
 
