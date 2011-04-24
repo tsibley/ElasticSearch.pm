@@ -477,9 +477,9 @@ L<http://www.elasticsearch.org/guide/reference/api/delete.html>
                           data => { text => 'foo bar'},
 
                           # optional
-                          routing   => $routing,
-                          parent    => $parent,
-                          percolate => $percolate,
+                          routing       => $routing,
+                          parent        => $parent,
+                          percolate     => $percolate,
             }},
 
             { index  => { index => 'foo', type => 'bar', id => 123,
@@ -496,9 +496,9 @@ L<http://www.elasticsearch.org/guide/reference/api/delete.html>
             { delete => { index => 'foo', type => 'bar', id => 123,
 
                           # optional
-                          routing   => $routing,
-                          parent    => $parent,
-                          version   => $version
+                          routing       => $routing,
+                          parent        => $parent,
+                          version       => $version
             }},
 
         ],
