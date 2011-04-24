@@ -399,27 +399,39 @@ my %Search_Data = (
     from          => ['from'],
     highlight     => ['highlight'],
     indices_boost => ['indices_boost'],
+    min_score     => ['min_score'],
     script_fields => ['script_fields'],
     size          => ['size'],
     'sort'        => ['sort'],
 );
 
+my %SearchQS = (
+    search_type => [
+        'enum',
+        [ qw(
+                dfs_query_then_fetch    dfs_query_and_fetch
+                query_then_fetch        query_and_fetch
+                count                   scan
+                )
+        ]
+    ],
+    preference   => ['string'],
+    routing      => ['flatten'],
+    scroll       => ['duration'],
+    timeout      => ['duration'],
+    track_scores => [ 'boolean', 1 ],
+);
+
 my %Search_Defn = (
     cmd     => CMD_index_type,
     postfix => '_search',
+    data    => { %Search_Data, query => ['query'] },
     qs      => {
-        search_type => [
-            'enum',
-            [ qw(
-                    dfs_query_then_fetch    dfs_query_and_fetch
-                    query_then_fetch        query_and_fetch
-                    count                   scan
-                    )
-            ]
-        ],
-        routing => ['flatten'],
+        %SearchQS,
         scroll  => ['duration'],
-        timeout => ['duration'],
+        version => [ 'boolean', 1 ]
+    },
+);
         version => [ 'boolean', 1 ],
     },
     data => { %Search_Data, query => 'query' }

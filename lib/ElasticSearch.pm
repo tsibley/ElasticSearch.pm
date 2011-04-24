@@ -628,27 +628,36 @@ more.
     $result = $e->search(
         index           => multi,
         type            => multi,
-        query           => {query},
 
         # optional
-        explain         => 1 | 0
-        facets          => { facets }
-        fields          => [$field_1,$field_n]
+        explain         => 1 | 0,
+        facets          => { facets },
+        fields          => [$field_1,$field_n],
+        filter          => $filter,
         from            => $start_from
         highlight       => { highlight }
-        indices_boost   => { index_1 => 1.5,... }
+        indices_boost   => { index_1 => 1.5,... },
+        min_score       => $score,
+        preference      => '_local' | '_primary' | $string,
+        query           => {query},
         routing         => [$routing, ...]
         script_fields   => { script_fields }
-        search_type     => $search_type
+        search_type     => 'dfs_query_then_fetch'
+                           | 'dfs_query_and_fetch'
+                           | 'query_then_fetch'
+                           | 'query_and_fetch'
+                           | 'count'
+                           | 'scan'
         size            => $no_of_results
         sort            => ['_score',$field_1]
-        scroll          => '5m' | '30s'
+        scroll          => '5m' | '30s',
+        track_scores    => 0 | 1,
         timeout         => '10s'
         version         => 0 | 1
     );
 
-Searches for all documents matching the query. Documents can be matched
-against multiple indices and multiple types, eg:
+Searches for all documents matching the query, with a request-body search.
+Documents can be matched against multiple indices and multiple types, eg:
 
     $result = $e->search(
         index   => undef,                           # all
@@ -657,6 +666,9 @@ against multiple indices and multiple types, eg:
     );
 
 For all of the options that can be included in the C<query> parameter, see
+L<http://www.elasticsearch.org/guide/reference/api/search>,
+L<http://www.elasticsearch.org/guide/reference/api/search/request-body.html>
+and L<http://www.elasticsearch.org/guide/reference/query-dsl>
 L<http://www.elasticsearch.org/guide/reference/api/search> and
 L<http://www.elasticsearch.org/guide/reference/query-dsl>
 
