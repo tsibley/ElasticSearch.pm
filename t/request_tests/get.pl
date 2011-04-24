@@ -20,17 +20,14 @@ is $es->get(
     fields => 'num'
 )->{fields}{num}, 123, ' - specify fields';
 
-TODO: {
-    todo_skip "Empty fields param not working in 0.15.2", 2;
-    ok $r= $es->get(
-        index  => 'es_test_1',
-        type   => 'type_1',
-        id     => 1,
-        fields => []
-        ),
-        ' - specify no fields';
-    ok !$r->{fields} && !$r->{_source}, ' - no fields returned';
-}
+ok $r= $es->get(
+    index  => 'es_test_1',
+    type   => 'type_1',
+    id     => 1,
+    fields => []
+    ),
+    ' - specify no fields';
+ok !$r->{fields} && !$r->{_source}, ' - no fields returned';
 
 throws_ok { $es->get( index => 'es_test_1', type => 'type_1', id => 2 ) }
 qr/ElasticSearch::Error::Missing/, ' - id missing';
