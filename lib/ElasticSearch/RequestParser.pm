@@ -453,6 +453,7 @@ my %SearchQS_Defn = (
 
 my %Query_Defn = (
     bool               => ['bool'],
+    boosting           => ['boosting'],
     constant_score     => ['constant_score'],
     custom_score       => ['custom_score'],
     dis_max            => ['dis_max'],
@@ -462,20 +463,22 @@ my %Query_Defn = (
     flt                => [ 'flt', 'fuzzy_like_this' ],
     flt_field          => [ 'flt_field', 'fuzzy_like_this_field' ],
     fuzzy              => ['fuzzy'],
+    has_child          => ['has_child'],
+    ids                => ['ids'],
     match_all          => ['match_all'],
-    min_score          => ['min_score'],
     mlt                => [ 'mlt', 'more_like_this' ],
     mlt_field          => [ 'mlt_field', 'more_like_this_field' ],
     prefix             => ['prefix'],
     query_string       => ['query_string'],
     range              => ['range'],
-    span_term          => ['span_term'],
     span_first         => ['span_first'],
     span_near          => ['span_near'],
     span_not           => ['span_not'],
     span_or            => ['span_or'],
+    span_term          => ['span_term'],
     term               => ['term'],
     terms              => [ 'terms', 'in' ],
+    top_children       => ['top_children'],
     wildcard           => ['wildcard'],
 );
 

@@ -751,6 +751,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/search/scroll.html>
 
         # one of:
         bool
+      | boosting
       | constant_score
       | custom_score
       | dis_max
@@ -761,6 +762,8 @@ See L<http://www.elasticsearch.org/guide/reference/api/search/scroll.html>
       | flt_field
       | has_child
       | fuzzy
+      | has_child
+      | ids
       | match_all
       | mlt
       | mlt_field
@@ -773,6 +776,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/search/scroll.html>
       | span_not
       | span_or
       | term
+      | terms
       | top_children
       | wildcard
     );
@@ -804,6 +808,7 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
 
         # one of :
         bool
+      | boosting
       | constant_score
       | custom_score
       | dis_max
@@ -814,6 +819,8 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
       | flt_field
       | has_child
       | fuzzy
+      | has_child
+      | ids
       | match_all
       | mlt
       | mlt_field
@@ -826,6 +833,7 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
       | span_not
       | span_or
       | term
+      | terms
       | top_children
       | wildcard
     );
