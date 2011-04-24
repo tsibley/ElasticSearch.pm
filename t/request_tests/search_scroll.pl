@@ -6,7 +6,7 @@ use warnings;
 our $es;
 my $r;
 
-# SCROLL
+## SCROLL
 ok $r = $es->search(
     query  => { match_all => {} },
     sort   => ['num'],
@@ -35,5 +35,23 @@ for my $tranche ( 1 .. 14 ) {
         " - first hit is ID " . ( $second || 'undef' );
 
 }
+
+# SCROLLED SEARCH
+isa_ok $r = $es->scrolled_search(
+    q      => 'foo bar',
+    size   => 5,
+    scroll => '2m'
+    ),
+    'ElasticSearch::ScrolledSearch';
+
+is $r->total, 25, ' - total';
+ok $r->max_score > 0, ' - max_score';
+
+my @docs;
+is scalar( @docs = $r->next ), 5, ' - next()';
+is scalar( @docs = $r->next(1) ),   1,  ' - next(1)';
+is scalar( @docs = $r->next(100) ), 19, ' - next(100)';
+
+ok $r->eof, ' - eof';
 
 1;

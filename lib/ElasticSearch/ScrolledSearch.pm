@@ -57,19 +57,16 @@ sub new {
     my $method = $params->{query} ? 'search' : 'searchqs';
 
     my $results = $es->$method($params);
-    my $hits    = $results->{hits};
-
     my $self = {
         _es        => $es,
         _size      => $params->{size} || 10,
         _scroll_id => $results->{_scroll_id},
         _scroll    => $scroll,
-        _total     => $results->{total},
-        _buffer    => $results->{hits},
-        _max_score => $results->{max_score},
+        _total     => $results->{hits}{total},
+        _buffer    => $results->{hits}{hits},
+        _max_score => $results->{hits}{max_score},
         _eof       => 0,
     };
-
     return bless( $self, $class );
 }
 

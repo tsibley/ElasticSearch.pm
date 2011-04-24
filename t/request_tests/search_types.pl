@@ -27,4 +27,22 @@ isa_ok $r= $es->search(
 is $r->{hits}{total}, 29, ' - total correct';
 ok @{ $r->{hits}{hits} } > 10, ' - returned  > 10 results';
 
+# COUNT
+isa_ok $r = $es->search( search_type => 'count' ), 'HASH', 'count';
+is $r->{hits}{total}, 29, ' - total correct';
+is @{ $r->{hits}{hits} }, 0, ' - zero results';
+
+# SCAN
+throws_ok { $es->search( search_type => 'scan' ) }
+qr/ElasticSearch::Error::Request/, ' - scan without scroll';
+
+ok $r = $es->search( search_type => 'scan', scroll => '2m', size => 1 ),
+    ' - scan with scroll';
+
+is @{ $r->{hits}{hits} }, 0, ' - no initial hits';
+ok $r->{_scroll_id}, ' - scroll id';
+
+is @{ $es->scroll( scroll_id => $r->{_scroll_id} )->{hits}{hits} }, 10,
+    ' - hits from all shards';
+
 1;
