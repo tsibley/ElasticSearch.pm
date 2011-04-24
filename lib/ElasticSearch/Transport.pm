@@ -102,10 +102,10 @@ ATTEMPT:
             }
 
             $error->{-vars}{request} = $params;
-            if ( my $content = $error->{-vars}{content} ) {
-                $content = $json->decode($content);
+            if ( my $raw = $error->{-vars}{content} ) {
+                my $content = eval {$json->decode($raw)} || $raw;
                 $self->log_response($content);
-                if ( $content->{error} ) {
+                if ( ref $content and $content->{error} ) {
                     $error->{-text} = $content->{error};
                     $error->{-vars}{error_trace} = $content->{error_trace}
                         if $content->{error_trace};
