@@ -15,8 +15,8 @@ ok $es->update_index_settings(
 
 wait_for_es();
 
-is $es->index_status( index => 'es_test_1' )
-    ->{indices}{'es_test_1'}{settings}{'index.number_of_replicas'}, 2,
+is $es->index_settings( index => 'es_test_1' )
+    ->{'es_test_1'}{settings}{'index.number_of_replicas'}, 2,
     ' - has 2 replicas';
 
 ok $es->update_index_settings(
@@ -27,8 +27,8 @@ ok $es->update_index_settings(
 
 wait_for_es();
 
-is $es->index_status( index => 'es_test_1' )
-    ->{indices}{'es_test_1'}{settings}{'index.number_of_replicas'}, 1,
+is $es->index_settings( index => 'es_test_1' )
+    ->{'es_test_1'}{settings}{'index.number_of_replicas'}, 1,
     ' - has 1 replica';
 
 throws_ok {
