@@ -14,7 +14,7 @@ our $DEBUG   = 0;
 sub new {
 #===================================
     my ( $proto, $params ) = parse_params(@_);
-    my $self = { _base_qs => {}, };
+    my $self = { _base_qs => {}, _default => {} };
 
     bless $self, ref $proto || $proto;
     $self->{_transport} = ElasticSearch::Transport->new($params);
@@ -27,6 +27,26 @@ sub request {
 #===================================
     my ( $self, $params ) = parse_params(@_);
     return $self->transport->request($params);
+}
+
+#===================================
+sub use_index {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_default}{index} = shift;
+    }
+    return $self->{_default}{index};
+}
+
+#===================================
+sub use_type {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_default}{type} = shift;
+    }
+    return $self->{_default}{type};
 }
 
 #===================================
@@ -168,6 +188,8 @@ C<multi> values can be:
 C<single> values must be a scalar, and are required parameters
 
       type  => 'tweet'
+
+Also, see L</"use_index()"> and L</"use_type()"
 
 =head2 as_json
 
@@ -1485,6 +1507,28 @@ whether or not the current server is a C<snapshot_build>.
 =cut
 
 =head2 Other methods
+
+=head3 use_index()
+
+=head3 use_type()
+
+C<use_index()> and C<use_type()> can be used to set default values for
+any C<index> or C<type> parameter. The default value can be overridden
+by passing a parameter (including C<undef>) to any request.
+
+    $es->use_index('one');
+    $es->use_type(['foo','bar']);
+
+    $es->index(                         # index: one, types: foo,bar
+        data=>{ text => 'my text' }
+    );
+
+    $es->index(                         # index: two, type: foo,bar
+        index=>'two',
+        data=>{ text => 'my text' }
+    )
+
+    $es->search( type => undef );       # index: one, type: all
 
 =head3 trace_calls()
 

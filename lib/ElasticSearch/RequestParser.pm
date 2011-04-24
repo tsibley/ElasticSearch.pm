@@ -343,7 +343,10 @@ sub _build_bulk_query {
             if $params->{_source};
 
         for my $key ( keys %$defn ) {
-            my $val = delete $params->{$key} || delete $params->{"_$key"};
+            my $val
+                = exists $params->{$key}    ? delete $params->{$key}
+                : exists $params->{"_$key"} ? delete $params->{"_$key"}
+                :                             $self->{_default}{$key};
             unless ( defined $val ) {
                 next if $defn->{$key} == ONE_OPT;
                 $self->throw(
@@ -1299,7 +1302,11 @@ sub _build_cmd {
         my $key  = shift @defn;
         my $type = shift @defn;
 
-        my $val = delete $params->{$key};
+        my $val
+            = exists $params->{$key}
+            ? delete $params->{$key}
+            : $self->{_default}{$key};
+
         if ( defined $val ) {
             if ( ref $val eq 'ARRAY' ) {
                 die "'$key' must be a single value\n"
