@@ -38,7 +38,7 @@ throws_ok {
 qr /MergeMappingException/, ' - conflicted mapping';
 
 ok !$es->mapping( index => 'es_test_1', type => 'type_1' )
-    ->{es_test_1}{type_1}{properties}{date}, ' - valid field not merged';
+    ->{type_1}{properties}{date}, ' - valid field not merged';
 
 ok $es->put_mapping(
     index            => 'es_test_1',
@@ -49,7 +49,7 @@ ok $es->put_mapping(
     ' - ignore conflict';
 
 ok $es->mapping( index => 'es_test_1', type => 'type_1' )
-    ->{es_test_1}{type_1}{properties}{date}, ' - valid field merged';
+    ->{type_1}{properties}{date}, ' - valid field merged';
 
 is test_dynamic(1), 1, 'Dynamic mapping enabled';
 is test_dynamic(0), 0, ' - disabled';
