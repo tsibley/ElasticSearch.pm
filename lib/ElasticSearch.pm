@@ -870,18 +870,19 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         facets               =>  {facets}
         fields               =>  {fields}
         from                 =>  {from}
-        highlight            =>  {highlight}
         indices_boost        =>  { index_1 => 1.5,... }
+        min_score            =>  $score
+        preference           =>  '_local' | '_primary' | $string
         routing              =>  [$routing,...]
         script_fields        =>  { script_fields }
-        scroll               =>  '5m' | '10s'
+        search_scroll        =>  '5m' | '10s',
+        search_indices       =>  ['index1','index2],
         search_type          =>  $search_type
+        search_types         =>  ['type1','type],
         size                 =>  {size}
         sort                 =>  {sort}
         scroll               =>  '5m' | '30s'
         timeout              =>  '10s'
-        version              =>  0 | 1
-
     )
 
 More-like-this (mlt) finds related/similar documents. It is possible to run

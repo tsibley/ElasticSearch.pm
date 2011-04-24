@@ -541,7 +541,7 @@ sub mlt {
         {   cmd    => CMD_INDEX_TYPE_ID,
             method => 'GET',
             qs     => {
-                %{ $Search_Defn{qs} },
+                %SearchQS,
                 mlt_fields         => ['flatten'],
                 pct_terms_to_match => [ 'float', 'percent_terms_to_match' ],
                 min_term_freq      => ['int'],
@@ -552,6 +552,9 @@ sub mlt {
                 min_word_len       => ['int'],
                 max_word_len       => ['int'],
                 boost_terms        => ['float'],
+                search_indices     => ['flatten'],
+                search_types       => ['flatten'],
+                search_scroll      => ['string'],
             },
             postfix => '_mlt',
             data    => \%Search_Data,
