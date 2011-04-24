@@ -1,7 +1,8 @@
 #!perl
 
 use Test::More;
-use strict; use warnings;
+use strict;
+use warnings;
 our $es;
 my $r;
 

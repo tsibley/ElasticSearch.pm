@@ -15,7 +15,7 @@ ok $es->delete_river( river => 'foo' )->{ok}, 'Delete river';
 
 missing($_) for qw(get_river river_status);
 
-$es->delete_index(index=>'_river');
+$es->delete_index( index => '_river' );
 
 #===================================
 sub missing {

@@ -64,23 +64,23 @@ ok $es->index(
 )->{ok}, ' - index correct version';
 
 is $es->index(
-    index   => 'es_test_1',
-    type    => 'type_1',
-    id      => 5,
-    version => 10,
+    index        => 'es_test_1',
+    type         => 'type_1',
+    id           => 5,
+    version      => 10,
     version_type => 'external',
-    data    => { text => 'foo', num => 123 },
-    refresh => 1
-)->{_version},10, ' - index version_type external';
+    data         => { text => 'foo', num => 123 },
+    refresh      => 1
+)->{_version}, 10, ' - index version_type external';
 
 is $es->index(
-    index   => 'es_test_1',
-    type    => 'type_1',
-    id      => 6,
-    version => 10,
+    index        => 'es_test_1',
+    type         => 'type_1',
+    id           => 6,
+    version      => 10,
     version_type => 'external',
-    data    => { text => 'foo', num => 123 },
-    refresh => 1
-)->{_version},10, ' - create version_type external';
+    data         => { text => 'foo', num => 123 },
+    refresh      => 1
+)->{_version}, 10, ' - create version_type external';
 
 1

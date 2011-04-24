@@ -8,7 +8,8 @@ my $r;
 
 ### INDEX ALIASES ###
 ok $es->aliases(
-    actions => { add => { alias => 'alias_1', index => 'es_test_1' } } ),
+    actions => { add => { alias => 'alias_1', index => 'es_test_1' } }
+    ),
     'add alias_1';
 wait_for_es();
 
