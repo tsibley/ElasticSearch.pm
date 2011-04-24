@@ -922,6 +922,19 @@ doesn't exist and C<ignore_missing> is not true:
 
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-delete-index.html>
 
+=head3 index_settings()
+
+    $result = $e->index_settings(
+        index           => multi,
+    );
+
+Returns the current settings for all, one or many indices.
+
+    $result = $e->index_settings( index=> ['index_1','index_2'] );
+
+See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-get-settings.html>
+
+
 =head3 update_index_settings()
 
     $result = $e->update_index_settings(

@@ -927,12 +927,27 @@ sub clear_cache {
 }
 
 #===================================
+sub index_settings {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+
+    $self->_do_action(
+        'index_settings',
+        {   method  => 'GET',
+            cmd     => CMD_index,
+            postfix => '_settings'
+        },
+        $params
+    );
+}
+
+#===================================
 sub update_index_settings {
 #===================================
     my ( $self, $params ) = parse_params(@_);
 
     $self->_do_action(
-        'update_settings',
+        'update_index_settings',
         {   method  => 'PUT',
             cmd     => CMD_index,
             postfix => '_settings',
