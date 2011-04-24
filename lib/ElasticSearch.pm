@@ -189,7 +189,7 @@ C<single> values must be a scalar, and are required parameters
 
       type  => 'tweet'
 
-Also, see L</"use_index()"> and L</"use_type()"
+Also, see L</"use_index()/use_type()">.
 
 =head2 as_json
 
@@ -1598,9 +1598,7 @@ whether or not the current server is a C<snapshot_build>.
 
 =head2 Other methods
 
-=head3 use_index()
-
-=head3 use_type()
+=head3 use_index()/use_type()
 
 C<use_index()> and C<use_type()> can be used to set default values for
 any C<index> or C<type> parameter. The default value can be overridden
