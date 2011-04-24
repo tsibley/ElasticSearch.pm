@@ -103,6 +103,7 @@ sub get {
             qs  => {
                 fields         => ['flatten'],
                 ignore_missing => [ 'boolean', 1 ],
+                preference     => ['string'],
                 refresh        => [ 'boolean', 1 ],
                 routing        => ['string'],
             },

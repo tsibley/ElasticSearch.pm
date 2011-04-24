@@ -396,6 +396,7 @@ See also: L</"index()">
 
         # optional
         fields          => 'field' or ['field1',...]
+        preference      => '_local' | '_primary' | $string,
         refresh         => 0 | 1,
         routing         => $routing,
         ignore_missing  => 0 | 1,
