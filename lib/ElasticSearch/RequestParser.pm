@@ -167,6 +167,8 @@ sub create {
                 routing   => ['string'],
                 parent    => ['string'],
                 percolate => ['string'],
+                version   => ['int'],
+                version_type => [ 'enum', [ 'internal', 'external' ] ],
             },
         },
         $params

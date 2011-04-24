@@ -86,4 +86,49 @@ is @{
 
 is $es->count( match_all => {} )->{count}, 0, ' - 2 docs deleted';
 
+ok $r= $es->bulk( [ {
+            index => {
+                index   => 'es_test_1',
+                type    => 'test',
+                id      => 1,
+                data    => { text => 'foo', num => 1 },
+                version => 10
+            }
+        },
+        {   index => {
+                index        => 'es_test_1',
+                type         => 'test',
+                id           => 2,
+                data         => { text => 'foo', num => 1 },
+                version      => 10,
+                version_type => 'external'
+            }
+        },
+        {   create => {
+                index   => 'es_test_1',
+                type    => 'test',
+                id      => 3,
+                data    => { text => 'foo', num => 1 },
+                version => 10
+            }
+        },
+        {   create => {
+                index        => 'es_test_1',
+                type         => 'test',
+                id           => 4,
+                data         => { text => 'foo', num => 1 },
+                version      => 10,
+                version_type => 'external'
+            }
+        },
+    ],
+    { refresh => 1 }
+    )->{results},
+    'Bulk versions';
+
+like $r->[0]{index}{error}, qr/Conflict/, ' - index version conflict';
+ok $r->[1]{index}{ok},       ' - index external version ok';
+like $r->[2]{create}{error}, qr/Conflict/, ' - create version conflict';
+ok $r->[3]{create}{ok},      ' - create external version ok';
+
 1

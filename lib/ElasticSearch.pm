@@ -359,11 +359,13 @@ C<set()> is a synonym for L</"index()">
         },
 
         # optional
-        parent      => $parent,
-        percolate   => $percolate,
-        refresh     => 0 | 1,
-        routing     => $routing,
-        timeout     => eg '1m' or '10s'
+        parent       => $parent,
+        percolate    => $percolate,
+        refresh      => 0 | 1,
+        routing      => $routing,
+        timeout      => eg '1m' or '10s',
+        version      => int,
+        version_type => 'internal' | 'external',
     );
 
 eg:
@@ -385,6 +387,9 @@ then a C<Conflict> error is thrown.
 
 If the C<id> is not specified, then ElasticSearch autogenerates a unique
 ID.
+
+If you pass a C<version> parameter to C<create>, then it must be C<0> unless
+you also set C<version_type> to C<external>.
 
 See also: L</"index()">
 
@@ -480,6 +485,8 @@ L<http://www.elasticsearch.org/guide/reference/api/delete.html>
                           routing       => $routing,
                           parent        => $parent,
                           percolate     => $percolate,
+                          version       => $version,
+                          version_type  => 'internal' | 'external'
             }},
 
             { index  => { index => 'foo', type => 'bar', id => 123,
