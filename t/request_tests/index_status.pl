@@ -21,7 +21,6 @@ qr/ElasticSearch::Error::Missing/, ' - index missing';
 ok $r= $es->index_status( index => 'es_test_1', recovery => 1, snapshot => 1 )
     ->{indices}{es_test_1}{shards}{0}, ' - recovery and snapshot';
 
-ok $r->[0]{peer_recovery},    ' - peer recovery';
-ok $r->[1]{gateway_recovery}, ' - gateway recovery';
+ok $r->[0]{peer_recovery}||$r->[0]{gateway_recovery},    ' - recovery';
 
 1;
