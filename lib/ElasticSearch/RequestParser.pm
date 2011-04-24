@@ -702,8 +702,13 @@ sub get_aliases {
     my ( $self, $params ) = parse_params(@_);
     $self->error("get_aliases() does not support as_json")
         if $params->{as_json};
-    my $results = $self->index_status($params);
-    my $indices = $results->{indices};
+    my $results = $self->cluster_state(
+        filter_indices       => $params->{index},
+        filter_blocks        => 1,
+        filter_nodes         => 1,
+        filter_routing_table => 1,
+    );
+    my $indices = $results->{metadata}{indices};
     my %aliases = ( indices => {}, aliases => {} );
     foreach my $index ( keys %$indices ) {
         my $aliases = $indices->{$index}{aliases};
