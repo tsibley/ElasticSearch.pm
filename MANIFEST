@@ -1,12 +1,12 @@
 AUTHORS
 Build.PL
 Changes
-examples/reindex_es.pl
 examples/search_issues.pl
 lib/ElasticSearch.pm
 lib/ElasticSearch/Error.pm
 lib/ElasticSearch/QueryParser.pm
 lib/ElasticSearch/RequestParser.pm
+lib/ElasticSearch/ScrolledSearch.pm
 lib/ElasticSearch/TestServer.pm
 lib/ElasticSearch/Transport.pm
 lib/ElasticSearch/Transport/HTTP.pm
@@ -58,6 +58,7 @@ t/request_tests/module_options.pl
 t/request_tests/more_like_this.pl
 t/request_tests/nodes.pl
 t/request_tests/open_close_index.pl
+t/request_tests/reindex.pl
 t/request_tests/rivers.pl
 t/request_tests/search_custom_score.pl
 t/request_tests/search_explain.pl
@@ -71,5 +72,7 @@ t/request_tests/search_script_fields.pl
 t/request_tests/search_scroll.pl
 t/request_tests/search_sort.pl
 t/request_tests/search_types.pl
+t/request_tests/searchqs.pl
 t/request_tests/update_settings.pl
+t/request_tests/use_index_type.pl
 t/request_tests/version.pl

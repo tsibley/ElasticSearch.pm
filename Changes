@@ -1,4 +1,31 @@
 Revision history for ElasticSearch
+0.36    2911-04-24
+        Updated ElasticSearch.pm to work with ElasticSearch version 0.16.0
+
+        New features:
+         - no_refresh:
+           Disable the automatic discovery of live nodes, to work with
+           remote clusters or proxied clusters
+
+         - scrolled_search():
+           Convenience iterator to wrap search/scroll requests
+
+         - reindex():
+           Utility to reindex data from one index to another, or one
+           cluster to another
+
+         - use_index()/use_type():
+           Set default index/type parameters
+
+         - searchqs():
+           URI/query string search, (as opposed to search() which uses a
+           request body)
+
+         - New search_type's : 'scan' and 'count'
+
+         - index_settings():
+           Retrieve index settings
+
 0.35    2011-04-07
         Added the 'dynamic_templates' option to put_mapping
 

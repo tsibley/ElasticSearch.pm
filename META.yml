@@ -20,11 +20,13 @@ name: ElasticSearch
 provides:
   ElasticSearch:
     file: lib/ElasticSearch.pm
-    version: 0.35
+    version: 0.36
   ElasticSearch::Error:
     file: lib/ElasticSearch/Error.pm
   ElasticSearch::QueryParser:
     file: lib/ElasticSearch/QueryParser.pm
+  ElasticSearch::ScrolledSearch:
+    file: lib/ElasticSearch/ScrolledSearch.pm
   ElasticSearch::TestServer:
     file: lib/ElasticSearch/TestServer.pm
   ElasticSearch::Transport:
@@ -122,5 +124,7 @@ requires:
   LWP::UserAgent: 0
   parent: 0
 resources:
+  bugtracker: https://github.com/clintongormley/ElasticSearch.pm/issues
   license: http://dev.perl.org/licenses/
-version: 0.35
+  repository: http://github.com/clintongormley/ElasticSearch.pm/
+version: 0.36
