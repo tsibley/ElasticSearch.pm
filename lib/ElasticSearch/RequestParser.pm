@@ -649,7 +649,7 @@ sub delete_index {
     shift()->_do_action(
         'delete_index',
         {   method  => 'DELETE',
-            cmd     => CMD_INDEX,
+            cmd     => CMD_index,
             qs      => { ignore_missing => [ 'boolean', 1 ], },
             postfix => ''
         },

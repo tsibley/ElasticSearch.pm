@@ -911,12 +911,12 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-create-inde
 =head3 delete_index()
 
     $result = $e->delete_index(
-        index           => single,
+        index           => multi,
         ignore_missing  => 0 | 1        # optional
     );
 
-Deletes an existing index, or throws a C<Missing> exception if the index
-doesn't exist and C<ignore_missing> is not true:
+Deletes one or more existing indices, or throws a C<Missing> exception if a
+specified index doesn't exist and C<ignore_missing> is not true:
 
     $result = $e->delete_index( index => 'twitter' );
 
