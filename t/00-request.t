@@ -1,7 +1,7 @@
 #!perl
 
 our $test_num;
-BEGIN { $test_num = 327 }
+BEGIN { $test_num = 335 }
 
 #use Test::Most qw(defer_plan);
 use Test::More tests => $test_num;
@@ -128,6 +128,7 @@ SKIP: {
             search_scroll
             search_indices_boost
             search_custom_score
+            searchqs
             count
             more_like_this
             search_highlight
