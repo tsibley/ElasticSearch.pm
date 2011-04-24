@@ -23,6 +23,10 @@ wait_for_es();
 
 is $es->count( match_all => {} )->{count}, 2, ' - count ok';
 
-$es->delete_index( index => 'es_test_3' );
+$es->delete_index();
+
+$es->use_index(undef);
+$es->use_type(undef);
+
 wait_for_es();
 
