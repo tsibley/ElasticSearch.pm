@@ -32,9 +32,16 @@ our %QS_Format = (
     optional => "'scalar value'",
     flatten  => "'scalar' or ['scalar_1', 'scalar_n']",
     'int'    => "integer",
-    string   => '"string"',
-    float    => 'float',
-    enum     => '"predefined_value"',
+    string   => sub {
+        my $k = shift;
+        return
+              $k eq 'preference' ? '_local | _primary | $string'
+            : $k eq 'percolate' || $k eq 'q' ? '$query_string'
+            : $k eq 'scroll_id' ? '$scroll_id'
+            :                     '$string';
+    },
+    float => 'float',
+    enum  => sub { join " | ", @{ $_[1][1] } },
 );
 
 our %QS_Formatter = (
@@ -1245,8 +1252,15 @@ sub _usage {
     if ( my $qs = $defn->{qs} ) {
         for ( sort keys %$qs ) {
             my $arg_format = $QS_Format{ $qs->{$_}[0] };
+            my @extra;
+            $arg_format = $arg_format->( $_, $qs->{$_} )
+                if ref $arg_format;
+            if ( length($arg_format) > 45 ) {
+                ( $arg_format, @extra ) = split / [|] /, $arg_format;
+            }
             $usage .= sprintf( "  - %-26s =>  %-45s # optional\n", $_,
                 $arg_format );
+            $usage .= ( ' ' x 34 ) . " | $_\n" for @extra;
         }
     }
 
