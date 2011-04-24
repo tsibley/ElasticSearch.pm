@@ -33,7 +33,8 @@ sub new {
     my $self = bless {
         _JSON         => JSON->new(),
         _timeout      => 120,
-        _max_requests => 10_000
+        _max_requests => 10_000,
+        _failed       => {},
         },
         $transport_class;
 
@@ -43,7 +44,7 @@ sub new {
     $self->{_default_servers}
         = [ ref $servers eq 'ARRAY' ? @$servers : $servers ];
 
-    for (qw(timeout max_requests)) {
+    for (qw(timeout max_requests no_refresh)) {
         next unless exists $params->{$_};
         $self->$_( delete $params->{$_} );
     }
@@ -75,6 +76,7 @@ sub request {
 
     my $args = { %$params, data => $data };
     my $response_json;
+    $self->{_failed} = {};
 
 ATTEMPT:
     while (1) {
@@ -92,9 +94,13 @@ ATTEMPT:
             {
                 warn "Error connecting to '$server' : "
                     . ( $error->{-text} || 'Unknown' ) . "\n\n";
-                $self->refresh_servers;
+                $self->no_refresh
+                    ? $self->_remove_server($server)
+                    : $self->refresh_servers;
+
                 next ATTEMPT;
             }
+
             $error->{-vars}{request} = $params;
             if ( my $content = $error->{-vars}{content} ) {
                 $content = $json->decode($content);
@@ -172,15 +178,48 @@ sub refresh_servers {
 sub next_server {
 #===================================
     my $self = shift;
-    $self->refresh_servers
-        unless $self->{_refresh_in}--;
+    unless ( $self->{_refresh_in}-- ) {
+        if ( $self->no_refresh ) {
+            $self->servers( $self->default_servers );
+            $self->{_refresh_in} = $self->max_requests - 1;
+            $self->{_failed}     = {};
+        }
+        else {
+            $self->refresh_servers;
+        }
+    }
 
     my @servers = @{ $self->servers };
-    my $next    = shift(@servers);
+
+    unless (@servers) {
+        my $failed = $self->{_failed};
+        @servers = grep { !$failed->{$_} } @{ $self->default_servers };
+        unless (@servers) {
+            $self->{_refresh_in} = 0;
+            $self->throw(
+                "NoServers",
+                "No servers available:\n",
+                { servers => $self->default_servers }
+            );
+        }
+
+    }
+
+    my $next = shift(@servers);
 
     $self->{_current_server} = { $$ => $next };
     $self->servers( @servers, $next );
     return $next;
+}
+
+#===================================
+sub _remove_server {
+#===================================
+    my $self   = shift;
+    my $server = shift;
+    $self->{_failed}{$server}++;
+    my @servers = grep { $_ ne $server } @{ $self->servers };
+    $self->servers( \@servers );
 }
 
 #===================================
@@ -235,6 +274,16 @@ sub timeout {
         $self->clear_clients;
     }
     return $self->{_timeout} || 0;
+}
+
+#===================================
+sub no_refresh {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_no_refresh} = !!shift();
+    }
+    return $self->{_no_refresh} || 0;
 }
 
 #===================================
@@ -385,6 +434,16 @@ On the first request and every C<max_requests> after that (default 10,000),
 the list of live nodes is automatically refreshed.  This can be disabled
 by setting C<max_requests> to C<0>.
 
+Regardless of the C<max_requests> setting, a list of live nodes will still be
+retrieved on the first request.  This may not be desirable behaviour
+if, for instance, you are connecting to remote servers which use internal
+IP addresses, or which don't allow remote C<nodes()> requests.
+
+If you want to disable this behaviour completely, set C<no_refresh> to C<1>,
+in which case the transport module will round robin through the
+C<servers> list only. Failed nodes will be removed from the list
+(but added back in every C<max_requests> or when all nodes have failed):
+
 Currently, the available backends are:
 
 =over
@@ -425,6 +484,7 @@ happens via the main L<ElasticSearch> class.
         servers     => 'search.foo.com:9200',
         transport   => 'httplite',
         timeout     => '10',
+        no_refresh  => 0 | 1,
     );
 
     my $t = $e->transport;
@@ -441,6 +501,9 @@ happens via the main L<ElasticSearch> class.
     $t->refresh_servers             # refresh list of live nodes
 
     $t->clear_clients               # clear all open clients
+
+    $t->no_refresh(0|1)             # don't retrieve the live node list
+                                    # instead, use just the nodes specified
 
     $t->register('foo',$class)      # register new Transport backend
 

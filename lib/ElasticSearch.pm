@@ -81,9 +81,13 @@ a randomly chosen node in the list.
     use ElasticSearch;
     my $e = ElasticSearch->new(
         servers      => 'search.foo.com:9200',
-        transport    => 'http' | 'httplite' | 'httptiny' | 'thrift', # default 'http'
-        max_requests => 10_000,                                      # default 10_000
+        transport    => 'http'                  # default 'http'
+                        | 'httplite'
+                        | 'httptiny'
+                        | 'thrift',
+        max_requests => 10_000,                 # default 10_000
         trace_calls  => 'log_file',
+        no_refresh   => 0 | 1,
     );
 
     $e->index(
@@ -199,6 +203,10 @@ a non-existent index.
             timeout      => 30,
             max_requests => 10_000,                             # refresh server list
                                                                 # after max_requests
+
+            no_refresh   => 0 | 1                               # don't retrieve the live
+                                                                # server list. Instead, use
+                                                                # just the servers specified
      );
 
 C<servers> is a required parameter and can be either a single server or an
@@ -217,6 +225,19 @@ To force a lookup of live nodes, you can do:
 
     $e->refresh_servers();
 
+=head4 no_refresh()
+
+Regardless of the C<max_requests> setting, a list of live nodes will still be
+retrieved on the first request.  This may not be desirable behaviour
+if, for instance, you are connecting to remote servers which use internal
+IP addresses, or which don't allow remote C<nodes()> requests.
+
+If you want to disable this behaviour completely, set C<no_refresh> to C<1>,
+in which case the transport module will round robin through the
+C<servers> list only. Failed nodes will be removed from the list
+(but added back in every C<max_requests> or when all nodes have failed).
+
+=head4 Transport Backends
 
 There are various C<transport> backends that ElasticSearch can use:
 C<http> (the default, based on LWP), C<httplite> (based on L<HTTP::Lite>),
