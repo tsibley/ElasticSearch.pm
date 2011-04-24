@@ -740,6 +740,21 @@ should be passed as well.  For instance;
 
 See L<http://www.elasticsearch.org/guide/reference/api/search/scroll.html>
 
+=head3 scrolled_search()
+
+C<scrolled_search()> returns a convenience iterator for scrolled
+searches. It accepts the standard search parameters that would be passed
+to L</"search()"> and requires a C<scroll> parameter, eg:
+
+    $scroller = $es->scrolled_search(
+                    query  => {match_all=>{}},
+                    scroll => '5m'               # keep the scroll request
+                                                 # live for 5 minutes
+                );
+
+See L<ElasticSearch::ScrolledSearch>, L</"search()">, L</"searchqs()">
+and L</"scroll()">.
+
 =head3 count()
 
     $result = $e->count(

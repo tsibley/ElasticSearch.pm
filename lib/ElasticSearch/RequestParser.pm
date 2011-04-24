@@ -504,6 +504,14 @@ sub scroll {
 }
 
 #===================================
+sub scrolled_search {
+#===================================
+    my $self = shift;
+    require ElasticSearch::ScrolledSearch;
+    return ElasticSearch::ScrolledSearch->new( $self, @_ );
+}
+
+#===================================
 sub delete_by_query {
 #===================================
     shift()->_do_action(
