@@ -296,13 +296,14 @@ and L<http://www.elasticsearch.org/guide/reference/modules/thrift.html>
         },
 
         # optional
-        create      => 0 | 1,
-        parent      => $parent,
-        percolate   => $percolate,
-        refresh     => 0 | 1,
-        routing     => $routing,
-        timeout     => eg '1m' or '10s'
-        version     => int,
+        create       => 0 | 1,
+        parent       => $parent,
+        percolate    => $percolate,
+        refresh      => 0 | 1,
+        routing      => $routing,
+        timeout      => eg '1m' or '10s'
+        version      => int,
+        version_type => 'internal' | 'external',
     );
 
 eg:
@@ -484,10 +485,11 @@ L<http://www.elasticsearch.org/guide/reference/api/delete.html>
                           data => { text => 'foo bar'},
 
                           # optional
-                          routing   => $routing,
-                          parent    => $parent,
-                          percolate => $percolate,
-                          version   => $version
+                          routing       => $routing,
+                          parent        => $parent,
+                          percolate     => $percolate,
+                          version       => $version,
+                          version_type  => 'internal' | 'external'
             }},
 
             { delete => { index => 'foo', type => 'bar', id => 123,

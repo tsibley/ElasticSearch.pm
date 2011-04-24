@@ -122,6 +122,7 @@ my %Index_Defn = (
         parent    => ['string'],
         percolate => ['string'],
         version   => ['int'],
+        version_type => [ 'enum', [ 'internal', 'external' ] ],
     },
     data => 'data',
 );
@@ -225,14 +226,15 @@ my %Bulk_Actions = (
         version => ONE_OPT,
     },
     'index' => {
-        index     => ONE_REQ,
-        type      => ONE_REQ,
-        id        => ONE_OPT,
-        data      => ONE_REQ,
-        routing   => ONE_OPT,
-        parent    => ONE_OPT,
-        percolate => ONE_OPT,
-        version   => ONE_OPT,
+        index        => ONE_REQ,
+        type         => ONE_REQ,
+        id           => ONE_OPT,
+        data         => ONE_REQ,
+        routing      => ONE_OPT,
+        parent       => ONE_OPT,
+        percolate    => ONE_OPT,
+        version      => ONE_OPT,
+        version_type => ONE_OPT,
     },
 );
 $Bulk_Actions{create} = $Bulk_Actions{index};
