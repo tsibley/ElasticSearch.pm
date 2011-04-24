@@ -16,4 +16,8 @@ qr/ElasticSearch::Error::Missing/,
 ok !$es->delete_index( index => 'es_test_2', ignore_missing => 1 ),
     ' - ignore_missing';
 
+ok $es->delete_index(), 'Delete all indices';
+wait_for_es();
+
+is scalar keys %{$es->get_aliases->{indices}}, 0, ' - all indices deleted';
 1
