@@ -620,7 +620,11 @@ sub index_status {
     shift()->_do_action(
         'index_status',
         {   cmd     => CMD_index,
-            postfix => '_status'
+            postfix => '_status',
+            qs      => {
+                recovery => [ 'boolean', 1 ],
+                snapshot => [ 'boolean', 1 ]
+            },
         },
         @_
     );

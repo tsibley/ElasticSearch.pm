@@ -855,6 +855,8 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl/mlt-query.html>
 
     $result = $e->index_status(
         index           => multi,
+        recovery        => 0 | 1,
+        snapshot        => 0 | 1,
     );
 
 Returns the status of
