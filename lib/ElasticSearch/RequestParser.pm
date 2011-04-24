@@ -191,6 +191,7 @@ sub delete {
                 consistency => [ 'enum', [ 'one', 'quorom', 'all' ] ],
                 ignore_missing => [ 'boolean', 1 ],
                 refresh        => [ 'boolean', 1 ],
+                parent         => ['string'],
                 routing        => ['string'],
                 version        => ['int'],
                 replication => [ 'enum', [ 'async', 'sync' ] ],

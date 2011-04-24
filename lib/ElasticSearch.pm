@@ -446,6 +446,7 @@ See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.h
         consistency     => 'quorum' | 'one' | 'all'
         ignore_missing  => 0 | 1
         refresh         => 0 | 1
+        parent          => $parent,
         routing         => $routing,
         replication     => 'sync' | 'async'
         version         => int
