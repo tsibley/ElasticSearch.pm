@@ -77,16 +77,19 @@ sub connect_to_es {
 
 NO_HOME
 
-    my %config = (
-        cluster => { name => 'es_test' },
-        gateway => { type => 'local' },
-        %{ $params{config} || {} }
-    );
     my $transport = $params{transport};
     my $port      = $params{port} || ( $transport eq 'thrift' ? 9500 : 9200 );
     my $instances = $params{instances};
-    my $ip        = $config{network}{host} = $params{ip};
-    my @servers   = map {"$ip:$_"} $port .. $port + $instances - 1;
+
+    my %config = (
+        cluster => { name => 'es_test' },
+        gateway => { type => 'local' },
+        "$transport.port" => "$port-" . ( $port + $instances - 1 ),
+        %{ $params{config} || {} }
+    );
+
+    my $ip = $config{network}{host} = $params{ip};
+    my @servers = map {"$ip:$_"} $port .. $port + $instances - 1;
 
     foreach (@servers) {
         if ( IO::Socket::INET->new($_) ) {
