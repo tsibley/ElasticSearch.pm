@@ -8,14 +8,13 @@ use IO::Socket();
 use File::Temp();
 use File::Spec::Functions qw(catfile);
 use YAML qw(DumpFile);
+use File::Path qw(rmtree);
 
-require Exporter;
-our @ISA    = 'Exporter';
-our @EXPORT = qw(connect_to_es);
+use base 'ElasticSearch';
 
 =head1 NAME
 
-ElasticSearch::TestServer - Start an ElasticSearh cluster for testing
+ElasticSearch::TestServer - Start an ElasticSearch cluster for testing
 
 =head1 SYNOPSIS
 
@@ -24,11 +23,7 @@ ElasticSearch::TestServer - Start an ElasticSearh cluster for testing
     $ENV{ES_HOME} = '/path/to/elasticsearch';
     $ENV{ES_TRANSPORT} = 'http';
 
-    my $es = connect_to_es();
-
-  OR
-
-    my $es = connect_to_es(
+    my $es = ElasticSearch::TestServer->new(
         home        => '/path/to/elasticsearch',
         instances   => 3,
         transport   => 'http',
@@ -48,15 +43,15 @@ By default, it uses C<http> transport, the C<local> gateway, and
 starts 3 instances on C<localhost>, starting with C<port> 9200 if
 the C<transport> is C<http>, C<httplite> or C<httptiny>, or 9500 if C<thrift>.
 
-C<connect_to_es> returns an ElasticSearch instance.
+It is a subclass of L<ElasticSearch>, so C<< ElasticSearch::TestServer->new >>
+returns an ElasticSearch instance.
 
 =cut
 
-my ( @PIDs, $work_dir );
-
 #===================================
-sub connect_to_es {
+sub new {
 #===================================
+    my $class  = shift;
     my %params = (
         home      => $ENV{ES_HOME},
         transport => $ENV{ES_TRANSPORT} || 'http',
@@ -109,23 +104,37 @@ RUNNING
 
     print "Starting test server installed in $home\n";
 
-    my $cmd = catfile( $home, 'bin', 'elasticsearch' );
-    my $pid_file = File::Temp->new;
-
+    my $cmd          = catfile( $home, 'bin', 'elasticsearch' );
+    my $pid_file     = File::Temp->new;
     my $blank_config = File::Temp->new( SUFFIX => '.yml' );
-    my $config_path = $blank_config->filename();
+    my $config_path  = $blank_config->filename();
+
+    my $dir     = '';
+    my $dirname = '';
+    my $PIDs    = [];
 
     unless ( $config{path}{data} ) {
-        $work_dir = File::Temp->newdir();
-        $config{path}{data} = $work_dir->dirname;
+        $dir = File::Temp->newdir( 'elastic_XXXXX', CLEANUP => 0,
+            TMPDIR => 1 );
+        $dirname = $config{path}{data} = $dir->dirname;
     }
+
+    my $old_SIGINT = $SIG{INT};
+    my $new_SIGINT = sub {
+        $class->_shutdown_servers( $PIDs, $dirname );
+        if ( ref $old_SIGINT eq 'CODE' ) {
+            return $old_SIGINT->();
+        }
+        exit(1);
+    };
+    $SIG{INT} = $new_SIGINT;
 
     DumpFile( $blank_config->filename, \%config );
 
-    $SIG{INT} = sub { _shutdown_servers(); };
-
     for ( 1 .. $instances ) {
         print "Starting test node $_\n";
+        my $int_caught = 0;
+        local $SIG{INT} = sub { $int_caught++; };
         defined( my $pid = fork ) or die "Couldn't fork a new process: $!";
         if ( $pid == 0 ) {
             die "Can't start a new session: $!" if setsid == -1;
@@ -135,9 +144,9 @@ RUNNING
         else {
             sleep 1;
             open my $pid_fh, '<', $pid_file->filename;
-            push @PIDs, <$pid_fh>;
+            push @$PIDs, <$pid_fh>;
         }
-
+        $new_SIGINT->() if $int_caught;
     }
 
     print "Waiting for servers to warm up\n";
@@ -156,28 +165,66 @@ RUNNING
     }
     die "Couldn't start $instances nodes" if @servers;
 
-    my $es;
-    eval {
-        $es = ElasticSearch->new(
-            servers     => $server,
-            trace_calls => $params{trace_calls},
-            transport   => $transport,
-        );
-        $es->refresh_servers;
-        }
-        or die("**** Couldn't connect to ElasticSearch at $server ****");
+    my $es = $class->SUPER::new(
+        servers     => $server,
+        trace_calls => $params{trace_calls},
+        transport   => $transport,
+        pids        => $PIDs,
+        tmpdir      => $dirname,
+    );
+
+    my $attempts = 10;
+    while (1) {
+        eval { $es->refresh_servers; 1 } && last;
+        die("**** Couldn't connect to ElasticSearch at $server ****\n")
+            unless --$attempts;
+        print "Connection failed. Retrying\n";
+        sleep 1;
+    }
+    print "Connected\n";
+
     return $es;
+}
+
+#===================================
+sub pids {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_pids} = shift;
+    }
+    return $self->{_pids};
+}
+
+#===================================
+sub tmpdir {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_tmpdir} = shift;
+    }
+    return $self->{_tmpdir};
 }
 
 #===================================
 sub _shutdown_servers {
 #===================================
-    kill 9, @PIDs;
-    wait;
-    exit(0);
+    my ( $self, $PIDs, $dir ) = @_;
+
+    $PIDs = $self->pids   unless defined $PIDs;
+    $dir  = $self->tmpdir unless defined $dir;
+
+    kill 9, @$PIDs;
+
+    while (1) { last if wait == -1 }
+    if ( defined $dir ) {
+
+        rmtree( $dir, { error => \my $error } );
+    }
+    undef $dir;
 }
 
-END { _shutdown_servers() }
+sub DESTROY { shift->_shutdown_servers; }
 
 =head1 AUTHOR
 

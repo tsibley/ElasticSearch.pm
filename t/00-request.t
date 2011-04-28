@@ -26,7 +26,7 @@ diag "Transport: $transport (Set ES_TRANSPORT=http|httplite|httptiny|thrift)";
 diag "";
 
 our $es = eval {
-    connect_to_es(
+    ElasticSearch::TestServer->new(
         instances   => $instances,
         transport   => $transport,
         trace_calls => 'log'
