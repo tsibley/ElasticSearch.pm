@@ -114,8 +114,8 @@ sub send_request {
     my $msg = $Statuses{$code};
 
     my $type
-        = $code eq 'CONFLICT'  ? 'Conflict'
-        : $code eq 'NOT_FOUND' ? 'Missing'
+        = $msg eq 'CONFLICT'  ? 'Conflict'
+        : $msg eq 'NOT_FOUND' ? 'Missing'
         : $msg eq 'REQUEST_TIMEOUT' || $msg eq 'GATEWAY_TIMEOUT' ? 'Timeout'
         :                                                          'Request';
     my $error_params = {
