@@ -75,11 +75,15 @@ NO_HOME
     my $transport = $params{transport};
     my $port      = $params{port} || ( $transport eq 'thrift' ? 9500 : 9200 );
     my $instances = $params{instances};
+    my $plugin    = $ElasticSearch::Transport::Transport{$transport}
+        or die "Unknown transport '$transport'";
+    eval "require  $plugin" or die $@;
+    my $protocol = $plugin->protocol;
 
     my %config = (
         cluster => { name => 'es_test' },
         gateway => { type => 'local' },
-        "$transport.port" => "$port-" . ( $port + $instances - 1 ),
+        "$protocol.port" => "$port-" . ( $port + $instances - 1 ),
         %{ $params{config} || {} }
     );
 
