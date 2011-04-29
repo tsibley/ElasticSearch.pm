@@ -66,7 +66,7 @@ sub new {
     ElasticSearch home directory not specified
 
     Please either set \$ENV{ES_HOME} or pass a value
-    for 'home' to connect_to_es()
+    for 'home' to new()
 
 ************************************************************
 
@@ -114,8 +114,11 @@ RUNNING
     my $PIDs    = [];
 
     unless ( $config{path}{data} ) {
-        $dir = File::Temp->newdir( 'elastic_XXXXX', CLEANUP => 0,
-            TMPDIR => 1 );
+        $dir = File::Temp->newdir(
+            'elastic_XXXXX',
+            CLEANUP => 0,
+            TMPDIR  => 1
+        );
         $dirname = $config{path}{data} = $dir->dirname;
     }
 
