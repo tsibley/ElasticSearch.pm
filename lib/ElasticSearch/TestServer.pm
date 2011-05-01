@@ -218,6 +218,8 @@ sub _shutdown_servers {
 #===================================
     my ( $self, $PIDs, $dir ) = @_;
 
+    local $?;
+
     $PIDs = $self->pids   unless defined $PIDs;
     $dir  = $self->tmpdir unless defined $dir;
 
@@ -225,7 +227,6 @@ sub _shutdown_servers {
 
     while (1) { last if wait == -1 }
     if ( defined $dir ) {
-
         rmtree( $dir, { error => \my $error } );
     }
     undef $dir;
