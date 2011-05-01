@@ -68,7 +68,7 @@ sub reindex {
 
     my @docs;
     while (1) {
-        my $doc = $source->next(1);
+        my $doc = $source->next();
         if ( !$doc or @docs == $bulk_size ) {
             my $results = $self->bulk_index( \@docs );
             if ( my $err = $results->{errors} ) {

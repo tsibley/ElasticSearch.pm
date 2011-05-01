@@ -15,7 +15,7 @@ ElasticSearch::ScrolledSearch - Description
   OR
     $scroller = ElasticSearch::ScrolledSearch($es,$search_params);
 
-    while (@results = $scroller->next) {
+    while (my $result = $scroller->next) {
         # do something
     }
 
@@ -59,7 +59,6 @@ sub new {
     my $results = $es->$method($params);
     my $self = {
         _es        => $es,
-        _size      => $params->{size} || 10,
         _scroll_id => $results->{_scroll_id},
         _scroll    => $scroll,
         _total     => $results->{hits}{total},
@@ -73,12 +72,12 @@ sub new {
 =head2 next()
 
     @results = $scroller->next()
-    @results = $scroller->next($size);
+    @results = $scroller->next($no_of_results);
 
-Returns the next C<$size> results, where C<$size> defaults to the C<size>
-parameter used to do the original search, or C<10> if not specified.
+Returns the next result, or the next C<$no_of_results> or an empty list when
+no more results are available.
 
-Returns an empty list when no more results are available.
+An error is thrown if the C<scroll> has already expired.
 
 =cut
 
@@ -86,7 +85,7 @@ Returns an empty list when no more results are available.
 sub next {
 #===================================
     my $self = shift;
-    my $size = shift || $self->{_size};
+    my $size = shift || 1;
     while ( @{ $self->{_buffer} } < $size && !$self->{_eof} ) {
         $self->_get_next;
     }
