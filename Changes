@@ -1,5 +1,21 @@
 Revision history for ElasticSearch
-0.36    2911-04-24
+0.37    2011-05-01
+
+        BREAKING CHANGES:
+         -  ElasticSearch::ScrolledSearch
+
+            $scrolled_search->next() now returns 1 result by default, instead
+            of $size results, to make it easier to write:
+
+                while (my $result = $scroll->next) {}
+
+         - ElasticSearch::TestServer is now an object which subclasses
+           ElasticSearch itself.  connect_to_server() has been removed.
+           Also, the port parameter can be used to specify a custom start port
+           when starting the test server, making it easier to run the
+           test server while there is an existing ES server running.
+
+0.36    2011-04-24
         Updated ElasticSearch.pm to work with ElasticSearch version 0.16.0
 
         New features:
