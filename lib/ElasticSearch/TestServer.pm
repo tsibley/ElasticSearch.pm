@@ -60,7 +60,7 @@ sub new {
         ref $_[0] eq 'HASH' ? %{ shift() } : @_
     );
 
-    my $home = $params{home} or die <<NO_HOME;
+    my $home = delete $params{home} or die <<NO_HOME;
 
 ************************************************************
     ElasticSearch home directory not specified
@@ -74,7 +74,7 @@ NO_HOME
 
     my $transport = $params{transport};
     my $port      = $params{port} || ( $transport eq 'thrift' ? 9500 : 9200 );
-    my $instances = $params{instances};
+    my $instances = delete $params{instances};
     my $plugin    = $ElasticSearch::Transport::Transport{$transport}
         or die "Unknown transport '$transport'";
     eval "require  $plugin" or die $@;
@@ -87,7 +87,7 @@ NO_HOME
         %{ $params{config} || {} }
     );
 
-    my $ip = $config{network}{host} = $params{ip};
+    my $ip = $config{network}{host} = delete $params{ip};
     my @servers = map {"$ip:$_"} $port .. $port + $instances - 1;
 
     foreach (@servers) {
@@ -173,6 +173,7 @@ RUNNING
     die "Couldn't start $instances nodes" if @servers;
 
     my $es = $class->SUPER::new(
+        %params,
         servers     => $server,
         trace_calls => $params{trace_calls},
         transport   => $transport,
