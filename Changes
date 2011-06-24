@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+
+
+         - trace_calls() now also accepts a filehandle
+
 0.37    2011-05-01
 
         BREAKING CHANGES:

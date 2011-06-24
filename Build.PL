@@ -25,6 +25,7 @@ my $builder = Module::Build->new(
         'Data::Dumper'   => 0,
         'Encode'         => 0,
         'parent'         => 0,
+        'Scalar::Util'   => '1.07',
     },
     recommends => {
         'HTTP::Lite'      => 0,

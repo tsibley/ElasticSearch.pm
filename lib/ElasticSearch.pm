@@ -1761,11 +1761,14 @@ by passing a parameter (including C<undef>) to any request.
 
     $es->trace_calls(1);            # log to STDERR
     $es->trace_calls($filename);    # log to $filename.$PID
+    $es->trace_calls(\*STDOUT);     # log to STDOUT
+    $es->trace_calls($fh);          # log to given filehandle
     $es->trace_calls(0 | undef);    # disable logging
 
 C<trace_calls()> is used for debugging.  All requests to the cluster
-are logged either to C<STDERR> or the specified filename, with the
-current $PID appended, in a form that can be rerun with curl.
+are logged either to C<STDERR>, or the specified filehandle,
+or the specified filename, with the
+current C<$PID> appended, in a form that can be rerun with curl.
 
 The cluster response will also be logged, and commented out.
 
