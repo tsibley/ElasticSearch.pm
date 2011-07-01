@@ -960,6 +960,7 @@ sub mapping {
         {   method  => 'GET',
             cmd     => CMD_index_type,
             postfix => '_mapping',
+            qs      => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
     );
