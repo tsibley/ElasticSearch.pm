@@ -170,7 +170,10 @@ RUNNING
         $timeout--;
         last if $timeout == 0;
     }
-    die "Couldn't start $instances nodes" if @servers;
+    if (@servers) {
+        eval { $class->_shutdown_servers( $PIDs, $dirname ) };
+        die "Couldn't start $instances nodes for transport $transport";
+    }
 
     my $es = $class->SUPER::new(
         servers     => $server,

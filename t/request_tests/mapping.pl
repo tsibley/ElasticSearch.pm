@@ -6,6 +6,8 @@ use warnings;
 our $es;
 my $r;
 
+no warnings 'redefine';
+
 $es->create_index( index => 'es_test_1' );
 wait_for_es();
 

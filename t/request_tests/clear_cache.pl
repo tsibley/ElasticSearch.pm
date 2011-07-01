@@ -6,6 +6,8 @@ use warnings;
 our $es;
 my $r;
 
+no warnings 'redefine';
+
 ### CLEAR INDEX CACHE ###
 ok $es->clear_cache->{ok}, 'Clear all index caches';
 ok $es->clear_cache( index => 'es_test_1' )->{ok}, ' - just index 1';

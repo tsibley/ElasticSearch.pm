@@ -6,6 +6,8 @@ use warnings;
 our $es;
 my $r;
 
+no warnings 'redefine';
+
 ### RIVER ###
 ok $es->create_river( type => 'dummy', river => 'foo' )->{ok}, 'Create river';
 wait_for_es(1);

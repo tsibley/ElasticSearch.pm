@@ -1,64 +1,46 @@
 #!perl
 
-our $test_num;
-BEGIN { $test_num = 354 }
-
-#use Test::Most qw(defer_plan);
-use Test::More tests => $test_num;
+use Test::More;
 use Test::Exception;
 use Module::Build;
 use lib 't/request_tests';
 
 our $instances = 3;
 
-my $transport = $ENV{ES_TRANSPORT} || 'http';
-$transport = 'http'
-    unless $ElasticSearch::Transport::Transport{$transport};
-
 BEGIN {
     use_ok 'ElasticSearch'             || print "Bail out!";
     use_ok 'ElasticSearch::TestServer' || print "Bail out!";
+    use_ok 'ElasticSearch::Transport'  || print "Bail out!";
 }
 
 diag "";
 diag "Testing ElasticSearch $ElasticSearch::VERSION, Perl $], $^X";
-diag "Transport: $transport (Set ES_TRANSPORT=http|httplite|httptiny|thrift)";
-diag "";
 
-our $es = eval {
-    ElasticSearch::TestServer->new(
-        instances   => $instances,
-        transport   => $transport,
-        trace_calls => 'log'
-    );
-} or do { diag $_ for split /\n/, $@ };
+for ( get_backends() ) {
+    diag "";
+    diag "Transport backend: $_";
 
-# ./bin/elasticsearch -Des.path.data=/tmp/elastic \
-# -Des.network.host=127.0.0.1 \
-# -Des.cluster.name=es_test \
-# -Des.action.auto_create_index=1
-#
-#   our $es = ElasticSearch->new(
-#       servers     => ['127.0.0.1:9200'],
-#       trace_calls => 'log'
-#   );
+    our $es = eval {
+        ElasticSearch::TestServer->new(
+            instances   => $instances,
+            transport   => $_,
+            trace_calls => 'log'
+        );
+    };
 
-#===================================
-sub run_tests {
-#===================================
-    while ( my $module = shift ) {
-        my $str = "Testing: $module";
-        note '';
-        note $str;
-        note '-' x length $str;
-        do "$module.pl" or die $!;
+    unless ($es) { diag $_ for split /\n/, $@; next }
 
-    }
+    run_test_suite();
+    note "Done testing transport: $_";
+    note "Shutting down servers";
+    $es->_shutdown_servers;
 }
 
-SKIP: {
-    skip "ElasticSearch server not available for testing", $test_num - 2
-        unless $es;
+done_testing;
+
+#===================================
+sub run_test_suite {
+#===================================
 
     ok $es, 'Connected to an ES cluster';
     ok $es->transport->current_server, 'Current server set';
@@ -138,7 +120,19 @@ SKIP: {
     index_test_docs();
     run_tests('reindex');
 
-    #    all_done;
+}
+
+#===================================
+sub run_tests {
+#===================================
+    while ( my $module = shift ) {
+        my $str = "Testing: $module";
+        note '';
+        note $str;
+        note '-' x length $str;
+        do "$module.pl" or die $!;
+
+    }
 }
 
 #===================================
@@ -306,4 +300,22 @@ sub wait_for_es {
         timeout         => '30s'
     );
     $es->refresh_index();
+}
+
+#===================================
+sub get_backends {
+#===================================
+    my @backends = sort keys %ElasticSearch::Transport::Transport;
+    my $transport = $ENV{ES_TRANSPORT} || 'http';
+    $transport = 'http'
+        unless $transport eq 'all'
+            or grep { $transport eq $_ } @backends;
+
+    my $note = ' (Set ES_TRANSPORT=' . join( '|', 'all', @backends ) . ')';
+    if ( $transport eq 'all' ) {
+        diag "Testing transports: " . join( ', ', @backends ) . $note;
+        return @backends;
+    }
+    diag "Testing transport: $transport $note";
+    return $transport;
 }
