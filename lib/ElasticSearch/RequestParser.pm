@@ -6,14 +6,16 @@ use warnings FATAL => 'all';
 use constant {
     ONE_REQ     => 1,
     ONE_OPT     => 2,
-    MULTI_ALL   => 3,
-    MULTI_BLANK => 4,
+    ONE_ALL     => 3,
+    MULTI_ALL   => 4,
+    MULTI_BLANK => 5,
 };
 
 use constant {
     CMD_NONE          => [],
     CMD_INDEX_TYPE_ID => [ index => ONE_REQ, type => ONE_REQ, id => ONE_REQ ],
     CMD_INDEX_TYPE_id => [ index => ONE_REQ, type => ONE_REQ, id => ONE_OPT ],
+    CMD_INDEX_type_ID => [ index => ONE_REQ, type => ONE_ALL, id => ONE_REQ ],
     CMD_index      => [ index => MULTI_BLANK ],
     CMD_INDEX      => [ index => ONE_REQ ],
     CMD_INDEX_TYPE => [ index => ONE_REQ, type => ONE_REQ ],
@@ -107,7 +109,7 @@ sub get {
 #===================================
     shift()->_do_action(
         'get',
-        {   cmd => CMD_INDEX_TYPE_ID,
+        {   cmd => CMD_INDEX_type_ID,
             qs  => {
                 fields         => ['flatten'],
                 ignore_missing => [ 'boolean', 1 ],
@@ -1475,7 +1477,7 @@ sub _build_cmd {
         if ( defined $val ) {
             if ( ref $val eq 'ARRAY' ) {
                 die "'$key' must be a single value\n"
-                    if $type == ONE_REQ || $type == ONE_OPT;
+                    if $type <= ONE_ALL;
                 $val = join ',', @$val;
             }
         }

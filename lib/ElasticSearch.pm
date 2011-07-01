@@ -529,7 +529,7 @@ See also: L</"index()">
 
     $result = $es->get(
         index   => single,
-        type    => single,
+        type    => single or blank,
         id      => single,
 
         # optional
