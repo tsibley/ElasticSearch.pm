@@ -5,6 +5,7 @@ use warnings FATAL => 'all';
 use ElasticSearch::Util qw(throw parse_params);
 use URI();
 use JSON();
+use Scalar::Util qw(openhandle);
 
 our %Transport = (
     'http'     => 'ElasticSearch::Transport::HTTP',
@@ -306,8 +307,15 @@ sub _log_fh {
     unless ( exists $self->{_log_fh}{$$} ) {
         my $log_fh;
         if ( my $file = $self->trace_calls ) {
-            $file = $file eq 1 ? '&STDERR' : "$file.$$";
-            open $log_fh, ">>$file"
+            $file = \*STDERR if $file eq 1;
+            my $open_mode = '>>';
+            if ( openhandle($file) ) {
+                $open_mode = '>>&';
+            }
+            else {
+                $file .= ".$$";
+            }
+            open $log_fh, $open_mode, $file
                 or $self->throw( 'Internal',
                 "Couldn't open '$file' for trace logging: $!" );
             binmode( $log_fh, ':utf8' );
