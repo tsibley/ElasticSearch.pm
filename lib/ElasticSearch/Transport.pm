@@ -85,7 +85,11 @@ ATTEMPT:
 
         $self->log_request( $server, $args ) unless $Skip_Log;
 
-        $response_json = eval { $self->send_request( $server, $args ) }
+        eval {
+            $response_json = $self->send_request( $server, $args )
+                || '{"ok":true}';
+            1;
+        }
             and last ATTEMPT;
 
         my $error = $@;
@@ -104,7 +108,7 @@ ATTEMPT:
 
             $error->{-vars}{request} = $params;
             if ( my $raw = $error->{-vars}{content} ) {
-                my $content = eval {$json->decode($raw)} || $raw;
+                my $content = eval { $json->decode($raw) } || $raw;
                 $self->log_response($content);
                 if ( ref $content and $content->{error} ) {
                     $error->{-text} = $content->{error};

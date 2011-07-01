@@ -1229,6 +1229,17 @@ specified index doesn't exist and C<ignore_missing> is not true:
 
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-delete-index.html>
 
+=head3 index_exists()
+
+    $result = $e->index_exists(
+        index => multi
+    );
+
+Returns C<<{ok => 1}>> if all specified indices exist, or throws  a C<Missing>
+exception.
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1022>
+
 =head3 index_settings()
 
     $result = $es->index_settings(

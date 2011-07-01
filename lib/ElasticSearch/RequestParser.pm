@@ -773,6 +773,18 @@ sub delete_index {
 }
 
 #===================================
+sub index_exists {
+#===================================
+    shift()->_do_action(
+        'index_exists',
+        {   method => 'HEAD',
+            cmd    => CMD_index,
+        },
+        @_
+    );
+}
+
+#===================================
 sub open_index {
 #===================================
     shift()->_do_action(
