@@ -406,7 +406,7 @@ my %Search_Data = (
     script_fields => ['script_fields'],
     size          => ['size'],
     'sort'        => ['sort'],
-    track_scores => [ 'track_scores' ],
+    track_scores  => ['track_scores'],
 );
 
 my %SearchQS = (
@@ -419,10 +419,10 @@ my %SearchQS = (
                 )
         ]
     ],
-    preference   => ['string'],
-    routing      => ['flatten'],
-    scroll       => ['duration'],
-    timeout      => ['duration'],
+    preference => ['string'],
+    routing    => ['flatten'],
+    scroll     => ['duration'],
+    timeout    => ['duration'],
 );
 
 my %Search_Defn = (
