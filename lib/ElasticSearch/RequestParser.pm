@@ -122,6 +122,45 @@ sub get {
     );
 }
 
+#===================================
+sub mget {
+#===================================
+    my $self   = shift;
+    my $params = $self->parse_params(@_);
+
+    if ( $params->{index} ) {
+        if ( my $ids = delete $params->{ids} ) {
+            $self->throw( 'Param', 'mget',
+                'Cannot specify both ids and docs in mget()' )
+                if $params->{docs};
+            $params->{docs} = [ map { +{ _id => $_ } } @$ids ];
+        }
+    }
+    else {
+        $self->throw( 'Param',
+            'Cannot specify a type for mget() without specifying index' )
+            if $params->{type};
+        $self->throw( 'Param',
+            'Use of the ids param with mget() requires an index' )
+            if $params->{ids};
+    }
+    my $filter;
+    my $result = $self->_do_action(
+        'mget',
+        {   cmd     => [ index => ONE_OPT, type => ONE_OPT ],
+            postfix => '_mget',
+            data => { docs           => 'docs' },
+            qs   => { filter_missing => [ 'boolean', 1 ], },
+            fixup => sub { $filter = delete $_[0]->{qs}{filter_missing} }
+        },
+        $params
+    );
+    my $docs = $result->{docs};
+    return $filter
+        ? [ grep { $_->{exists} } @$docs ]
+        : $docs;
+}
+
 my %Index_Defn = (
     cmd => CMD_INDEX_TYPE_id,
     qs  => {

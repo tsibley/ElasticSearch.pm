@@ -572,6 +572,58 @@ exception is thrown, unless C<ignore_missing> is true.
 
 See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.html>
 
+=head3 mget()
+
+    $docs = $e->mget(
+        index          => single,
+        type           => single or blank,
+        ids            => \@ids,
+        filter_missing => 0 | 1
+    );
+
+    $docs = $e->mget(
+        index          => single or blank,
+        type           => single or blank,
+        docs           => \@doc_info,
+        filter_missing => 0 | 1
+    );
+
+C<mget> or "multi-get" returns multiple documents at once. There are two
+ways to call C<mget()>:
+
+If all docs come from the same index (and potentially the same type):
+
+    $docs = $e->mget(
+        index => 'myindex',
+        type  => 'mytype',   # optional
+        ids   => [1,2,3],
+    )
+
+Alternatively you can specify each doc separately:
+
+    $docs = $e->mget(
+        docs => [
+            { _index => 'index_1', type = >'type_1', _id => 1 },
+            { _index => 'index_2', type = >'type_2', _id => 2 },
+        ]
+    )
+
+Or:
+    $docs = $e->mget(
+        index => 'myindex',  # default index
+        type  => 'mytype',   # default type
+        docs => [
+            { _id => 1 },    # uses defaults
+            { _index => 'index_2', type = >'type_2', _id => 2 },
+        ]
+    );
+
+Returns an array ref containing all of the documents requested.  If a document
+is not found, then its entry will include C<<{exists => 0}>>. If you would
+rather filter these missing docs, pass C<filter_missing => 1>
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1084>
+
 =head3 delete()
 
     $result = $es->delete(

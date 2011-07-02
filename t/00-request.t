@@ -96,6 +96,7 @@ sub run_test_suite {
     index_test_docs();
 
     run_tests( qw(
+            mget
             search_query
             search_from_size
             search_types
