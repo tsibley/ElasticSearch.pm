@@ -60,6 +60,7 @@ t/request_tests/nodes.pl
 t/request_tests/open_close_index.pl
 t/request_tests/reindex.pl
 t/request_tests/rivers.pl
+t/request_tests/search_builder.pl
 t/request_tests/search_custom_score.pl
 t/request_tests/search_explain.pl
 t/request_tests/search_facets.pl

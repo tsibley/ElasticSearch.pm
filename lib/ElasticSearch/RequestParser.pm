@@ -394,11 +394,30 @@ sub _build_bulk_query {
 ## QUERIES
 ##################################
 
+#===================================
+sub _to_dsl {
+#===================================
+    my $self = shift;
+    my $ops  = shift;
+    my $builder;
+    foreach my $clause (@_) {
+        while ( my ( $old, $new ) = each %$ops ) {
+            my $src = delete $clause->{$old} or next;
+            die "Cannot specify $old and $new parameters"
+                if $clause->{$new};
+            $builder ||= $self->builder;
+            my $method = $new eq 'query' ? 'query' : 'filter';
+            $clause->{$new} = $builder->$method($src)->{$method};
+        }
+    }
+}
+
 my %Search_Data = (
     explain       => ['explain'],
     facets        => ['facets'],
     fields        => ['fields'],
     filter        => ['filter'],
+    filterb       => ['filterb'],
     from          => ['from'],
     highlight     => ['highlight'],
     indices_boost => ['indices_boost'],
@@ -428,12 +447,28 @@ my %SearchQS = (
 my %Search_Defn = (
     cmd     => CMD_index_type,
     postfix => '_search',
-    data    => { %Search_Data, query => ['query'] },
+    data    => { %Search_Data, query => ['query'], queryb => ['queryb'] },
     qs      => {
         %SearchQS,
         scroll  => ['duration'],
         version => [ 'boolean', 1 ]
     },
+    fixup => sub {
+        my $self = shift;
+        my $args = shift;
+        $self->_to_dsl( { queryb => 'query', filterb => 'filter' },
+            $args->{data}, );
+        my @facets = values %{ $args->{data}{facets} || {} };
+        if (@facets) {
+            $self->_to_dsl( {
+                    queryb        => 'query',
+                    filterb       => 'filter',
+                    facet_filterb => 'facet_filter'
+                },
+                @facets,
+            );
+        }
+    }
 );
 
 my %SearchQS_Defn = (
@@ -457,6 +492,8 @@ my %SearchQS_Defn = (
 );
 
 my %Query_Defn = (
+    query              => ['query'],
+    queryb             => ['queryb'],
     bool               => ['bool'],
     boosting           => ['boosting'],
     constant_score     => ['constant_score'],
@@ -486,6 +523,18 @@ my %Query_Defn = (
     top_children       => ['top_children'],
     wildcard           => ['wildcard'],
 );
+
+#===================================
+sub _query_fixup {
+#===================================
+    my $self = shift;
+    my $args = shift;
+    $self->_to_dsl( { queryb => 'query' }, $args->{data} );
+    if ( my $query = delete $args->{data}{query} ) {
+        my ( $k, $v ) = %$query;
+        $args->{data}{$k} = $v;
+    }
+}
 
 #===================================
 sub search   { shift()->_do_action( 'search',   \%Search_Defn,   @_ ) }
@@ -529,7 +578,8 @@ sub delete_by_query {
                 replication => [ 'enum', [ 'async', 'sync' ] ],
                 routing => ['flatten'],
             },
-            data => \%Query_Defn,
+            data  => \%Query_Defn,
+            fixup => \&_query_fixup,
         },
         @_
     );
@@ -544,6 +594,7 @@ sub count {
             postfix => '_count',
             data    => \%Query_Defn,
             qs      => { routing => ['flatten'] },
+            fixup   => \&_query_fixup,
         },
         @_
     );
@@ -574,6 +625,9 @@ sub mlt {
             },
             postfix => '_mlt',
             data    => \%Search_Data,
+            fixup   => sub {
+                shift()->_to_dsl( { filterb => 'filter' }, $_[0]->{data} );
+            },
         },
         @_
     );
@@ -590,20 +644,27 @@ sub create_percolator {
         {   cmd    => CMD_INDEX_PERC,
             prefix => '_percolator',
             method => 'PUT',
-            data   => { query => 'query', data => ['data'] },
-            fixup  => sub {
+            data   => {
+                query  => ['query'],
+                queryb => ['queryb'],
+                data   => ['data']
+            },
+            fixup => sub {
+                my $self = shift;
                 my $args = shift;
+                $self->_to_dsl( { queryb => 'query' }, $args->{data} );
+                die('create_percolator() requires either the query or queryb param'
+                ) unless $args->{data}{query};
                 die 'The "data" param cannot include a "query" key'
                     if $args->{data}{data}{query};
                 $args->{data} = {
                     query => $args->{data}{query},
                     %{ $args->{data}{data} }
                 };
-                }
+            },
         },
         @_
     );
-
 }
 
 #===================================
@@ -925,9 +986,9 @@ sub put_mapping {
                 _source           => ['_source'],
             },
             fixup => sub {
-                my $args = shift;
+                my $args = $_[1];
                 $args->{data} = { $params->{type} => $args->{data} };
-                }
+            },
 
         },
         $params
@@ -1249,7 +1310,7 @@ sub _do_action {
         $args{qs} = $self->_build_qs( $params, $defn->{qs} );
         $args{data} = $self->_build_data( $params, $defn->{data} );
         if ( my $fixup = $defn->{fixup} ) {
-            $fixup->( \%args );
+            $fixup->( $self, \%args );
         }
         die "Unknown parameters: " . join( ', ', keys %$params ) . "\n"
             if keys %$params;

@@ -116,6 +116,8 @@ sub run_test_suite {
             )
     );
 
+    run_tests('search_builder');
+
     create_indices();
     index_test_docs();
     run_tests('reindex');

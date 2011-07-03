@@ -14,12 +14,42 @@ our $DEBUG   = 0;
 sub new {
 #===================================
     my ( $proto, $params ) = parse_params(@_);
-    my $self = { _base_qs => {}, _default => {} };
+    my $self = {
+        _base_qs       => {},
+        _default       => {},
+        _builder_class => 'ElasticSearch::SearchBuilder'
+    };
 
     bless $self, ref $proto || $proto;
     $self->{_transport} = ElasticSearch::Transport->new($params);
     $self->$_( $params->{$_} ) for keys %$params;
     return $self;
+}
+
+#===================================
+sub builder_class {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_builder_class} = shift;
+        delete $self->{_builder};
+    }
+    return $self->{_builder_class};
+}
+
+#===================================
+sub builder {
+#===================================
+    my $self = shift;
+    unless ( $self->{_builder} ) {
+        my $class = $self->{_builder_class}
+            or $self->throw( 'Param', "No builder_class specified" );
+        eval "require $class; 1"
+            or $self->throw( 'Internal',
+            "Couldn't load clas $class: " . ( $@ || 'Unknown error' ) );
+        $self->{_builder} = $class->new(@_);
+    }
+    return $self->{_builder};
 }
 
 #===================================
@@ -176,11 +206,17 @@ a randomly chosen node in the list.
         }
     );
 
-    $results = $e->search(
-        index => 'twitter',
-        type  => 'tweet',
-        query => {
-            query_string => { query => 'kimchy' },
+    # ElasticSearch::SearchBuilder Perlish query language
+    $results = $es->search(
+        index  => 'twitter',
+        type   => 'tweet',
+        queryb => {
+            message   => 'Perl API',
+            user      => 'kimchy',
+            post_date => {
+                '>'   => '2010-01-01',
+                '<='  => '2011-01-01',
+            }
         }
     );
 
@@ -250,6 +286,60 @@ Anything that is known to be an error throws an exception, eg trying to delete
 a non-existent index.
 
 =cut
+
+=head1 INTEGRATION WITH ElasticSearch::SearchBuilder
+
+L<ElasticSearch::SearchBuilder> provides a concise Perlish
+L<SQL::Abstract>-style query language, which gets translated into the native
+L<Query DSL|http://www.elasticsearch.org/guide/reference/query-dsl> that
+ElasticSearch uses.
+
+For instance:
+
+    {
+        content => 'search keywords',
+        -filter => {
+            tags        => ['perl','ruby'],
+            date        => {
+                '>'     => '2010-01-01',
+                '<='    => '2011-01-01'
+            },
+        }
+    }
+
+Would be translated to:
+
+    { query => {
+        filtered => {
+            query  => { text => { content => "search keywords" } },
+            filter => {
+                and => [
+                    { terms => { tags => ["perl", "ruby"] } },
+                    { numeric_range => {
+                        date => {
+                            gt => "2010-01-01",
+                            lte => "2011-01-01"
+                    }}},
+                ],
+            }
+    }}}
+
+All you have to do to start using L<ElasticSearch::SearchBuilder> is to change
+your C<query> or C<filter> parameter to C<queryb> or C<filterb> (where the
+extra C<b> stands for C<builder>):
+
+    $es->search(
+        queryb => { content => 'keywords' }
+    )
+
+If you want to see what your SearchBuilder-style query is being converted into,
+you can either use L</"trace_calls()"> or access it directly with:
+
+    $native_query  = $es->builder->query( $query )
+    $native_filter = $es->builder->filter( $filter )
+
+See the L<ElasticSearch::SearchBuilder> docs for more information about
+the syntax.
 
 =head1 METHODS
 
@@ -770,16 +860,20 @@ more.
         type            => multi,
 
         # optional
+        query           => { native query },
+        queryb          => { searchbuilder query },
+
+        filter          => { native filter },
+        filterb         => { searchbuilder filter },
+
         explain         => 1 | 0,
         facets          => { facets },
         fields          => [$field_1,$field_n],
-        filter          => $filter,
         from            => $start_from
         highlight       => { highlight }
         indices_boost   => { index_1 => 1.5,... },
         min_score       => $score,
         preference      => '_local' | '_primary' | $string,
-        query           => {query},
         routing         => [$routing, ...]
         script_fields   => { script_fields }
         search_type     => 'dfs_query_then_fetch'
@@ -805,8 +899,37 @@ Documents can be matched against multiple indices and multiple types, eg:
         query   => { term => {user => 'kimchy' }}
     );
 
-For all of the options that can be included in the C<query> parameter, see
-L<http://www.elasticsearch.org/guide/reference/api/search>,
+You can provide either the C<query> parameter, which uses the native
+ElasticSearch Query DSL, or the C<queryb> parameter, which uses the
+more concise L<ElasticSearch::SearchBuilder> query syntax.
+
+Similarly, use C<filterb> instead of C<filter>. SearchBuilder can also be
+used in facets, for instance, instead of:
+
+    $es->search(
+        facets  => {
+            wow_facet => {
+                query        => { text => { content => 'wow'  }},
+                facet_filter => { term => {status => 'active' }},
+            }
+        }
+    )
+
+You can use:
+
+    $es->search(
+        facets  => {
+            wow_facet => {
+                queryb        => { content => 'wow'   },  # note the extra 'b'
+                facet_filterb => { status => 'active' },  # note the extra 'b'
+            }
+        }
+    )
+
+See L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more.
+
+For all of the options that can be included in the native C<query> parameter,
+see L<http://www.elasticsearch.org/guide/reference/api/search>,
 L<http://www.elasticsearch.org/guide/reference/api/search/request-body.html>
 and L<http://www.elasticsearch.org/guide/reference/query-dsl>
 
@@ -904,6 +1027,8 @@ and L</"scroll()">.
         routing         => [$routing,...]
 
         # one of:
+        query           => { native query },
+        queryb          => { search builder query },
         bool
       | boosting
       | constant_score
@@ -941,8 +1066,16 @@ against multiple indices and multiple types, eg
     $result = $e->count(
         index   => undef,               # all
         type    => ['user','tweet'],
-        term => {user => 'kimchy' },
+        queryb  => { user  => 'kimchy' }
     );
+
+B<Note>: C<count()> supports L<ElasticSearch::SearchBuilder>-style
+queries via the C<queryb> parameter.  See
+L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more details.
+
+B<DEPRECATION>: C<count()> previously took query types at the top level, eg
+C<< $es->count( term=> { ... }) >>. This form still works, but is deprecated.
+Instead use the C<queryb> or C<query> parameter as you would in L</"search()">.
 
 See also L</"search()">,
 L<http://www.elasticsearch.org/guide/reference/api/count.html>
@@ -959,6 +1092,10 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         consistency     => 'quorum' | 'one' | 'all'
         replication     => 'sync' | 'async'
         routing         => [$routing,...]
+
+        # one of:
+        query           => { native query },
+        queryb          => { search builder query },
 
         # one of :
         bool
@@ -998,8 +1135,17 @@ multiple indices and multiple types, eg
     $result = $e->delete_by_query(
         index   => undef,               # all
         type    => ['user','tweet'],
-        term    => {user => 'kimchy' }
+        queryb  => {user => 'kimchy' },
     );
+
+B<Note>: C<delete_by_query()> supports L<ElasticSearch::SearchBuilder>-style
+queries via the C<queryb> parameter.  See
+L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more details.
+
+B<DEPRECATION>: C<delete_by_query()> previously took query types at the top level,
+eg C<< $es->delete_by_query( term=> { ... }) >>. This form still works, but is
+deprecated. Instead use the C<queryb> or C<query> parameter as you would in
+L</"search()">.
 
 See also L</"search()">,
 L<http://www.elasticsearch.org/guide/reference/api/delete-by-query.html>
@@ -1031,6 +1177,8 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         explain              =>  {explain}
         facets               =>  {facets}
         fields               =>  {fields}
+        filter               =>  { native filter },
+        filterb              =>  { search builder filter },
         from                 =>  {from}
         indices_boost        =>  { index_1 => 1.5,... }
         min_score            =>  $score
@@ -1054,6 +1202,10 @@ the document referred to by C<index/type/id>.
 
 This gets transformed into a search query, so all of the search parameters
 are also available.
+
+Note: C<mlt()> supports L<ElasticSearch::SearchBuilder>-style filters via
+the C<filterb> parameter.  See L</"INTEGRATION WITH ElasticSearch::SearchBuilder">
+for more details.
 
 See L<http://www.elasticsearch.org/guide/reference/api/more-like-this.html>
 and L<http://www.elasticsearch.org/guide/reference/query-dsl/mlt-query.html>
@@ -1541,8 +1693,13 @@ and L<http://www.elasticsearch.org/blog/2011/02/08/percolator.html>
     $e->create_percolator(
         index           =>  single
         percolator      =>  $percolator
-        query           =>  {query}                                       # required
-        data            =>  {data}                                        # optional
+
+        # one of queryb or query is required
+        query           =>  { native query }
+        queryb          =>  { search builder query }
+
+        # optional
+        data            =>  {data}
     )
 
 Create a percolator, eg:
@@ -1550,9 +1707,13 @@ Create a percolator, eg:
     $e->create_percolator(
         index           => 'myindex',
         percolator      => 'mypercolator',
-        query           => { field => { text => 'foo' }},
+        queryb          => { field => 'foo'  },
         data            => { color => 'blue' }
     )
+
+Note: C<create_percolator()> supports L<ElasticSearch::SearchBuilder>-style
+queries via the C<queryb> parameter.  See
+L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more details.
 
 =head3 get_percolator()
 
@@ -1838,6 +1999,20 @@ Or:
             servers         => '127.0.0.1:9200',
             max_requests    => 0,
     );
+
+=head3 builder_class() | builder()
+
+The C<builder_class> is set to L<ElasticSearch::SearchBuilder> by default.
+This can be changed, eg:
+
+    $es = ElasticSearch->new(
+            servers         => '127.0.0.1:9200',
+            builder_class   => 'My::Builder'
+    );
+
+C<builder()> will C<require> the module set in C<builder_class()>, create
+an instance, and store that instance for future use.  The C<builder_class>
+should implement the C<filter()> and C<query()> methods.
 
 =head3 camel_case()
 

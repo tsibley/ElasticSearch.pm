@@ -54,10 +54,10 @@ sub new {
     my $scroll = $params->{scroll}
         or $es->throw( 'Param', 'Missing scroll param', $params );
 
-    my $method = $params->{query} ? 'search' : 'searchqs';
+    my $method = $params->{q} ? 'searchqs' : 'search';
 
     my $results = $es->$method($params);
-    my $self = {
+    my $self    = {
         _es        => $es,
         _scroll_id => $results->{_scroll_id},
         _scroll    => $scroll,

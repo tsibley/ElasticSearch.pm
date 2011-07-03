@@ -23,7 +23,7 @@ print <<USAGE;
     You can now search the database of open issues.
     Enter some keywords, eg:
         > kimchy
-        > clint*
+        > clint
 
     Or enter an issue ID to see all of the details:
         > 1
@@ -113,11 +113,8 @@ sub search_issues {
 #===================================
     my $keywords = shift;
     my $result   = $ES->search(
-        index => $Index,
-        query => {
-            field =>
-                { _all => $keywords }  # query string search across all fields
-        }
+        index  => $Index,
+        queryb => { _all => { '^' => $keywords } } # text_phrase_prefix search
     );
     printf( "Total results found for \"%s\": %d\n",
         $keywords, $result->{hits}{total} );
@@ -135,9 +132,9 @@ sub retrieve_issue {
             type  => $Type,
             id    => $id
         )->{_source};
-        }
+    }
         or printf( "ERROR: Unknown doc ID: $id. We have docs 1..%d\n",
-        $ES->count( index => $Index, match_all => {} )->{count} );
+        $ES->count( index => $Index, queryb => { -all => 1 } )->{count} );
 
     for my $key ( sort keys %$doc ) {
         my $val = $doc->{$key} // '';
@@ -157,13 +154,13 @@ all of the issue details.
 
 In order to run this demo, you will need an ElasticSearch server running
 on localhost. If you don't already have ElasticSearch, you can find the
-latest version (currently 0.16.0) at L<http://www.elasticsearch.com/download/>.
+latest version (currently 0.16.2) at L<http://www.elasticsearch.com/download/>.
 
 You can install it as follows:
 
-    wget http://cloud.github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.16.0.zip
-    unzip elasticsearch-0.16.0.zip
-    cd elasticsearch-0.16.0
+    wget http://cloud.github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.16.2.zip
+    unzip elasticsearch-0.16.2.zip
+    cd elasticsearch-0.16.2
     ./bin/elasticsearch -f                   # run server in foreground
 
 =head1 AUTHOR
