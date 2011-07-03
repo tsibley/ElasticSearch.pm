@@ -1029,35 +1029,6 @@ and L</"scroll()">.
         # one of:
         query           => { native query },
         queryb          => { search builder query },
-        bool
-      | boosting
-      | constant_score
-      | custom_score
-      | dis_max
-      | field
-      | field_masking_span
-      | filtered
-      | flt
-      | flt_field
-      | has_child
-      | fuzzy
-      | has_child
-      | ids
-      | match_all
-      | mlt
-      | mlt_field
-      | query_string
-      | prefix
-      | range
-      | span_term
-      | span_first
-      | span_near
-      | span_not
-      | span_or
-      | term
-      | terms
-      | top_children
-      | wildcard
     );
 
 Counts the number of documents matching the query. Documents can be matched
@@ -1097,36 +1068,6 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         query           => { native query },
         queryb          => { search builder query },
 
-        # one of :
-        bool
-      | boosting
-      | constant_score
-      | custom_score
-      | dis_max
-      | field
-      | field_masking_span
-      | filtered
-      | flt
-      | flt_field
-      | has_child
-      | fuzzy
-      | has_child
-      | ids
-      | match_all
-      | mlt
-      | mlt_field
-      | query_string
-      | prefix
-      | range
-      | span_term
-      | span_first
-      | span_near
-      | span_not
-      | span_or
-      | term
-      | terms
-      | top_children
-      | wildcard
     );
 
 Deletes any documents matching the query. Documents can be matched against

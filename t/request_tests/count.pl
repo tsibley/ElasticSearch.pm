@@ -6,6 +6,9 @@ use warnings;
 our $es;
 my $r;
 
+is $es->count( query => { term => { text => 'foo' } } )->{count}, 17,
+    "Count: query";
+
 is $es->count( term => { text => 'foo' } )->{count}, 17, "Count: term";
 
 is $es->count( terms => { text => [ 'foo', 'bar' ] } )->{count}, 25,

@@ -520,6 +520,9 @@ my %Query_Defn = (
     span_term          => ['span_term'],
     term               => ['term'],
     terms              => [ 'terms', 'in' ],
+    text               => ['text'],
+    text_phrase        => ['text_phrase'],
+    text_phrase_prefix => ['text_phrase_prefix'],
     top_children       => ['top_children'],
     wildcard           => ['wildcard'],
 );
