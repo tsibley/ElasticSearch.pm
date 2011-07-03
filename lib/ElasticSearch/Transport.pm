@@ -528,7 +528,7 @@ Note: my experience with L<HTTP::Lite> so far has been flawless - I'm just
 being cautious.
 
 Also, just added the C<httptiny> backend with L<HTTP::Tiny>, which is 1% faster
-again than the C<httplite> backend, but again needs more testing.
+again than the C<httplite> backend.
 
 See also:
 L<http://www.elasticsearch.org/guide/reference/modules/http.html>
