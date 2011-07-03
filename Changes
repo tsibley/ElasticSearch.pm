@@ -1,7 +1,11 @@
 Revision history for ElasticSearch
 
-
-         - trace_calls() now also accepts a filehandle
+0.38    2011-07-03
+        - Integrated ElasticSearch::SearchBuilder
+        - Deprecated the use of query types as top level params to count()
+          and delete_by_query() in favour of query or queryb
+        - trace_calls() now also accepts a filehandle (thanks FERREIRA)
+        - TestServer now supports ES_TRANSPORT=all
 
 0.37    2011-05-01
 

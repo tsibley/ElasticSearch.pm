@@ -77,3 +77,4 @@ t/request_tests/searchqs.pl
 t/request_tests/update_settings.pl
 t/request_tests/use_index_type.pl
 t/request_tests/version.pl
+META.json
