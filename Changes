@@ -1,5 +1,9 @@
 Revision history for ElasticSearch
 
+0.39     2011-07-19
+         - "type" is now optional for get() requests
+         - added index_exists()
+
 0.38    2011-07-03
         - Integrated ElasticSearch::SearchBuilder
         - Deprecated the use of query types as top level params to count()

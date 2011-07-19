@@ -9,17 +9,17 @@ my $r;
 ok $r= $es->mget(
     index => 'es_test_1',
     type  => 'type_1',
-    ids   => [ 1, 2, 3, 4 ]
+    ids   => [ 1, 2, 3, 4, 5 ]
     ),
     'mget';
-is scalar @$r, 4, ' - 4 results';
+is scalar @$r, 5, ' - 5 results';
 is $r->[0]{_id},    1, ' - first id ok';
-is $r->[3]{exists}, 0, "last doesn't exist";
+is $r->[3]{exists}, 0, "id 3 doesn't exist";
 
 ok $r= $es->mget(
     index          => 'es_test_1',
     type           => 'type_1',
-    ids            => [ 1, 2, 3, 4 ],
+    ids            => [ 1, 2, 3, 4, 5 ],
     filter_missing => 1
     ),
     ' - filter missing';
@@ -28,7 +28,7 @@ is scalar @$r, 2, ' - missing filtered';
 ok $r= $es->mget(
     docs => [
         { _index => 'es_test_1', _type => 'type_1', _id => 1 },
-        { _index => 'es_test_1', _type => 'type_1', _id => 3 }
+        { _index => 'es_test_1', _type => 'type_1', _id => 5 }
     ]
     ),
     ' - docs';

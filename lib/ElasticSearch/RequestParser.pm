@@ -151,14 +151,12 @@ sub mget {
             postfix => '_mget',
             data => { docs           => 'docs' },
             qs   => { filter_missing => [ 'boolean', 1 ], },
-            fixup => sub { $filter = delete $_[0]->{qs}{filter_missing} }
+            fixup => sub { $filter = delete $_[1]->{qs}{filter_missing} }
         },
         $params
     );
     my $docs = $result->{docs};
-    return $filter
-        ? [ grep { $_->{exists} } @$docs ]
-        : $docs;
+    return $filter ? [ grep { $_->{exists} } @$docs ] : $docs;
 }
 
 my %Index_Defn = (
