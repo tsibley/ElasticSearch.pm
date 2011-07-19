@@ -1288,7 +1288,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-delete-inde
         index => multi
     );
 
-Returns C<<{ok => 1}>> if all specified indices exist, or throws  a C<Missing>
+Returns C<< {ok => 1} >> if all specified indices exist, or throws  a C<Missing>
 exception.
 
 See L<https://github.com/elasticsearch/elasticsearch/issues/1022>
