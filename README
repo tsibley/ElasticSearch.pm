@@ -2,7 +2,7 @@ NAME
     ElasticSearch - An API for communicating with ElasticSearch
 
 VERSION
-    Version 0.38, tested against ElasticSearch server version 0.16.2.
+    Version 0.39, tested against ElasticSearch server version 0.17.0.
 
 DESCRIPTION
     ElasticSearch is an Open Source (Apache 2 license), distributed, RESTful
@@ -355,7 +355,7 @@ METHODS
    get()
         $result = $es->get(
             index   => single,
-            type    => single,
+            type    => single or blank,
             id      => single,
 
             # optional
@@ -398,6 +398,51 @@ METHODS
 
     See also: "bulk()",
     <http://www.elasticsearch.org/guide/reference/api/get.html>
+
+   mget()
+        $docs = $es->mget(
+            index          => single,
+            type           => single or blank,
+            ids            => \@ids,
+            filter_missing => 0 | 1
+        );
+
+        $docs = $es->mget(
+            index          => single or blank,
+            type           => single or blank,
+            docs           => \@doc_info,
+            filter_missing => 0 | 1
+        );
+
+    "mget" or "multi-get" returns multiple documents at once. There are two
+    ways to call "mget()":
+
+    If all docs come from the same index (and potentially the same type):
+
+        $docs = $es->mget(
+            index => 'myindex',
+            type  => 'mytype',   # optional
+            ids   => [1,2,3],
+        )
+
+    Alternatively you can specify each doc separately:
+
+        $docs = $es->mget(
+            docs => [
+                { _index => 'index_1', type = >'type_1', _id => 1 },
+                { _index => 'index_2', type = >'type_2', _id => 2 },
+            ]
+        )
+
+    Or: $docs = $es->mget( index => 'myindex', # default index type =>
+    'mytype', # default type docs => [ { _id => 1 }, # uses defaults {
+    _index => 'index_2', type = >'type_2', _id => 2 }, ] );
+
+    Returns an array ref containing all of the documents requested. If a
+    document is not found, then its entry will include "<{exists =" 0}>>. If
+    you would rather filter these missing docs, pass "filter_missing =" 1>
+
+    See <https://github.com/elasticsearch/elasticsearch/issues/1084>
 
    delete()
         $result = $es->delete(
@@ -1033,6 +1078,16 @@ METHODS
     <http://www.elasticsearch.org/guide/reference/api/admin-indices-delete-i
     ndex.html>
 
+   index_exists()
+        $result = $e->index_exists(
+            index => multi
+        );
+
+    Returns "<{ok =" 1}>> if all specified indices exist, or throws a
+    "Missing" exception.
+
+    See <https://github.com/elasticsearch/elasticsearch/issues/1022>
+
    index_settings()
         $result = $es->index_settings(
             index           => multi,
@@ -1077,6 +1132,18 @@ METHODS
 
     "actions" can be a single HASH ref, or an ARRAY ref containing multiple
     HASH refs.
+
+    Note: "aliases()" supports ElasticSearch::SearchBuilder-style filters
+    via the "filterb" parameter. See "INTEGRATION WITH
+    ElasticSearch::SearchBuilder" for more details.
+
+        $result = $es->aliases( actions => [
+            { add    => {
+                index   => 'foo',
+                alias   => 'baz',
+                filterb => { foo => 'bar' }
+            }}
+        ]);
 
     See
     <http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.

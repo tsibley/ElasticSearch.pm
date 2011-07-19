@@ -29,6 +29,7 @@ lib/ElasticSearch/Transport/ThriftBackend/Types.pm
 lib/ElasticSearch/Util.pm
 Makefile.PL
 MANIFEST			This list of files
+META.json
 META.yml
 README
 t/00-request.t
@@ -54,6 +55,7 @@ t/request_tests/index_and_create.pl
 t/request_tests/index_status.pl
 t/request_tests/index_templates.pl
 t/request_tests/mapping.pl
+t/request_tests/mget.pl
 t/request_tests/module_options.pl
 t/request_tests/more_like_this.pl
 t/request_tests/nodes.pl
@@ -77,4 +79,3 @@ t/request_tests/searchqs.pl
 t/request_tests/update_settings.pl
 t/request_tests/use_index_type.pl
 t/request_tests/version.pl
-META.json

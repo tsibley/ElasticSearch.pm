@@ -6,7 +6,7 @@ WriteMakefile
   'VERSION_FROM' => 'lib/ElasticSearch.pm',
   'PREREQ_PM' => {
                    'Data::Dumper' => 0,
-                   'ElasticSearch::SearchBuilder' => '0.05',
+                   'ElasticSearch::SearchBuilder' => '0.06',
                    'Encode' => 0,
                    'File::Temp' => '0.20',
                    'HTTP::Request' => 0,
