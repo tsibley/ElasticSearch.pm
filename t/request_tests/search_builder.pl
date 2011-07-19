@@ -132,4 +132,27 @@ throws_ok {
 }
 qr/Cannot specify queryb and query/, 'delete_by_query query,queryb';
 
+# ALIASES
+eq_or_diff $em->aliases(
+    actions => [ {
+            add => {
+                index   => 'foo',
+                alias   => 'foo',
+                filterb => { foo => 'bar' }
+            }
+        }
+    ]
+    ),
+    {
+    'actions' => [ {
+            'add' => {
+                'index'  => 'foo',
+                'filter' => { 'term' => { 'foo' => 'bar' } },
+                'alias'  => 'foo'
+            }
+        }
+    ]
+    },
+    , 'aliases filterb';
+
 1

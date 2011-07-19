@@ -1338,6 +1338,18 @@ Adds or removes an alias for an index, eg:
 C<actions> can be a single HASH ref, or an ARRAY ref containing multiple HASH
 refs.
 
+Note: C<aliases()> supports L<ElasticSearch::SearchBuilder>-style
+filters via the C<filterb> parameter.  See
+L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more details.
+
+    $result = $es->aliases( actions => [
+        { add    => {
+            index   => 'foo',
+            alias   => 'baz',
+            filterb => { foo => 'bar' }
+        }}
+    ]);
+
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.html>
 
 =head3 get_aliases()

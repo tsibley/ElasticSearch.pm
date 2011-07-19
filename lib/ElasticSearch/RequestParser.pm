@@ -864,6 +864,12 @@ sub aliases {
             method => 'POST',
             cmd    => [],
             data   => { actions => 'actions' },
+            fixup  => sub {
+                my $self    = shift;
+                my $args    = shift;
+                my @actions = map { values %$_ } @{ $args->{data}{actions} };
+                $self->_to_dsl( { filterb => 'filter' }, @actions );
+                }
         },
         $params
     );
