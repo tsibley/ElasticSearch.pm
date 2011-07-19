@@ -575,14 +575,14 @@ See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.h
 
 =head3 mget()
 
-    $docs = $e->mget(
+    $docs = $es->mget(
         index          => single,
         type           => single or blank,
         ids            => \@ids,
         filter_missing => 0 | 1
     );
 
-    $docs = $e->mget(
+    $docs = $es->mget(
         index          => single or blank,
         type           => single or blank,
         docs           => \@doc_info,
@@ -594,7 +594,7 @@ ways to call C<mget()>:
 
 If all docs come from the same index (and potentially the same type):
 
-    $docs = $e->mget(
+    $docs = $es->mget(
         index => 'myindex',
         type  => 'mytype',   # optional
         ids   => [1,2,3],
@@ -602,7 +602,7 @@ If all docs come from the same index (and potentially the same type):
 
 Alternatively you can specify each doc separately:
 
-    $docs = $e->mget(
+    $docs = $es->mget(
         docs => [
             { _index => 'index_1', type = >'type_1', _id => 1 },
             { _index => 'index_2', type = >'type_2', _id => 2 },
@@ -610,7 +610,7 @@ Alternatively you can specify each doc separately:
     )
 
 Or:
-    $docs = $e->mget(
+    $docs = $es->mget(
         index => 'myindex',  # default index
         type  => 'mytype',   # default type
         docs => [
