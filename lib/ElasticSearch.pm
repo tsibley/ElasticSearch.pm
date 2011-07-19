@@ -114,8 +114,9 @@ sub reindex {
         last unless $doc;
 
         $doc = $transform->($doc) or next;
-        $doc->{version_type} = 'external';
-        $doc->{_index}       = $dest_index
+        $doc->{version_type} = 'external'
+            if defined $doc->{_version};
+        $doc->{_index} = $dest_index
             if $dest_index;
         push @docs, $doc;
     }
