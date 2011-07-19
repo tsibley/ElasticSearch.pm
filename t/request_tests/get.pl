@@ -58,4 +58,6 @@ ok !$es->get(
     ),
     ' - index ignore missing';
 
-1
+is $es->get( index => 'es_test_1', id => 1 )->{_id}, 1, ' - get without type';
+
+1,
