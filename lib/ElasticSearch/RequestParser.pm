@@ -128,6 +128,8 @@ sub mget {
     my $self   = shift;
     my $params = $self->parse_params(@_);
 
+    $params->{$_} ||= $self->{_default}{$_} for qw(index type);
+
     if ( $params->{index} ) {
         if ( my $ids = delete $params->{ids} ) {
             $self->throw( 'Param', 'mget',
