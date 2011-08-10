@@ -274,7 +274,7 @@ Also, see L</"use_index()/use_type()">.
 =head2 as_json
 
 If you pass C<< as_json => 1 >> to any request to the ElasticSearch server,
-it will return the raw UTF8-decodeed JSON response, rather than a Perl
+it will return the raw UTF8-decoded JSON response, rather than a Perl
 datastructure.
 
 =cut
@@ -758,7 +758,7 @@ results directly to C<bulk()>.
 See L<http://www.elasticsearch.org/guide/reference/api/bulk.html> for
 more details.
 
-=head3 bulk_index(), C<bulk_create()>, C<bulk_delete()>
+=head3 bulk_index(), bulk_create(), bulk_delete()
 
 These are convenience methods which allow you to pass just the data, without
 the C<index>, C<create> or C<index> action for each record, eg:
@@ -1291,8 +1291,8 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-delete-inde
         index => multi
     );
 
-Returns C<< {ok => 1} >> if all specified indices exist, or throws  a C<Missing>
-exception.
+Returns C<< {ok => 1} >> if all specified indices exist, or an empty list
+if it doesn't.
 
 See L<https://github.com/elasticsearch/elasticsearch/issues/1022>
 
