@@ -146,6 +146,7 @@ sub mget {
             'Use of the ids param with mget() requires an index' )
             if $params->{ids};
     }
+    return [] unless @{ $params->{docs} };
     my $filter;
     my $result = $self->_do_action(
         'mget',

@@ -33,6 +33,8 @@ ok $r= $es->mget(
     ),
     ' - docs';
 
+is_deeply $r = $es->mget(docs=>[]),[],' - no docs';
+
 throws_ok { $es->mget( type => 'foo' ) } qr/Cannot specify a type for mget/,
     ' - type without index';
 throws_ok { $es->mget( ids => [] ) } qr/Use of the ids param with mget/,

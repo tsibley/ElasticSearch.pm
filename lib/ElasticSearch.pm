@@ -619,11 +619,14 @@ Or:
         ]
     );
 
+If C<$docs> or C<$ids> is an empty array ref, then C<mget()> will just return
+an empty array ref.
+
 Returns an array ref containing all of the documents requested.  If a document
 is not found, then its entry will include C<<{exists => 0}>>. If you would
 rather filter these missing docs, pass C<filter_missing => 1>
 
-See L<https://github.com/elasticsearch/elasticsearch/issues/1084>
+See L<http://www.elasticsearch.org/guide/reference/api/multi-get.html>
 
 =head3 delete()
 
