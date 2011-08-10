@@ -2,7 +2,7 @@ package ElasticSearch;
 
 use strict;
 use warnings FATAL => 'all';
-
+use Any::URI::Escape qw(uri_escape);
 use constant {
     ONE_REQ     => 1,
     ONE_OPT     => 2,
@@ -1535,7 +1535,7 @@ sub _build_cmd {
                 if $type == ONE_REQ;
             $val = '_all';
         }
-        push @cmd, $val;
+        push @cmd, uri_escape($val);
     }
 
     return join '/', '', grep {defined} ( $prefix, @cmd, $postfix );
