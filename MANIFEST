@@ -77,5 +77,6 @@ t/request_tests/search_sort.pl
 t/request_tests/search_types.pl
 t/request_tests/searchqs.pl
 t/request_tests/update_settings.pl
+t/request_tests/uri_escape.pl
 t/request_tests/use_index_type.pl
 t/request_tests/version.pl

@@ -1,8 +1,29 @@
 Revision history for ElasticSearch
+0.40    2011-08-10
 
-0.39     2011-07-19
+        BREAKING CHANGE:
+         - index_exists now returns an empty list if the index doesn't exist.
+           Previously, it threw an error.
+
+        OTHER:
+         - Deprecated the use of top level mapping parameters in put_mapping()
+           in favour of just using the 'mapping' param
+         - IDs could not contain eg "/" before - now fixed with Any::URI::Escape
+           ie (URI::Escape or URI::Escape::XS)
+         - The 'servers' param to new() now defaults to localhost if not
+           specified
+         - The "scroll" param to scrolled_search() now defaults to '1m'
+         - added search_from and search_size to mlt()
+         - added analyze_wildcard and lowercase_expanded_terms to searchqs()
+         - mget() now returns [] if no docs specified, instead of dieing
+         - Made Test::More v 0.96 a dependency, and fixed the hashbang path
+           in the example (thanks to AVAR)
+
+0.39    2011-07-19
          - "type" is now optional for get() requests
          - added index_exists()
+         - added mget()
+         - added SearchBuilder integration for aliases
 
 0.38    2011-07-03
         - Integrated ElasticSearch::SearchBuilder

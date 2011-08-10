@@ -5,8 +5,9 @@ WriteMakefile
   'NAME' => 'ElasticSearch',
   'VERSION_FROM' => 'lib/ElasticSearch.pm',
   'PREREQ_PM' => {
+                   'Any::URI::Escape' => 0,
                    'Data::Dumper' => 0,
-                   'ElasticSearch::SearchBuilder' => '0.06',
+                   'ElasticSearch::SearchBuilder' => '0.07',
                    'Encode' => 0,
                    'File::Temp' => '0.20',
                    'HTTP::Request' => 0,
@@ -17,7 +18,8 @@ WriteMakefile
                    'POSIX' => 0,
                    'Scalar::Util' => '1.07',
                    'Test::Exception' => 0,
-                   'Test::More' => 0,
+                   'Test::More' => '0.96',
+                   'URI::Escape' => 0,
                    'YAML' => 0,
                    'parent' => 0
                  },
