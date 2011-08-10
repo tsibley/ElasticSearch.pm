@@ -994,25 +994,27 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
 =head3 searchqs()
 
     $result = $es->searchqs(
-        index               => multi,
-        type                => multi,
+        index                    => multi,
+        type                     => multi,
 
         # optional
-        q                   => $query_string,
-        analyzer            => $analyzer,
-        default_operator    => 'OR | AND ',
-        df                  => $default_field,
-        explain             => 1 | 0,
-        fields              => [$field_1,$field_n],
-        from                => $start_from
-        preference          => '_local' | '_primary' | $string,
-        routing             => [$routing, ...]
-        search_type         => $search_type
-        size                => $no_of_results
-        sort                => ['_score:asc','last_modified:desc'],
-        scroll              => '5m' | '30s',
-        timeout             => '10s'
-        version             => 0 | 1
+        q                        => $query_string,
+        analyze_wildcard         => 0 | 1,
+        analyzer                 => $analyzer,
+        default_operator         => 'OR | AND ',
+        df                       => $default_field,
+        explain                  => 1 | 0,
+        fields                   => [$field_1,$field_n],
+        from                     => $start_from,
+        lowercase_expanded_terms => 0 | 1,
+        preference               => '_local' | '_primary' | $string,
+        routing                  => [$routing, ...]
+        search_type              => $search_type
+        size                     => $no_of_results
+        sort                     => ['_score:asc','last_modified:desc'],
+        scroll                   => '5m' | '30s',
+        timeout                  => '10s'
+        version                  => 0 | 1
 
 Searches for all documents matching the C<q> query_string, with a URI request.
 Documents can be matched against multiple indices and multiple types, eg:
