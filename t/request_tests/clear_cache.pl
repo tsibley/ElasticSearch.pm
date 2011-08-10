@@ -20,15 +20,6 @@ $es->index(
     data  => { text => 'foo bar baz', num => 1 }
 );
 wait_for_es();
-$es->search(
-    query => {
-        filtered => {
-            filter => { term  => { num => 1 } },
-            query  => { range => { num => { gt => 0, lt => 5 } } }
-        }
-    },
-    sort => { num => 'asc' }
-);
 
 populate_caches();
 
@@ -53,6 +44,7 @@ qr/ElasticSearch::Error::Missing/, ' - index missing';
 #===================================
 sub used_caches {
 #===================================
+    sleep 1;    ## otherwise cached results in 0.17.4
     my %cache = (
         field  => 0,
         filter => 0
