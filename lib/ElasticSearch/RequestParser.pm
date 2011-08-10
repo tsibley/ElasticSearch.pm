@@ -536,39 +536,44 @@ my %SearchQS_Defn = (
 );
 
 my %Query_Defn = (
-    query              => ['query'],
-    queryb             => ['queryb'],
-    bool               => ['bool'],
-    boosting           => ['boosting'],
-    constant_score     => ['constant_score'],
-    custom_score       => ['custom_score'],
-    dis_max            => ['dis_max'],
-    field              => ['field'],
-    field_masking_span => ['field_masking_span'],
-    filtered           => ['filtered'],
-    flt                => [ 'flt', 'fuzzy_like_this' ],
-    flt_field          => [ 'flt_field', 'fuzzy_like_this_field' ],
-    fuzzy              => ['fuzzy'],
-    has_child          => ['has_child'],
-    ids                => ['ids'],
-    match_all          => ['match_all'],
-    mlt                => [ 'mlt', 'more_like_this' ],
-    mlt_field          => [ 'mlt_field', 'more_like_this_field' ],
-    prefix             => ['prefix'],
-    query_string       => ['query_string'],
-    range              => ['range'],
-    span_first         => ['span_first'],
-    span_near          => ['span_near'],
-    span_not           => ['span_not'],
-    span_or            => ['span_or'],
-    span_term          => ['span_term'],
-    term               => ['term'],
-    terms              => [ 'terms', 'in' ],
-    text               => ['text'],
-    text_phrase        => ['text_phrase'],
-    text_phrase_prefix => ['text_phrase_prefix'],
-    top_children       => ['top_children'],
-    wildcard           => ['wildcard'],
+    data => {
+        query  => ['query'],
+        queryb => ['queryb'],
+
+    },
+    deprecated => {
+        bool               => ['bool'],
+        boosting           => ['boosting'],
+        constant_score     => ['constant_score'],
+        custom_score       => ['custom_score'],
+        dis_max            => ['dis_max'],
+        field              => ['field'],
+        field_masking_span => ['field_masking_span'],
+        filtered           => ['filtered'],
+        flt                => [ 'flt', 'fuzzy_like_this' ],
+        flt_field          => [ 'flt_field', 'fuzzy_like_this_field' ],
+        fuzzy              => ['fuzzy'],
+        has_child          => ['has_child'],
+        ids                => ['ids'],
+        match_all          => ['match_all'],
+        mlt                => [ 'mlt', 'more_like_this' ],
+        mlt_field          => [ 'mlt_field', 'more_like_this_field' ],
+        prefix             => ['prefix'],
+        query_string       => ['query_string'],
+        range              => ['range'],
+        span_first         => ['span_first'],
+        span_near          => ['span_near'],
+        span_not           => ['span_not'],
+        span_or            => ['span_or'],
+        span_term          => ['span_term'],
+        term               => ['term'],
+        terms              => [ 'terms', 'in' ],
+        text               => ['text'],
+        text_phrase        => ['text_phrase'],
+        text_phrase_prefix => ['text_phrase_prefix'],
+        top_children       => ['top_children'],
+        wildcard           => ['wildcard'],
+    }
 );
 
 #===================================
@@ -1385,7 +1390,8 @@ sub _do_action {
         $args{cmd}
             = $self->_build_cmd( $params, @{$defn}{qw(prefix cmd postfix)} );
         $args{qs} = $self->_build_qs( $params, $defn->{qs} );
-        $args{data} = $self->_build_data( $params, $defn->{data} );
+        $args{data}
+            = $self->_build_data( $params, @{$defn}{ 'data', 'deprecated' } );
         if ( my $fixup = $defn->{fixup} ) {
             $fixup->( $self, \%args );
         }
@@ -1491,6 +1497,9 @@ sub _build_data {
     if ( ref $defn ne 'HASH' ) {
         $top_level = 1;
         $defn = { data => $defn };
+    }
+    elsif ( my $deprecated = shift ) {
+        $defn = { %$defn, %$deprecated };
     }
 
     my %data;
