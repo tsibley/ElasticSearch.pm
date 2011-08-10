@@ -823,6 +823,7 @@ sub index_exists {
         'index_exists',
         {   method => 'HEAD',
             cmd    => CMD_index,
+            fixup  => sub { $_[1]->{qs}{ignore_missing} = 1 }
         },
         @_
     );
