@@ -10,7 +10,8 @@ use Encode qw(decode_utf8);
 use parent 'ElasticSearch::Transport';
 
 #===================================
-sub protocol {'http'}
+sub protocol     {'http'}
+sub default_port {9200}
 #===================================
 
 #===================================

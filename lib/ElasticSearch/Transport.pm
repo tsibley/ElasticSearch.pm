@@ -40,7 +40,7 @@ sub new {
         $transport_class;
 
     my $servers = delete $params->{servers}
-        or $self->throw( 'Param', 'No servers passed to new' );
+        || '127.0.0.1:' . $transport_class->default_port;
 
     $self->{_default_servers}
         = [ ref $servers eq 'ARRAY' ? @$servers : $servers ];
@@ -387,6 +387,15 @@ sub protocol {
     my $self = shift;
     $self->throw( 'Internal',
         'protocol() must be subclassed in class ' . ( ref $self || $self ) );
+}
+
+#===================================
+sub default_port {
+#===================================
+    my $self = shift;
+    $self->throw( 'Internal',
+        'default_port() must be subclassed in class '
+            . ( ref $self || $self ) );
 }
 
 #===================================

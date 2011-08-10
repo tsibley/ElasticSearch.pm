@@ -69,7 +69,8 @@ my %Statuses = (
 );
 
 #===================================
-sub protocol {'thrift'}
+sub protocol     {'thrift'}
+sub default_port {9500}
 #===================================
 
 #===================================
@@ -94,8 +95,7 @@ sub send_request {
     eval {
         my $client = $self->client($server);
         $response = $client->execute($request);
-        }
-        or do {
+    } or do {
         my $error = $@ || 'Unknown';
         if ( ref $error && $error->{message} ) {
             $self->throw( 'Timeout', $error->{message} )
@@ -103,7 +103,7 @@ sub send_request {
             $self->throw( 'Connection', $error->{message} );
         }
         $self->throw( 'Request', $error );
-        };
+    };
 
     my $content = $response->body;
     $content = decode_utf8($content) if defined $content;
@@ -114,7 +114,7 @@ sub send_request {
     my $msg = $Statuses{$code};
 
     my $type
-        = $code == 409  ? 'Conflict'
+        = $code == 409 ? 'Conflict'
         : $code == 404 ? 'Missing'
         : $msg eq 'REQUEST_TIMEOUT' || $msg eq 'GATEWAY_TIMEOUT' ? 'Timeout'
         :                                                          'Request';

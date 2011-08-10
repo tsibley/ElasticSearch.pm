@@ -172,7 +172,7 @@ a randomly chosen node in the list.
 
     use ElasticSearch;
     my $es = ElasticSearch->new(
-        servers      => 'search.foo.com:9200',
+        servers      => 'search.foo.com:9200',  # default '127.0.0.1:9200'
         transport    => 'http'                  # default 'http'
                         | 'httplite'
                         | 'httptiny'
@@ -365,8 +365,9 @@ the syntax.
                                                                 # just the servers specified
      );
 
-C<servers> is a required parameter and can be either a single server or an
-ARRAY ref with a list of servers.
+C<servers> can be either a single server or an ARRAY ref with a list of servers.
+If not specified, then it defaults to C<localhost> and the port for the
+specified transport (eg C<9200> for C<http*> or C<9500> for C<thrift>).
 
 These servers are used in a round-robin fashion. If any server fails to
 connect, then the other servers in the list are tried, and if any

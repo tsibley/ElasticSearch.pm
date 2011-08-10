@@ -13,7 +13,8 @@ my $Connection_Error = qr/ Connection.(?:timed.out|re(?:set|fused))
                        /x;
 
 #===================================
-sub protocol {'http'}
+sub protocol     {'http'}
+sub default_port {9200}
 #===================================
 
 #===================================
