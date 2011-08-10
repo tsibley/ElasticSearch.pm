@@ -1104,6 +1104,8 @@ B<Note>: C<count()> supports L<ElasticSearch::SearchBuilder>-style
 queries via the C<queryb> parameter.  See
 L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more details.
 
+C<query> defaults to C<< {match_all=>{}} >> unless specified.
+
 B<DEPRECATION>: C<count()> previously took query types at the top level, eg
 C<< $es->count( term=> { ... }) >>. This form still works, but is deprecated.
 Instead use the C<queryb> or C<query> parameter as you would in L</"search()">.

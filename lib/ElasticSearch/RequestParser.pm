@@ -625,8 +625,12 @@ sub delete_by_query {
                 replication => [ 'enum', [ 'async', 'sync' ] ],
                 routing => ['flatten'],
             },
-            data  => \%Query_Defn,
-            fixup => \&_query_fixup,
+            %Query_Defn,
+            fixup => sub {
+                _query_fixup(@_);
+                die "Missing required param 'query' or 'queryb'\n"
+                    unless %{ $_[1]->{data} };
+            },
         },
         @_
     );
@@ -639,9 +643,14 @@ sub count {
         'count',
         {   %Search_Defn,
             postfix => '_count',
-            data    => \%Query_Defn,
-            qs      => { routing => ['flatten'] },
-            fixup   => \&_query_fixup,
+            %Query_Defn,
+            qs    => { routing => ['flatten'] },
+            fixup => sub {
+                _query_fixup(@_);
+                my $args = $_[1];
+                $args->{data}{match_all} = {}
+                    unless %{ $args->{data} };
+            },
         },
         @_
     );
