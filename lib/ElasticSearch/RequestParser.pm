@@ -667,6 +667,8 @@ sub mlt {
                 max_word_len       => ['int'],
                 boost_terms        => ['float'],
                 search_indices     => ['flatten'],
+                search_from        => ['int'],
+                search_size        => ['int'],
                 search_types       => ['flatten'],
                 search_scroll      => ['string'],
             },

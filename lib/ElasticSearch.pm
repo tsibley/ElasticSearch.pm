@@ -1188,6 +1188,8 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         script_fields        =>  { script_fields }
         search_scroll        =>  '5m' | '10s',
         search_indices       =>  ['index1','index2],
+        search_from          =>  integer,
+        search_size          =>  integer,
         search_type          =>  $search_type
         search_types         =>  ['type1','type],
         size                 =>  {size}
