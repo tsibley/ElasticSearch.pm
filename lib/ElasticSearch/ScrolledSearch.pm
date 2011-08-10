@@ -27,7 +27,7 @@ ElasticSearch::ScrolledSearch - Description
 
 C<ElasticSearch::ScrolledSearch> is a convenience iterator for scrolled
 searches. It accepts the standard search parameters that would be passed
-to L<ElasticSearch/"search()"> and requires a C<scroll> parameter, eg:
+to L<ElasticSearch/"search()">. The C<scroll> parameter defaults to C<1m>.
 
     $scroller = $es->scrolled_search(
                     query  => {match_all=>{}},
@@ -51,9 +51,7 @@ sub new {
     my $class = shift;
     my ( $es, $params ) = parse_params(@_);
 
-    my $scroll = $params->{scroll}
-        or $es->throw( 'Param', 'Missing scroll param', $params );
-
+    my $scroll = $params->{scroll}||= '1m';
     my $method = $params->{q} ? 'searchqs' : 'search';
 
     my $results = $es->$method($params);
