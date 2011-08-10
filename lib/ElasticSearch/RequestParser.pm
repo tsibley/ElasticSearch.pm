@@ -1047,35 +1047,43 @@ sub gateway_snapshot {
 sub put_mapping {
 #===================================
     my ( $self, $params ) = parse_params(@_);
+    my %defn = (
+        data       => { mapping => 'mapping' },
+        deprecated => {
+            dynamic           => ['dynamic'],
+            dynamic_templates => ['dynamic_templates'],
+            properties        => ['properties'],
+            _all              => ['_all'],
+            _analyzer         => ['_analyzer'],
+            _boost            => ['_boost'],
+            _id               => ['_id'],
+            _index            => ['_index'],
+            _meta             => ['_meta'],
+            _parent           => ['_parent'],
+            _routing          => ['_routing'],
+            _source           => ['_source'],
+        },
+    );
+
+    $defn{deprecated}{mapping} = undef
+        if !$params->{mapping} && grep { exists $params->{$_} }
+            keys %{ $defn{deprecated} };
+
     $self->_do_action(
         'put_mapping',
         {   method  => 'PUT',
             cmd     => CMD_index_TYPE,
             postfix => '_mapping',
             qs      => { ignore_conflicts => [ 'boolean', 1 ] },
-            data    => {
-                dynamic           => ['dynamic'],
-                dynamic_templates => ['dynamic_templates'],
-                properties        => 'properties',
-                _all              => ['_all'],
-                _analyzer         => ['_analyzer'],
-                _boost            => ['_boost'],
-                _id               => ['_id'],
-                _index            => ['_index'],
-                _meta             => ['_meta'],
-                _parent           => ['_parent'],
-                _routing          => ['_routing'],
-                _source           => ['_source'],
-            },
+            %defn,
             fixup => sub {
                 my $args = $_[1];
-                $args->{data} = { $params->{type} => $args->{data} };
+                my $mapping = $args->{data}{mapping} || $args->{data};
+                $args->{data} = { $params->{type} => $mapping };
             },
-
         },
         $params
     );
-
 }
 
 #===================================
@@ -1504,6 +1512,7 @@ sub _build_data {
 
     my %data;
 KEY: while ( my ( $key, $source ) = each %$defn ) {
+        next unless defined $source;
         if ( ref $source eq 'ARRAY' ) {
             foreach (@$source) {
                 my $val = delete $params->{$_};
@@ -1561,5 +1570,4 @@ sub _build_cmd {
 
     return join '/', '', grep {defined} ( $prefix, @cmd, $postfix );
 }
-
 1;

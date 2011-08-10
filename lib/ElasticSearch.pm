@@ -1556,21 +1556,8 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-clearcache.
     $result = $es->put_mapping(
         index               => multi,
         type                => single,
-        properties          => { ... },      # required
-
-        # optional
-        _all                => { ... },
-        _analyzer           => { ... },
-        _boost              => { ... },
-        _id                 => { ... },
-        _index              => { ... },
-        _meta               => { ... },
-        _parent             => { ... },
-        _routing            => { ... },
-        _source             => { ... },
-        dynamic             => 1 | 0 | 'strict',
-        dynamic_templates   => [ ... ],
-        ignore_conflicts    => 0 | 1,
+        mapping             => { ... }      # required
+        ignore_conflicts    => 0 | 1
     );
 
 A C<mapping> is the data definition of a C<type>.  If no mapping has been
@@ -1587,18 +1574,25 @@ to specify an official C<mapping> instead, eg:
     $result = $es->put_mapping(
         index   => ['twitter','buzz'],
         type    => 'tweet',
-        _source => { compress => 1 },
-        properties  =>  {
-            user        =>  {type  =>  "string", index      =>  "not_analyzed"},
-            message     =>  {type  =>  "string", null_value =>  "na"},
-            post_date   =>  {type  =>  "date"},
-            priority    =>  {type  =>  "integer"},
-            rank        =>  {type  =>  "float"}
+        mapping => {
+            _source => { compress => 1 },
+            properties  =>  {
+                user        =>  {type  =>  "string", index      =>  "not_analyzed"},
+                message     =>  {type  =>  "string", null_value =>  "na"},
+                post_date   =>  {type  =>  "date"},
+                priority    =>  {type  =>  "integer"},
+                rank        =>  {type  =>  "float"}
+            }
         }
     );
 
 See also: L<http://www.elasticsearch.org/guide/reference/api/admin-indices-put-mapping.html>
 and L<http://www.elasticsearch.org/guide/reference/mapping>
+
+B<DEPRECATION>: C<put_mapping()> previously took the mapping parameters
+at the top level, eg C<< $es->put_mapping( properties=> { ... }) >>.
+This form still works, but is deprecated. Instead use the C<mapping>
+parameter.
 
 =head3 delete_mapping()
 

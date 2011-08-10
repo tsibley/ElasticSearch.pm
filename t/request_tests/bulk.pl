@@ -11,10 +11,12 @@ drop_indices();
 $es->create_index( index => 'es_test_1' );
 wait_for_es();
 $es->put_mapping(
-    index => 'es_test_1',
-    type  => 'test',
-    properties =>
-        { text => { type => 'string' }, num => { type => 'integer' } }
+    index   => 'es_test_1',
+    type    => 'test',
+    mapping => {
+        properties =>
+            { text => { type => 'string' }, num => { type => 'integer' } }
+    }
 );
 
 wait_for_es(2);

@@ -230,17 +230,16 @@ sub parent_child_docs {
 
     drop_indices();
 
-    $es->create_index( index => 'es_test_1' );
-    $es->put_mapping(
-        index      => 'es_test_1',
-        type       => 'myparent',
-        properties => { text => { type => 'string' } }
-    );
-    $es->put_mapping(
-        index      => 'es_test_1',
-        type       => 'mychild',
-        _parent    => { type => 'myparent' },
-        properties => { text => { type => 'string' } }
+    $es->create_index(
+        index    => 'es_test_1',
+        mappings => {
+            myparent => { properties => { text => { type => 'string' } } },
+            mychild  => {
+                _parent    => { type => 'myparent' },
+                properties => { text => { type => 'string' } }
+
+            }
+        }
     );
 
     wait_for_es();
