@@ -104,7 +104,7 @@ sub read {
   my $ftype = 0;
   my $fid   = 0;
   $xfer += $input->readStructBegin(\$fname);
-  while (1) 
+  while (1)
   {
     $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
     if ($ftype == ElasticSearch::Transport::ThriftBackend::TType::STOP) {
@@ -199,7 +199,7 @@ sub write {
     {
       $xfer += $output->writeMapBegin(ElasticSearch::Transport::ThriftBackend::TType::STRING, ElasticSearch::Transport::ThriftBackend::TType::STRING, scalar(keys %{$self->{parameters}}));
       {
-        while( my ($kiter14,$viter15) = each %{$self->{parameters}}) 
+        while( my ($kiter14,$viter15) = each %{$self->{parameters}})
         {
           $xfer += $output->writeString($kiter14);
           $xfer += $output->writeString($viter15);
@@ -214,7 +214,7 @@ sub write {
     {
       $xfer += $output->writeMapBegin(ElasticSearch::Transport::ThriftBackend::TType::STRING, ElasticSearch::Transport::ThriftBackend::TType::STRING, scalar(keys %{$self->{headers}}));
       {
-        while( my ($kiter16,$viter17) = each %{$self->{headers}}) 
+        while( my ($kiter16,$viter17) = each %{$self->{headers}})
         {
           $xfer += $output->writeString($kiter16);
           $xfer += $output->writeString($viter17);
@@ -270,7 +270,7 @@ sub read {
   my $ftype = 0;
   my $fid   = 0;
   $xfer += $input->readStructBegin(\$fname);
-  while (1) 
+  while (1)
   {
     $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
     if ($ftype == ElasticSearch::Transport::ThriftBackend::TType::STOP) {
@@ -333,7 +333,7 @@ sub write {
     {
       $xfer += $output->writeMapBegin(ElasticSearch::Transport::ThriftBackend::TType::STRING, ElasticSearch::Transport::ThriftBackend::TType::STRING, scalar(keys %{$self->{headers}}));
       {
-        while( my ($kiter25,$viter26) = each %{$self->{headers}}) 
+        while( my ($kiter25,$viter26) = each %{$self->{headers}})
         {
           $xfer += $output->writeString($kiter25);
           $xfer += $output->writeString($viter26);
