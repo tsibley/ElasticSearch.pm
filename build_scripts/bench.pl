@@ -3,10 +3,12 @@
 use JSON::XS;
 use ElasticSearch;
 
-open $fh, '<', 'bench_data.json'
+open my $fh, '<', 'bench_data.json'
     or die "Couldn't open file 'bench_data.json': $!";
 my @data = @{ decode_json( join( '', <$fh> ) ) };
 
+#my @data = map {delete @{$_}{qw(date_keywords featured)}; $_} @{ decode_json( join( '', <$fh> ) ) };
+#$#data=10000;
 print "Rows: " . ( 0 + @data ) . "\n";
 
 use Time::HiRes qw(time);
@@ -99,12 +101,14 @@ sub run {
     $start = time();
     $es->refresh_index;
     printf " - refresh time: %.2f\n", time() - $start;
-    printf " - records indexed: %d\n", $es->count( match_all => {} )->{count};
+    printf " - records indexed: %d\n",
+        $es->count( index => 'foo', match_all => {} )->{count};
     sleep 2;
 
     # make sure really refreshed
     $es->refresh_index;
-    printf " - records indexed: %d\n", $es->count( match_all => {} )->{count};
+    printf " - records indexed: %d\n",
+        $es->count( index => 'foo', match_all => {} )->{count};
     print " - deleting index\n";
 
     $es->delete_index( index => 'foo' );
