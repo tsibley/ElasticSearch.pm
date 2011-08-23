@@ -259,15 +259,26 @@ types. I distinguish between them as follows:
 
    $es->method( index => multi, type => single, ...)
 
+C<single> values must be a scalar, and are required parameters
+
+      type  => 'tweet'
+
 C<multi> values can be:
 
       index   => 'twitter'          # specific index
       index   => ['twitter','user'] # list of indices
       index   => undef              # (or not specified) = all indices
 
-C<single> values must be a scalar, and are required parameters
+C<multi_req> values work like C<multi> values, but at least one value is
+required, so:
 
-      type  => 'tweet'
+      index   => 'twitter'          # specific index
+      index   => ['twitter','user'] # list of indices
+      index   => '_all'             # all indices
+
+      index   => []                 # error
+      index   => undef              # error
+
 
 Also, see L</"use_index()/use_type()">.
 
@@ -1281,7 +1292,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-create-inde
 =head3 delete_index()
 
     $result = $es->delete_index(
-        index           => multi,
+        index           => multi_req,
         ignore_missing  => 0 | 1        # optional
     );
 
@@ -1597,7 +1608,7 @@ parameter.
 =head3 delete_mapping()
 
     $result = $es->delete_mapping(
-        index           => multi,
+        index           => multi_req,
         type            => single,
         ignore_missing  => 0 | 1,
     );

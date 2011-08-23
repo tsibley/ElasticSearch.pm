@@ -9,6 +9,7 @@ use constant {
     ONE_ALL     => 3,
     MULTI_ALL   => 4,
     MULTI_BLANK => 5,
+    MULTI_REQ   => 6,
 };
 
 use constant {
@@ -16,16 +17,18 @@ use constant {
     CMD_INDEX_TYPE_ID => [ index => ONE_REQ, type => ONE_REQ, id => ONE_REQ ],
     CMD_INDEX_TYPE_id => [ index => ONE_REQ, type => ONE_REQ, id => ONE_OPT ],
     CMD_INDEX_type_ID => [ index => ONE_REQ, type => ONE_ALL, id => ONE_REQ ],
-    CMD_index      => [ index => MULTI_BLANK ],
-    CMD_INDEX      => [ index => ONE_REQ ],
-    CMD_INDEX_TYPE => [ index => ONE_REQ, type => ONE_REQ ],
-    CMD_INDEX_type => [ index => ONE_REQ, type => MULTI_BLANK ],
-    CMD_index_TYPE => [ index => MULTI_ALL, type => ONE_REQ ],
-    CMD_index_type => [ index => MULTI_ALL, type => MULTI_BLANK ],
-    CMD_RIVER      => [ river => ONE_REQ ],
-    CMD_nodes      => [ node  => MULTI_BLANK ],
-    CMD_NAME       => [ name  => ONE_REQ ],
-    CMD_INDEX_PERC => [ index => ONE_REQ, percolator => ONE_REQ ],
+    CMD_index        => [ index => MULTI_BLANK ],
+    CMD_INDICES      => [ index => MULTI_REQ ],
+    CMD_INDEX        => [ index => ONE_REQ ],
+    CMD_INDEX_TYPE   => [ index => ONE_REQ, type => ONE_REQ ],
+    CMD_INDEX_type   => [ index => ONE_REQ, type => MULTI_BLANK ],
+    CMD_index_TYPE   => [ index => MULTI_ALL, type => ONE_REQ ],
+    CMD_INDICES_TYPE => [ index => MULTI_REQ, type => ONE_REQ ],
+    CMD_index_type   => [ index => MULTI_ALL, type => MULTI_BLANK ],
+    CMD_RIVER        => [ river => ONE_REQ ],
+    CMD_nodes        => [ node  => MULTI_BLANK ],
+    CMD_NAME         => [ name  => ONE_REQ ],
+    CMD_INDEX_PERC   => [ index => ONE_REQ, percolator => ONE_REQ ],
 };
 
 our %QS_Format = (
@@ -824,7 +827,7 @@ sub delete_index {
     shift()->_do_action(
         'delete_index',
         {   method  => 'DELETE',
-            cmd     => CMD_index,
+            cmd     => CMD_INDICES,
             qs      => { ignore_missing => [ 'boolean', 1 ], },
             postfix => ''
         },
@@ -1094,7 +1097,7 @@ sub delete_mapping {
     $self->_do_action(
         'delete_mapping',
         {   method => 'DELETE',
-            cmd    => CMD_index_TYPE,
+            cmd    => CMD_INDICES_TYPE,
             qs     => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
@@ -1552,17 +1555,17 @@ sub _build_cmd {
             ? delete $params->{$key}
             : $self->{_default}{$key};
 
-        if ( defined $val ) {
-            if ( ref $val eq 'ARRAY' ) {
-                die "'$key' must be a single value\n"
-                    if $type <= ONE_ALL;
-                $val = join ',', @$val;
-            }
+        $val = '' unless defined $val;
+
+        if ( ref $val eq 'ARRAY' ) {
+            die "'$key' must be a single value\n"
+                if $type <= ONE_ALL;
+            $val = join ',', @$val;
         }
-        else {
+        unless ( length $val ) {
             next if $type == ONE_OPT || $type == MULTI_BLANK;
             die "Param '$key' is required\n"
-                if $type == ONE_REQ;
+                if $type == ONE_REQ || $type == MULTI_REQ;
             $val = '_all';
         }
         push @cmd, uri_escape($val);
