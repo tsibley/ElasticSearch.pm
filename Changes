@@ -1,4 +1,19 @@
 Revision history for ElasticSearch
+0.41    2011-08-26
+
+        BREAKING CHANGES:
+         - ElasticSearch::Transport::Thrift is now in a separate release
+         - delete_index() and delete_mapping() now require an index
+           parameter, to avoid accidental deletes.
+         - the return value for the bulk() methods, when { as_json => 1}
+           is specified, is now the JSON equivalent of the normal
+           return value, not the raw value from ES
+
+        OTHER:
+         - started using Dist::Zilla
+         - Added ElasticSearch::Transport::Curl, as a separate release
+         - get_aliases now works with {as_json => 1}
+
 0.40    2011-08-10
 
         BREAKING CHANGE:

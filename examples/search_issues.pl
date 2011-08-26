@@ -154,13 +154,13 @@ all of the issue details.
 
 In order to run this demo, you will need an ElasticSearch server running
 on localhost. If you don't already have ElasticSearch, you can find the
-latest version (currently 0.17.9) at L<http://www.elasticsearch.com/download/>.
+latest version (currently 0.17.6) at L<http://www.elasticsearch.com/download/>.
 
 You can install it as follows:
 
-    wget http://cloud.github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.17.0.zip
-    unzip elasticsearch-0.17.0.zip
-    cd elasticsearch-0.17.0
+    wget http://cloud.github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.17.6.zip
+    unzip elasticsearch-0.17.6.zip
+    cd elasticsearch-0.17.6
     ./bin/elasticsearch -f                   # run server in foreground
 
 =head1 AUTHOR
