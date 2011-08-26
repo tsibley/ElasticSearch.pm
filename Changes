@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.42    2011-08-26
+        Dull Dist::Zilla change, for CPAN
+
 0.41    2011-08-26
 
         BREAKING CHANGES:
