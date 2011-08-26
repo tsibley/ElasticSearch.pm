@@ -5,7 +5,7 @@ use warnings;
 use ElasticSearch();
 use POSIX 'setsid';
 use IO::Socket();
-use File::Temp();
+use File::Temp 0.20 ();
 use File::Spec::Functions qw(catfile);
 use YAML qw(DumpFile);
 use File::Path qw(rmtree);

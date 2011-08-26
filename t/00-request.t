@@ -1,6 +1,6 @@
 #!perl
 
-use Test::More;
+use Test::More 0.96;
 use Test::Exception;
 use Module::Build;
 use lib 't/request_tests';

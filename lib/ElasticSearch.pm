@@ -2115,18 +2115,6 @@ them to L<http://github.com/clintongormley/ElasticSearch.pm/issues>.
 I will be notified, and then you'll automatically be notified of progress on
 your bug as I make changes.
 
-=head1 TODO
-
-Hopefully I'll be adding an ElasticSearch::Abstract (similar to
-L<SQL::Abstract>) which will make it easier to generate valid queries
-for ElasticSearch.
-
-Also, a non-blocking L<AnyEvent> module has been written, but needs
-integrating with the new L<ElasticSearch::Transport>.
-
-This version is missing tests for C<parent>, C<routing> and C<percolator>.
-Will follow soon.
-
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
@@ -2141,21 +2129,13 @@ You can also look for information at:
 
 L<http://github.com/clintongormley/ElasticSearch.pm>
 
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=ElasticSearch>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/ElasticSearch>
-
 =item * CPAN Ratings
 
 L<http://cpanratings.perl.org/d/ElasticSearch>
 
-=item * Search CPAN
+=item * Search MetaCPAN
 
-L<http://search.cpan.org/dist/ElasticSearch/>
+L<https://metacpan.org/module/ElasticSearch>
 
 =back
 
