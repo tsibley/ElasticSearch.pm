@@ -106,6 +106,10 @@ faster than L<ElasticSearch::Transport.:HTTP>.
 
 =item * L<ElasticSearch::Transport::HTTPTiny>
 
+=item * L<ElasticSearch::Transport::Curl>
+
+=item * L<ElasticSearch::Transport::AEHTTP>
+
 =item * L<ElasticSearch::Transport::Thrift>
 
 =back

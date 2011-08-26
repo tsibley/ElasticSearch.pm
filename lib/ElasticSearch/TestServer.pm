@@ -41,7 +41,8 @@ down at the end, even if your code exits abnormally.
 
 By default, it uses C<http> transport, the C<local> gateway, and
 starts 3 instances on C<localhost>, starting with C<port> 9200 if
-the C<transport> is C<http>, C<httplite> or C<httptiny>, or 9500 if C<thrift>.
+the C<transport> is C<http>, C<httplite>, C<httptiny>, C<curl>, C<aehttp>
+ or 9500 if C<thrift>.
 
 It is a subclass of L<ElasticSearch>, so C<< ElasticSearch::TestServer->new >>
 returns an ElasticSearch instance.
@@ -78,6 +79,7 @@ NO_HOME
     my $plugin    = $ElasticSearch::Transport::Transport{$transport}
         or die "Unknown transport '$transport'";
     eval "require  $plugin" or die $@;
+    $plugin->_make_sync if $plugin->can('_make_sync');
     my $protocol = $plugin->protocol;
 
     my %config = (

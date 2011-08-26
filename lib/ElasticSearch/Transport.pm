@@ -12,9 +12,9 @@ our %Transport = (
     'httplite' => 'ElasticSearch::Transport::HTTPLite',
     'thrift'   => 'ElasticSearch::Transport::Thrift',
     'httptiny' => 'ElasticSearch::Transport::HTTPTiny',
+    'curl'     => 'ElasticSearch::Transport::Curl',
+    'aehttp'   => 'ElasticSearch::Transport::AEHTTP',
 );
-
-our $Skip_Log;
 
 #===================================
 sub new {
@@ -64,76 +64,122 @@ sub request {
     my $params        = shift;
     my $single_server = shift;
 
-    my $json = $self->JSON;
+    my $args = $self->_tidy_params($params);
+    $self->reset_failed_servers();
+
+    my $json;
+    while (1) {
+        my $srvr = $single_server || $self->next_server;
+        $self->log_request( $srvr, $args ) unless $single_server;
+
+        $json = eval { $self->send_request( $srvr, $args ) || '{"ok":true}' }
+            and last;
+
+        my $error = $@ || 'Unknown error';
+        next if !$single_server && $self->_should_retry( $srvr, $error );
+        $error = $self->_handle_error( $srvr, $params, $error )
+            or return;
+        die $error;
+    }
+    return $self->_response( $json, $params, $single_server );
+
+}
+
+#===================================
+sub _response {
+#===================================
+    my $self          = shift;
+    my $response_json = shift;
+    my $params        = shift;
+    my $skip_log      = shift;
+
+    my $as_json      = $params->{as_json};
+    my $post_process = $params->{post_process};
+
+    my $result;
+    $result = $self->JSON->decode($response_json)
+        unless $as_json && !$post_process && $skip_log;
+
+    $self->log_response( $result || $response_json )
+        unless $skip_log;
+
+    if ($post_process) {
+        $result = $post_process->($result);
+        if ($as_json) {
+            $response_json = $self->JSON->encode($result);
+            $result        = undef;
+        }
+    }
+
+    return $as_json ? $response_json : $result;
+}
+
+#===================================
+sub _should_retry {
+#===================================
+    my $self   = shift;
+    my $server = shift;
+    my $error  = shift;
+
+    return unless $error->isa('ElasticSearch::Error::Connection');
+
+    warn "Error connecting to '$server' : "
+        . ( $error->{-text} || 'Unknown' ) . "\n\n";
+
+    $self->no_refresh
+        ? $self->_remove_server($server)
+        : $self->{_refresh_in} = 0;
+
+    return 1;
+}
+
+#===================================
+sub _handle_error {
+#===================================
+    my $self   = shift;
+    my $server = shift;
+    my $params = shift;
+    my $error  = shift || 'Unknown error';
+
+    $error = build_error( $self, 'Request', $error, { request => $params } )
+        unless ref $error;
+
+    return
+        if $error->isa('ElasticSearch::Error::Missing')
+            && $params->{qs}{ignore_missing};
+
+    $error->{-vars}{request} = $params;
+    if ( my $raw = $error->{-vars}{content} ) {
+        my $content = eval { $self->JSON->decode($raw) } || $raw;
+        $self->log_response($content);
+        if ( ref $content and $content->{error} ) {
+            $error->{-text} = $content->{error};
+            $error->{-vars}{error_trace} = $content->{error_trace}
+                if $content->{error_trace};
+            delete $error->{-vars}{content};
+        }
+    }
+    return $error;
+}
+
+#===================================
+sub _tidy_params {
+#===================================
+    my $self   = shift;
+    my $params = shift;
 
     $params->{method} ||= 'GET';
     $params->{cmd}    ||= '/';
     $params->{qs}     ||= {};
 
     my $data = $params->{data};
-    if ($data) {
-        $data = ref $data eq 'SCALAR' ? $$data : $json->encode($data);
-    }
+    $data
+        = ref $data eq 'SCALAR'
+        ? $$data
+        : $self->JSON->encode($data)
+        if $data;
 
-    my $args = { %$params, data => $data };
-    my $response_json;
-    $self->{_failed} = {};
-
-ATTEMPT:
-    while (1) {
-        my $server = $single_server || $self->next_server;
-
-        $self->log_request( $server, $args ) unless $Skip_Log;
-
-        eval {
-            $response_json = $self->send_request( $server, $args )
-                || '{"ok":true}';
-            1;
-        }
-            and last ATTEMPT;
-
-        my $error = $@;
-        if ( ref $error ) {
-            if (  !$single_server
-                && $error->isa('ElasticSearch::Error::Connection') )
-            {
-                warn "Error connecting to '$server' : "
-                    . ( $error->{-text} || 'Unknown' ) . "\n\n";
-                $self->no_refresh
-                    ? $self->_remove_server($server)
-                    : $self->refresh_servers;
-
-                next ATTEMPT;
-            }
-
-            $error->{-vars}{request} = $params;
-            if ( my $raw = $error->{-vars}{content} ) {
-                my $content = eval { $json->decode($raw) } || $raw;
-                $self->log_response($content);
-                if ( ref $content and $content->{error} ) {
-                    $error->{-text} = $content->{error};
-                    $error->{-vars}{error_trace} = $content->{error_trace}
-                        if $content->{error_trace};
-                    delete $error->{-vars}{content};
-                }
-            }
-            return
-                if $error->isa('ElasticSearch::Error::Missing')
-                    && $args->{qs}{ignore_missing};
-            die $error;
-        }
-        $self->throw( 'Request', $error, { request => $params } );
-    }
-
-    my $as_json = $params->{as_json};
-
-    my $result;
-    $result = $json->decode($response_json)
-        unless $as_json && $Skip_Log;
-
-    $self->log_response( $result || $response_json ) unless $Skip_Log;
-
-    return $as_json ? $response_json : $result;
+    return { data => $data, map { $_ => $params->{$_} } qw(method cmd qs) };
 }
 
 #===================================
@@ -149,8 +195,6 @@ sub refresh_servers {
 
     my @all_servers = keys %servers;
     my $protocol    = $self->protocol;
-
-    local $Skip_Log = 1;
 
     foreach my $server (@all_servers) {
         next unless $server;
@@ -187,7 +231,7 @@ sub next_server {
         if ( $self->no_refresh ) {
             $self->servers( $self->default_servers );
             $self->{_refresh_in} = $self->max_requests - 1;
-            $self->{_failed}     = {};
+            $self->reset_failed_servers();
         }
         else {
             $self->refresh_servers;
@@ -225,6 +269,13 @@ sub _remove_server {
     $self->{_failed}{$server}++;
     my @servers = grep { $_ ne $server } @{ $self->servers };
     $self->servers( \@servers );
+}
+
+#===================================
+sub reset_failed_servers {
+#===================================
+    my $self = shift;
+    $self->{_failed} = {};
 }
 
 #===================================
@@ -382,40 +433,6 @@ sub log_response {
 }
 
 #===================================
-sub protocol {
-#===================================
-    my $self = shift;
-    $self->throw( 'Internal',
-        'protocol() must be subclassed in class ' . ( ref $self || $self ) );
-}
-
-#===================================
-sub default_port {
-#===================================
-    my $self = shift;
-    $self->throw( 'Internal',
-        'default_port() must be subclassed in class '
-            . ( ref $self || $self ) );
-}
-
-#===================================
-sub send_request {
-#===================================
-    my $self = shift;
-    $self->throw( 'Internal',
-        'send_request() must be subclassed in class '
-            . ( ref $self || $self ) );
-}
-
-#===================================
-sub client {
-#===================================
-    my $self = shift;
-    $self->throw( 'Internal',
-        'client() must be subclassed in class ' . ( ref $self || $self ) );
-}
-
-#===================================
 sub clear_clients {
 #===================================
     my $self = shift;
@@ -537,6 +554,16 @@ See L<ElasticSearch::Transport::HTTPLite>
 Uses L<HTTP::Tiny> to communicate using HTTP.
 See L<ElasticSearch::Transport::HTTPTiny>
 
+=item * C<curl>
+
+Uses L<WWW::Curl> and thus L<libcurl|http://curl.haxx.se/libcurl/>
+to communicate using HTTP. See L<ElasticSearch::Transport::Curl>
+
+=item * C<aehttp>
+
+Uses L<AnyEvent::HTTP> to communicate asynchronously using HTTP.
+See L<ElasticSearch::Transport::AEHTTP>
+
 =item * C<thrift>
 
 Uses C<thrift>  to communicate using a compact binary protocol over sockets.
@@ -588,14 +615,27 @@ Although the C<thrift> interface has the right buzzwords (binary, compact,
 sockets), the generated Perl code is very slow. Until that is improved, I
 recommend one of the C<http> backends instead.
 
-The C<httplite> backend is about 30% faster than the default C<http> backend,
-and will probably become the default after more testing in production.
+The HTTP backends in increasing order of speed are:
 
-Note: my experience with L<HTTP::Lite> so far has been flawless - I'm just
-being cautious.
+=over
 
-Also, just added the C<httptiny> backend with L<HTTP::Tiny>, which is 1% faster
-again than the C<httplite> backend.
+=item *
+
+C<http> - L<LWP> based
+
+=item *
+
+C<httplite> - L<HTTP::Lite> based, about 30% faster than C<http>
+
+=item *
+
+C<httptiny> - L<HTTP::Tiny> based, about 1% faster than C<httplite>
+
+=item *
+
+C<curl> - L<WWW::Curl> based, about 60% faster than C<httptiny>!
+
+=back
 
 See also:
 L<http://www.elasticsearch.org/guide/reference/modules/http.html>
@@ -610,7 +650,7 @@ that you should subclass:
 
     $t->init($params)
 
-Currently a no-op. Receives a HASH ref with the parameters passed in to
+By default, a no-op. Receives a HASH ref with the parameters passed in to
 C<new()>, less C<servers>, C<transport> and C<timeout>.
 
 Any parameters specific to your module should be deleted from C<$params>
@@ -671,6 +711,10 @@ You can register your Transport backend as follows:
 =item * L<ElasticSearch::Transport::HTTPLite>
 
 =item * L<ElasticSearch::Transport::HTTPTiny>
+
+=item * L<ElasticSearch::Transport::Curl>
+
+=item * L<ElasticSearch::Transport::AEHTTP>
 
 =item * L<ElasticSearch::Transport::Thrift>
 

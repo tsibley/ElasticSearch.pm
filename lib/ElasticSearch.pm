@@ -101,6 +101,9 @@ sub reindex {
         my $doc = $source->next();
         if ( !$doc or @docs == $bulk_size ) {
             my $results = $self->bulk_index( \@docs );
+            $results = $results->recv
+                if ref $results ne 'HASH'
+                    && $results->isa('AnyEvent::CondVar');
             if ( my $err = $results->{errors} ) {
                 my @errors = splice @$err, 0, 5;
                 push @errors, sprintf "...and %d more", scalar @$err
@@ -176,6 +179,8 @@ a randomly chosen node in the list.
         transport    => 'http'                  # default 'http'
                         | 'httplite'
                         | 'httptiny'
+                        | 'curl'
+                        | 'aehttp'
                         | 'thrift',
         max_requests => 10_000,                 # default 10_000
         trace_calls  => 'log_file',
@@ -362,7 +367,7 @@ the syntax.
 =head3 new()
 
     $es = ElasticSearch->new(
-            transport    =>  'http|httplite|httptiny|thrift',   # default 'http'
+            transport    =>  'http',
             servers      =>  '127.0.0.1:9200'                   # single server
                               | ['es1.foo.com:9200',
                                  'es2.foo.com:9200'],           # multiple servers
@@ -1312,7 +1317,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-delete-inde
 Returns C<< {ok => 1} >> if all specified indices exist, or an empty list
 if it doesn't.
 
-See L<https://github.com/elasticsearch/elasticsearch/issues/1022>
+See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-indices-exists.html>
 
 =head3 index_settings()
 
@@ -1391,8 +1396,6 @@ all aliases and their corresponding indices, eg:
 If you pass in the optional C<index> argument, which can be an index name
 or an alias name, then it will only return the indices and aliases related
 to that argument.
-
-Note: C<get_aliases()> does not support L</"as_json">
 
 =head3 open_index()
 

@@ -51,11 +51,13 @@ sub new {
     my $class = shift;
     my ( $es, $params ) = parse_params(@_);
 
-    my $scroll = $params->{scroll}||= '1m';
+    my $scroll = $params->{scroll} ||= '1m';
     my $method = $params->{q} ? 'searchqs' : 'search';
 
     my $results = $es->$method($params);
-    my $self    = {
+    $results = $results->recv
+        if ref $results ne 'HASH' and $results->isa('AnyEvent::CondVar');
+    my $self = {
         _es        => $es,
         _scroll_id => $results->{_scroll_id},
         _scroll    => $scroll,
@@ -99,6 +101,8 @@ sub _get_next {
         scroll    => $self->{_scroll},
         scroll_id => $self->{_scroll_id}
     );
+    $results = $results->recv
+        if ref $results ne 'HASH' and $results->isa('AnyEvent::CondVar');
     my @hits = @{ $results->{hits}{hits} };
     $self->{_eof}++ if @hits == 0;
     $self->{_scroll_id} = $results->{_scroll_id};

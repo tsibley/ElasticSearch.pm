@@ -108,6 +108,10 @@ consider trying L<ElasticSearch::Transport:HTTPLite> instead - it is
 
 =item * L<ElasticSearch::Transport::HTTPTiny>
 
+=item * L<ElasticSearch::Transport::Curl>
+
+=item * L<ElasticSearch::Transport::AEHTTP>
+
 =item * L<ElasticSearch::Transport::Thrift>
 
 =back

@@ -151,18 +151,21 @@ sub mget {
     }
     return [] unless @{ $params->{docs} };
     my $filter;
-    my $result = $self->_do_action(
+    $self->_do_action(
         'mget',
         {   cmd     => [ index => ONE_OPT, type => ONE_OPT ],
             postfix => '_mget',
             data => { docs           => 'docs' },
             qs   => { filter_missing => [ 'boolean', 1 ], },
-            fixup => sub { $filter = delete $_[1]->{qs}{filter_missing} }
+            fixup => sub { $filter = delete $_[1]->{qs}{filter_missing} },
+            post_process => sub {
+                my $result = shift;
+                my $docs   = $result->{docs};
+                return $filter ? [ grep { $_->{exists} } @$docs ] : $docs;
+                }
         },
         $params
     );
-    my $docs = $result->{docs};
-    return $filter ? [ grep { $_->{exists} } @$docs ] : $docs;
 }
 
 my %Index_Defn = (
@@ -326,15 +329,24 @@ sub bulk {
     $json->indent($indenting);
     die $error unless $json_docs;
 
-    my $results = $self->request( {
-            method  => 'POST',
-            cmd     => '/_bulk',
-            qs      => $qs,
-            as_json => $as_json,
-            data    => $json_docs
+    $self->request( {
+            method       => 'POST',
+            cmd          => '/_bulk',
+            qs           => $qs,
+            as_json      => $as_json,
+            data         => $json_docs,
+            post_process => sub { $self->_bulk_response( $actions, @_ ) },
         }
     );
-    return $results if $as_json;
+}
+
+#===================================
+sub _bulk_response {
+#===================================
+    my $self    = shift;
+    my $actions = shift;
+    my $results = shift;
+
     my $items = ref($results) eq 'HASH' && $results->{items}
         || $self->throw( 'Request', 'Malformed response to bulk query',
         $results );
@@ -750,23 +762,26 @@ sub delete_percolator {
 #===================================
 sub get_percolator {
 #===================================
-    my $result = shift()->_do_action(
+    shift()->_do_action(
         'get_percolator',
-        {   cmd    => CMD_INDEX_PERC,
-            prefix => '_percolator',
-            method => 'GET',
-            qs     => { ignore_missing => [ 'boolean', 1 ], }
+        {   cmd          => CMD_INDEX_PERC,
+            prefix       => '_percolator',
+            method       => 'GET',
+            qs           => { ignore_missing => [ 'boolean', 1 ], },
+            post_process => sub {
+                my $result = shift;
+                return $result
+                    unless ref $result eq 'HASH';
+                return {
+                    index      => $result->{_type},
+                    percolator => $result->{_id},
+                    query      => delete $result->{_source}{query},
+                    data       => $result->{_source},
+                };
+            },
         },
         @_
     );
-    return $result
-        unless ref $result eq 'HASH';
-    return {
-        index      => $result->{_type},
-        percolator => $result->{_id},
-        query      => delete $result->{_source}{query},
-        data       => $result->{_source},
-    };
 }
 
 #===================================
@@ -903,26 +918,34 @@ sub aliases {
 #===================================
 sub get_aliases {
 #===================================
-    my ( $self, $params ) = parse_params(@_);
-    $self->error("get_aliases() does not support as_json")
-        if $params->{as_json};
-    my $results = $self->cluster_state(
-        filter_indices       => $params->{index},
-        filter_blocks        => 1,
-        filter_nodes         => 1,
-        filter_routing_table => 1,
-    );
-    my $indices = $results->{metadata}{indices};
-    my %aliases = ( indices => {}, aliases => {} );
-    foreach my $index ( keys %$indices ) {
-        my $aliases = $indices->{$index}{aliases};
-        $aliases{indices}{$index} = $aliases;
-        for (@$aliases) {
-            push @{ $aliases{aliases}{$_} }, $index;
-        }
+    shift()->_do_action(
+        'get_aliases',
+        {   cmd    => CMD_NONE,
+            prefix => '_cluster/state',
+            qs     => { index => ['flatten'], },
+            fixup  => sub {
+                my $qs = $_[1]->{qs};
+                $qs->{"filter_$_"} = 1 for qw(blocks nodes routing_table);
+                $qs->{filter_indices} = delete $qs->{index};
+            },
+            post_process => sub {
+                my $results = shift;
+                my $indices = $results->{metadata}{indices};
+                my %aliases = ( indices => {}, aliases => {} );
+                foreach my $index ( keys %$indices ) {
+                    my $aliases = $indices->{$index}{aliases};
+                    $aliases{indices}{$index} = $aliases;
+                    for (@$aliases) {
+                        push @{ $aliases{aliases}{$_} }, $index;
+                    }
 
-    }
-    return \%aliases;
+                }
+                return \%aliases;
+            },
+        },
+        @_
+    );
+
 }
 
 #===================================
@@ -1411,6 +1434,7 @@ sub _do_action {
         1;
     } or $error = $@ || 'Unknown error';
 
+    $args{post_process} = $defn->{post_process};
     $self->throw(
         'Param',
         $error . $self->_usage( $action, $defn ),
