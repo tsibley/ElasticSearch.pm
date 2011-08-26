@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 our $DEBUG   = 0;
 
 #===================================
@@ -181,6 +181,7 @@ a randomly chosen node in the list.
                         | 'httptiny'
                         | 'curl'
                         | 'aehttp'
+                        | 'aecurl'
                         | 'thrift',
         max_requests => 10_000,                 # default 10_000
         trace_calls  => 'log_file',
@@ -414,8 +415,9 @@ C<servers> list only. Failed nodes will be removed from the list
 
 There are various C<transport> backends that ElasticSearch can use:
 C<http> (the default, based on LWP), C<httplite> (based on L<HTTP::Lite>),
-C<httptiny> (based on L<HTTP::Tiny>) or
-C<thrift> (which uses the Thrift protocol).
+C<httptiny> (based on L<HTTP::Tiny>), C<curl> (based on L<WWW::Curl>),
+C<aehttp> (based on L<AnyEvent::HTTP), C<aecurl> (based on
+L<AnyEvent::Curl::Multi>) and C<thrift> (which uses the Thrift protocol).
 
 Although the C<thrift> interface has the right buzzwords (binary, compact,
 sockets), the generated Perl code is very slow. Until that is improved, I

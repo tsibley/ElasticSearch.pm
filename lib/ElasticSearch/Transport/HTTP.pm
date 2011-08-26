@@ -112,6 +112,8 @@ consider trying L<ElasticSearch::Transport:HTTPLite> instead - it is
 
 =item * L<ElasticSearch::Transport::AEHTTP>
 
+=item * L<ElasticSearch::Transport::AECurl>
+
 =item * L<ElasticSearch::Transport::Thrift>
 
 =back

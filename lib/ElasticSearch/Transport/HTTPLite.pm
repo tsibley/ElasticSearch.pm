@@ -110,6 +110,8 @@ faster than L<ElasticSearch::Transport.:HTTP>.
 
 =item * L<ElasticSearch::Transport::AEHTTP>
 
+=item * L<ElasticSearch::Transport::AECurl>
+
 =item * L<ElasticSearch::Transport::Thrift>
 
 =back

@@ -119,6 +119,8 @@ It is slightly (1%) faster thab L<ElasticSearch::Transport::HTTPLite>.
 
 =item * L<ElasticSearch::Transport::AEHTTP>
 
+=item * L<ElasticSearch::Transport::AECurl>
+
 =item * L<ElasticSearch::Transport::Thrift>
 
 =back

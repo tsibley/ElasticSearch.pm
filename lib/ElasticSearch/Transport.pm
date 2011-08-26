@@ -14,6 +14,7 @@ our %Transport = (
     'httptiny' => 'ElasticSearch::Transport::HTTPTiny',
     'curl'     => 'ElasticSearch::Transport::Curl',
     'aehttp'   => 'ElasticSearch::Transport::AEHTTP',
+    'aecurl'     => 'ElasticSearch::Transport::AECurl',
 );
 
 #===================================
@@ -564,6 +565,11 @@ to communicate using HTTP. See L<ElasticSearch::Transport::Curl>
 Uses L<AnyEvent::HTTP> to communicate asynchronously using HTTP.
 See L<ElasticSearch::Transport::AEHTTP>
 
+=item * C<aecurl>
+
+Uses L<AnyEvent::Curl::Multi> (and thus L<libcurl|http://curl.haxx.se/libcurl/>)
+to communicate asynchronously using HTTP. See L<ElasticSearch::Transport::AECurl>
+
 =item * C<thrift>
 
 Uses C<thrift>  to communicate using a compact binary protocol over sockets.
@@ -715,6 +721,8 @@ You can register your Transport backend as follows:
 =item * L<ElasticSearch::Transport::Curl>
 
 =item * L<ElasticSearch::Transport::AEHTTP>
+
+=item * L<ElasticSearch::Transport::AECurl>
 
 =item * L<ElasticSearch::Transport::Thrift>
 
