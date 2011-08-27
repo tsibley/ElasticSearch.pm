@@ -54,6 +54,7 @@ sub run_test_suite {
             cluster_health
             nodes
             module_options
+            deflate
             )
     );
 

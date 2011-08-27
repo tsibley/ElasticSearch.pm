@@ -42,7 +42,11 @@ sub send_request {
 
     my $code    = $response->{status};
     my $msg     = $response->{reason};
-    my $content = decode_utf8( $response->{content} || '' );
+    my $content = $response->{content} || '';
+
+    my $ce = $response->{headers}{'content-encoding'} || '';
+    $content = $self->inflate($content) if $ce eq 'deflate';
+    $content = decode_utf8 $content;
 
     return $content if $code && $code >= 200 && $code <= 209;
 
@@ -76,7 +80,10 @@ sub client {
 #===================================
     my $self = shift;
     unless ( $self->{_client}{$$} ) {
-        my $client = HTTP::Tiny->new( timeout => $self->timeout || 10000 );
+        my %params = ( timeout => $self->timeout || 10000 );
+        $params{default_headers} = { 'Accept-Encoding' => 'deflate' }
+            if $self->deflate;
+        my $client = HTTP::Tiny->new(%params);
         $self->{_client}{$$} = $client;
     }
     return $self->{_client}{$$};

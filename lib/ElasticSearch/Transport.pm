@@ -2,9 +2,10 @@ package ElasticSearch::Transport;
 
 use strict;
 use warnings FATAL => 'all';
-use ElasticSearch::Util qw(throw parse_params);
+use ElasticSearch::Util qw(throw build_error parse_params);
 use URI();
 use JSON();
+use Encode qw(decode_utf8);
 use Scalar::Util qw(openhandle);
 
 our %Transport = (
@@ -14,7 +15,7 @@ our %Transport = (
     'httptiny' => 'ElasticSearch::Transport::HTTPTiny',
     'curl'     => 'ElasticSearch::Transport::Curl',
     'aehttp'   => 'ElasticSearch::Transport::AEHTTP',
-    'aecurl'     => 'ElasticSearch::Transport::AECurl',
+    'aecurl'   => 'ElasticSearch::Transport::AECurl',
 );
 
 #===================================
@@ -46,7 +47,7 @@ sub new {
     $self->{_default_servers}
         = [ ref $servers eq 'ARRAY' ? @$servers : $servers ];
 
-    for (qw(timeout max_requests no_refresh)) {
+    for (qw(timeout max_requests no_refresh deflate)) {
         next unless exists $params->{$_};
         $self->$_( delete $params->{$_} );
     }
@@ -323,6 +324,21 @@ sub http_uri {
 }
 
 #===================================
+sub inflate {
+#===================================
+    my $self = shift;
+    my $content = shift;
+    my $output;
+        require IO::Uncompress::Inflate;
+
+        no warnings 'once';
+        IO::Uncompress::Inflate::inflate( \$content, \$output, Transparent => 0 )
+            or die "Couldn't inflate response: "
+                . $IO::Uncompress::Inflate::InflateError;
+    return $output;
+}
+
+#===================================
 sub timeout {
 #===================================
     my $self = shift;
@@ -331,6 +347,17 @@ sub timeout {
         $self->clear_clients;
     }
     return $self->{_timeout} || 0;
+}
+
+#===================================
+sub deflate {
+#===================================
+    my $self = shift;
+    if (@_) {
+        $self->{_deflate} = shift;
+        $self->clear_clients;
+    }
+    return $self->{_deflate} || 0;
 }
 
 #===================================
@@ -593,6 +620,7 @@ happens via the main L<ElasticSearch> class.
         transport   => 'httplite',
         timeout     => '10',
         no_refresh  => 0 | 1,
+        delate      => 0 | 1,
     );
 
     my $t = $e->transport;
@@ -612,6 +640,9 @@ happens via the main L<ElasticSearch> class.
 
     $t->no_refresh(0|1)             # don't retrieve the live node list
                                     # instead, use just the nodes specified
+
+    $t->deflate(0|1);               # should ES deflate its responses
+                                    # useful if ES is on a remote network
 
     $t->register('foo',$class)      # register new Transport backend
 

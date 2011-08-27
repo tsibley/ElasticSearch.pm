@@ -25,6 +25,9 @@ sub send_request {
     my $uri     = $self->http_uri( $server, $params->{cmd}, $params->{qs} );
     my $request = HTTP::Request->new( $method, $uri );
 
+    $request->header( 'Accept-Encoding' => 'deflate' )
+        if $self->deflate;
+
     $request->add_content_utf8( $params->{data} )
         if defined $params->{data};
 

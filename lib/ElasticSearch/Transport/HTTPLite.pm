@@ -27,15 +27,24 @@ sub send_request {
     my $method = $params->{method};
     my $uri    = $self->http_uri( $server, $params->{cmd}, $params->{qs} );
     my $client = $self->client;
+    $client->add_req_header( 'Accept-Encoding' => 'deflate' )
+        if $self->deflate;
+
     $client->method($method);
     if ( my $data = $params->{data} ) {
         utf8::encode($data);
         $client->{content} = $data;
     }
 
-    my $code    = $client->request($uri) || 500;
-    my $msg     = $!;
-    my $content = decode_utf8( $client->body || '' );
+    my $code = $client->request($uri) || 500;
+    my $msg = $!;
+
+    my $content = $client->body || '';
+
+    my $ce = ( $client->get_header('Content-Encoding') || [] )->[0] || '';
+    $content = $self->inflate($content) if $ce eq 'deflate';
+    $content = decode_utf8 $content;
+
     return $content if $code && $code >= 200 && $code <= 209;
 
     $msg ||= $client->status_message || 'read timeout';
