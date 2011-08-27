@@ -8,5 +8,5 @@ bench_data.json
 /.includepath
 /.project
 /MYMETA.yml
-log
+log.*
 ElasticSearch-*

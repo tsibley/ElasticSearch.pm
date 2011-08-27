@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.44    2011-08-27
+        Added support for deflate() to all HTTP Transport modules.
+
 0.43    2011-08-26
         Added ElasticSearch::Transport::AECurl, and async backend which uses
         libcurl, via AnyEvent::Curl::Multi
