@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.45    2011-08-27
+        Doc typo corrected
+
 0.44    2011-08-27
         Added support for deflate() to all HTTP Transport modules.
 

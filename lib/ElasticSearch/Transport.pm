@@ -620,7 +620,7 @@ happens via the main L<ElasticSearch> class.
         transport   => 'httplite',
         timeout     => '10',
         no_refresh  => 0 | 1,
-        delate      => 0 | 1,
+        deflate     => 0 | 1,
     );
 
     my $t = $e->transport;
