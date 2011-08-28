@@ -33,7 +33,26 @@ ok $r= $es->mget(
     ),
     ' - docs';
 
-is_deeply $r = $es->mget(docs=>[]),[],' - no docs';
+ok $r= $es->mget(
+    fields => [ 'num', 'date' ],
+    docs   => [
+        { _index => 'es_test_1', _type => 'type_1', _id => 1 },
+        {   _index => 'es_test_1',
+            _type  => 'type_1',
+            _id    => 5,
+            fields => ['text']
+        }
+    ]
+    ),
+    ' - fields';
+
+ok keys %{ $r->[0]{fields} } == 2
+    && $r->[0]{fields}{num}
+    && $r->[0]{fields}{date}, ' - default';
+
+ok keys %{ $r->[1]{fields} } == 1 && $r->[1]{fields}{text}, ' - specific';
+
+is_deeply $r = $es->mget( docs => [] ), [], ' - no docs';
 
 throws_ok { $es->mget( type => 'foo' ) } qr/Cannot specify a type for mget/,
     ' - type without index';

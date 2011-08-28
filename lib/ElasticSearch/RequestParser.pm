@@ -128,8 +128,7 @@ sub get {
 #===================================
 sub mget {
 #===================================
-    my $self   = shift;
-    my $params = $self->parse_params(@_);
+    my ( $self, $params ) = parse_params(@_);
 
     $params->{$_} ||= $self->{_default}{$_} for qw(index type);
 
@@ -155,8 +154,11 @@ sub mget {
         'mget',
         {   cmd     => [ index => ONE_OPT, type => ONE_OPT ],
             postfix => '_mget',
-            data => { docs           => 'docs' },
-            qs   => { filter_missing => [ 'boolean', 1 ], },
+            data => { docs => 'docs' },
+            qs   => {
+                fields         => ['flatten'],
+                filter_missing => [ 'boolean', 1 ],
+            },
             fixup => sub { $filter = delete $_[1]->{qs}{filter_missing} },
             post_process => sub {
                 my $result = shift;

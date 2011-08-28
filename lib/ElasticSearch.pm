@@ -598,6 +598,7 @@ See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.h
         index          => single,
         type           => single or blank,
         ids            => \@ids,
+        fields         => ['field_1','field_2'],
         filter_missing => 0 | 1
     );
 
@@ -605,6 +606,7 @@ See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.h
         index          => single or blank,
         type           => single or blank,
         docs           => \@doc_info,
+        fields         => ['field_1','field_2'],
         filter_missing => 0 | 1
     );
 
@@ -623,18 +625,24 @@ Alternatively you can specify each doc separately:
 
     $docs = $es->mget(
         docs => [
-            { _index => 'index_1', type = >'type_1', _id => 1 },
-            { _index => 'index_2', type = >'type_2', _id => 2 },
+            { _index => 'index_1', _type => 'type_1', _id => 1 },
+            { _index => 'index_2', _type => 'type_2', _id => 2 },
         ]
     )
 
 Or:
+
     $docs = $es->mget(
-        index => 'myindex',  # default index
-        type  => 'mytype',   # default type
+        index  => 'myindex',                    # default index
+        type   => 'mytype',                     # default type
+        fields => ['field_1','field_2'],        # default fields
         docs => [
-            { _id => 1 },    # uses defaults
-            { _index => 'index_2', type = >'type_2', _id => 2 },
+            { _id => 1 },                       # uses defaults
+            { _index => 'index_2',
+              _type  => 'type_2',
+              _id    => 2,
+              fields => ['field_2','field_3'],
+            },
         ]
     );
 
