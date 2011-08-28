@@ -44,7 +44,6 @@ qr/ElasticSearch::Error::Missing/, ' - index missing';
 #===================================
 sub used_caches {
 #===================================
-    sleep 1;    ## otherwise cached results in 0.17.4
     my %cache = (
         field  => 0,
         filter => 0
@@ -68,6 +67,7 @@ sub populate_caches {
         },
         sort => { num => 'asc' }
     );
+    sleep 1;    ## otherwise cached results
     my $caches = used_caches();
     ok $caches->{field},  ' - field cache populated';
     ok $caches->{filter}, ' - filter cache populated';
