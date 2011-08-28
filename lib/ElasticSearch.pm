@@ -1903,6 +1903,36 @@ For example:
 
 See: L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html>
 
+=head3 cluster_settings()
+
+    $result = $es->cluster_settings()
+
+Returns any cluster wide settings that have been set with
+L</"update_cluster_settings">.
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1266>
+
+
+=head3 update_cluster_settings()
+
+    $result = $es->update_cluster_settings(
+        persistent  => {...},
+        transient   => {...},
+    )
+
+For example:
+
+    $result = $es->update_cluster_settings(
+        persistent  => {
+            "discovery.zen.minimum_master_nodes" => 2
+        },
+    )
+
+C<persistent> settings will survive a full cluster restart. C<transient>
+settings won't.
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1266>
+
 =head3 nodes()
 
     $result = $es->nodes(

@@ -1398,6 +1398,40 @@ sub cluster_health {
     );
 }
 
+#===================================
+sub cluster_settings {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+
+    $self->_do_action(
+        'cluster_settings',
+        {   method  => 'GET',
+            cmd     => CMD_NONE,
+            postfix => '_cluster/settings'
+        },
+        $params
+    );
+}
+
+#===================================
+sub update_cluster_settings {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+
+    $self->_do_action(
+        'update_cluster_settings',
+        {   method  => 'PUT',
+            cmd     => CMD_NONE,
+            postfix => '_cluster/settings',
+            data    => {
+                persistent => ['persistent'],
+                transient  => ['transient']
+            }
+        },
+        $params
+    );
+}
+
 ##################################
 ## FLAGS
 ##################################
