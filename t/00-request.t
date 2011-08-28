@@ -62,6 +62,7 @@ sub run_test_suite {
     run_tests( qw(
             create_index
             index_status
+            index_stats
             update_settings
             index_admin
             analyze

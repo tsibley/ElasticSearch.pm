@@ -1262,6 +1262,28 @@ Throws a C<Missing> exception if the specified indices do not exist.
 
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html>
 
+=head3 index_stats()
+
+    $result = $es->index_stats(
+        index           => multi,
+        type            => multi,
+
+        docs            => 1|0,
+        store           => 1|0,
+        indexing        => 1|0,
+
+        clear           => 0|1,         # clears default docs,store,indexing
+        flush           => 0|1,
+        merge           => 0|1
+        refresh         => 0|1,
+        level           => 'shards'
+    );
+
+Throws a C<Missing> exception if the specified indices do not exist.
+
+See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-stats.html>
+
+
 =head3 create_index()
 
     $result = $es->create_index(
