@@ -119,6 +119,10 @@ sub reindex {
         $doc = $transform->($doc) or next;
         $doc->{version_type} = 'external'
             if defined $doc->{_version};
+        if ( my $fields = delete $doc->{fields} ) {
+            $doc->{parent} = $fields->{_parent}
+                if defined $fields->{_parent};
+        }
         $doc->{_index} = $dest_index
             if $dest_index;
         push @docs, $doc;
@@ -894,6 +898,24 @@ from the original index:
             $doc->{_source}{title} = uc( $doc->{_source}{title} );
             return $doc;
         }
+    );
+
+B<NOTE:> If some of your docs have parent/child relationships, and you want
+to preserve this relationship, then you should add this to your
+scrolled search parameters: C<< fields => ['_source','_parent'] >>.
+
+For example:
+
+    my $source = $es->scrolled_search(
+        index       => 'old_index',
+        search_type => 'scan',
+        fields      => ['_source','_parent'],
+        version     => 1
+    );
+
+    $es->reindex(
+        source      => $source,
+        dest_index  => 'new_index',
     );
 
 See also L</"scrolled_search()">, L<ElasticSearch::ScrolledSearch>,
