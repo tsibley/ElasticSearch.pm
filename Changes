@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+0.46    2011-09-07
+        Fixed support for parent/child in reindex() - thanks to PERLER for
+        reporting
+
 0.45    2011-08-27
         Doc typo corrected
 
