@@ -7,6 +7,7 @@ use URI();
 use JSON();
 use Encode qw(decode_utf8);
 use Scalar::Util qw(openhandle);
+use List::Util qw(shuffle);
 
 our %Transport = (
     'http'     => 'ElasticSearch::Transport::HTTP',
@@ -45,7 +46,7 @@ sub new {
         || '127.0.0.1:' . $transport_class->default_port;
 
     $self->{_default_servers}
-        = [ ref $servers eq 'ARRAY' ? @$servers : $servers ];
+        = [ shuffle( ref $servers eq 'ARRAY' ? @$servers : $servers ) ];
 
     for (qw(timeout max_requests no_refresh deflate)) {
         next unless exists $params->{$_};
@@ -213,6 +214,8 @@ sub refresh_servers {
                 || ''
             } values %{ $nodes->{nodes} };
         next unless @servers;
+
+        @servers = shuffle(@servers);
 
         $self->{_refresh_in} = $self->max_requests - 1;
         return $self->servers( \@servers );
@@ -547,8 +550,13 @@ ElasticSearch::Transport - Base class for communicating with ElasticSearch
 ElasticSearch::Transport is a base class for the modules which communicate
 with the ElasticSearch server.
 
-It handles failover to the next node in case the current node closes the
-connection. All requests are round-robin'ed to all live servers.
+It handles failover to the next node in case the current node closes
+the connection.
+
+All requests are round-robin'ed to all live servers as returned by
+C</_cluster/nodes>, except we C<shuffle> the server list when we
+retrieve it, and thus avoid having all our instances make their first
+request to the same server.
 
 On the first request and every C<max_requests> after that (default 10,000),
 the list of live nodes is automatically refreshed.  This can be disabled
