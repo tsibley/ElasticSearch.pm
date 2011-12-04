@@ -651,7 +651,9 @@ happens via the main L<ElasticSearch> class.
                                     # instead, use just the nodes specified
 
     $t->deflate(0|1);               # should ES deflate its responses
-                                    # useful if ES is on a remote network
+                                    # useful if ES is on a remote network.
+                                    # ES needs compression enabled with
+                                    #     http.compression: true
 
     $t->register('foo',$class)      # register new Transport backend
 
