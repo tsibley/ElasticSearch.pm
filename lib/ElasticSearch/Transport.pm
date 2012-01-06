@@ -8,6 +8,7 @@ use JSON();
 use Encode qw(decode_utf8);
 use Scalar::Util qw(openhandle);
 use List::Util qw(shuffle);
+use IO::Handle();
 
 our %Transport = (
     'http'     => 'ElasticSearch::Transport::HTTP',
