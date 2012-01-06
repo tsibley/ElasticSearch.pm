@@ -181,6 +181,8 @@ my %Index_Defn = (
         routing   => ['string'],
         parent    => ['string'],
         percolate => ['string'],
+        timestamp => ['duration'],
+        ttl       => ['int'],
         version   => ['int'],
         version_type => [ 'enum', [ 'internal', 'external' ] ],
     },
@@ -219,6 +221,8 @@ sub create {
                 routing   => ['string'],
                 parent    => ['string'],
                 percolate => ['string'],
+                timestamp => ['duration'],
+                ttl       => ['int'],
                 version   => ['int'],
                 version_type => [ 'enum', [ 'internal', 'external' ] ],
             },
@@ -876,6 +880,7 @@ sub index_segments {
     );
 }
 
+#===================================
 sub create_index {
 #===================================
     shift()->_do_action(
@@ -1191,9 +1196,13 @@ sub mapping {
     $self->_do_action(
         'mapping',
         {   method  => 'GET',
-            cmd     => CMD_index_type,
+            cmd     => CMD_index_then_type,
             postfix => '_mapping',
-            qs      => { ignore_missing => [ 'boolean', 1 ], }
+            fixup   => sub {
+                die "Cannot specify type without index"
+                    if $params->{type} && !$params->{index};
+            },
+            qs => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
     );
