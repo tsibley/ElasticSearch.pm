@@ -991,6 +991,7 @@ more.
         size            => $no_of_results
         sort            => ['_score',$field_1]
         scroll          => '5m' | '30s',
+        stats           => ['group_1','group_2'],
         track_scores    => 0 | 1,
         timeout         => '10s'
         version         => 0 | 1
@@ -1061,6 +1062,7 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         size                     => $no_of_results
         sort                     => ['_score:asc','last_modified:desc'],
         scroll                   => '5m' | '30s',
+        stats                    => ['group_1','group_2'],
         timeout                  => '10s'
         version                  => 0 | 1
 
@@ -1288,16 +1290,19 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
 
     $result = $es->index_stats(
         index           => multi,
-        type            => multi,
+        types           => multi,
 
         docs            => 1|0,
         store           => 1|0,
         indexing        => 1|0,
+        get             => 1|0,
 
-        clear           => 0|1,         # clears default docs,store,indexing
+        clear           => 0|1,         # clears default docs,store,indexing,get,search
+
         flush           => 0|1,
         merge           => 0|1
         refresh         => 0|1,
+
         level           => 'shards'
     );
 

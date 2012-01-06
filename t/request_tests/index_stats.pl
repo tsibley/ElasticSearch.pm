@@ -21,7 +21,7 @@ ok $r->{total}{indexing}
 
 ok $r= $es->index_stats(
     index    => 'es_test_1',
-    type     => 'type_1',
+    types    => 'type_1',
     clear    => 1,
     indexing => 1
 )->{_all}, ' - clear';
@@ -38,12 +38,13 @@ ok $r->{total}{indexing}
 ok $r= $es->index_stats(
     clear    => 1,
     docs     => 1,
+    get      => 1,
     store    => 1,
     indexing => 1,
     flush    => 1,
     merge    => 1,
     refresh  => 1,
-    type     => [ 'type_1', 'type_2' ],
+    types    => [ 'type_1', 'type_2' ],
     level    => 'shards'
     )->{_all}{indices}{es_test_1},
     ' - all options';
@@ -53,11 +54,16 @@ ok $r->{shards}, ' - shards';
 $r = $r->{total};
 ok $r->{docs}
     && $r->{store}
-    && $r->{indexing}
     && $r->{flush}
+    && $r->{get}
+    && $r->{indexing}
     && $r->{merges}
     && $r->{refresh},
     ' - all stats';
+
+ok $es->search( index => 'es_test_1', stats => 'foo' ), ' - search with stats';
+ok $r= $es->index_stats( clear => 1, search => 1, groups => 'foo' )
+    ->{_all}{primaries}{search}{groups}{foo}, ' - stats with groups';
 
 throws_ok { $es->index_stats( index => 'foo' ) }
 qr/ElasticSearch::Error::Missing/, ' - index missing';

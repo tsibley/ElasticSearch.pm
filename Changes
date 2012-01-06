@@ -2,6 +2,7 @@ Revision history for ElasticSearch
 0.48
         Fixed support for as_json in ScrolledSearch
         Fixed implicit IO::Handle bug when trying to log in older Perls
+        Fixed a bug in index_stats and addded 'get' stats and groups.
 
 0.47    2011-10-24
         Merged patch from AVAR, which ensures that the servers are used in

@@ -510,6 +510,7 @@ my %Search_Defn = (
     qs      => {
         %SearchQS,
         scroll  => ['duration'],
+        stats   => ['flatten'],
         version => [ 'boolean', 1 ]
     },
     fixup => sub {
@@ -548,6 +549,7 @@ my %SearchQS_Defn = (
         scroll                   => ['duration'],
         size                     => ['int'],
         'sort'                   => ['flatten'],
+        stats                    => ['flatten'],
         version                  => [ 'boolean', 1 ],
     },
 );
@@ -829,20 +831,18 @@ sub index_stats {
         {   cmd     => CMD_index,
             postfix => '_stats',
             qs      => {
-                type     => ['flatten'],
-                level    => [ 'enum', [qw(shards)] ],
                 docs     => [ 'boolean', 1, 0 ],
                 store    => [ 'boolean', 1, 0 ],
                 indexing => [ 'boolean', 1, 0 ],
-                clear   => [ 'boolean', 1 ],
-                merge   => [ 'boolean', 1 ],
-                flush   => [ 'boolean', 1 ],
-                refresh => [ 'boolean', 1 ],
-            },
-            fixup => sub {
-                my $qs = $_[1]->{qs};
-                my $types = delete $qs->{type} or return;
-                $qs->{types} = $types;
+                get      => [ 'boolean', 1, 0 ],
+                search   => [ 'boolean', 1, 0 ],
+                clear    => [ 'boolean', 1 ],
+                merge    => [ 'boolean', 1 ],
+                flush    => [ 'boolean', 1 ],
+                refresh  => [ 'boolean', 1 ],
+                types    => ['flatten'],
+                groups   => ['flatten'],
+                level => [ 'enum', [qw(shards)] ],
             },
         },
         @_
