@@ -1610,6 +1610,7 @@ C<snapshot_index()> is a synonym for L</"gateway_snapshot()">
         field_data      => 0 | 1,
         filter          => 0 | 1,
         id              => 0 | 1,
+        fields          => 'field1' | ['field1','fieldn',...]
     );
 
 Clears the caches for the specified indices. By default, clears all caches,

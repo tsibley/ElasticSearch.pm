@@ -1186,6 +1186,7 @@ sub clear_cache {
                 filter     => [ 'boolean', 1 ],
                 field_data => [ 'boolean', 1 ],
                 bloom      => [ 'boolean', 1 ],
+                fields     => ['flatten'],
             }
         },
         @_
