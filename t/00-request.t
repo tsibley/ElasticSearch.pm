@@ -16,11 +16,12 @@ BEGIN {
 diag "";
 diag "Testing ElasticSearch $ElasticSearch::VERSION, Perl $], $^X";
 
+our $es;
 for ( get_backends() ) {
     diag "";
     diag "Transport backend: $_";
 
-    our $es = eval {
+    $es = eval {
         ElasticSearch::TestServer->new(
             instances   => $instances,
             transport   => $_,
@@ -62,6 +63,7 @@ sub run_test_suite {
     run_tests( qw(
             create_index
             index_status
+            index_stats
             update_settings
             index_admin
             analyze

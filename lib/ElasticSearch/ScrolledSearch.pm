@@ -52,8 +52,8 @@ sub new {
     my ( $es, $params ) = parse_params(@_);
 
     my $scroll = $params->{scroll} ||= '1m';
-    my $method = $params->{q} ? 'searchqs' : 'search';
-
+    my $method  = $params->{q} ? 'searchqs' : 'search';
+    my $as_json = delete $params->{as_json};
     my $results = $es->$method($params);
     $results = $results->recv
         if ref $results ne 'HASH' and $results->isa('AnyEvent::CondVar');
@@ -65,6 +65,7 @@ sub new {
         _buffer    => $results->{hits}{hits},
         _max_score => $results->{hits}{max_score},
         _eof       => 0,
+        _as_json   => $as_json,
     };
     return bless( $self, $class );
 }
@@ -79,6 +80,17 @@ no more results are available.
 
 An error is thrown if the C<scroll> has already expired.
 
+If C<< as_json => 1 >> is specified, then L</"next()"> will always return
+a JSON array:
+
+   $scroller->next()
+   # '[{...}]'
+
+   $scroller->next(2)
+   # '[{...},{...}]'
+
+   # if no results left: '[]'
+
 =cut
 
 #===================================
@@ -89,7 +101,11 @@ sub next {
     while ( @{ $self->{_buffer} } < $size && !$self->{_eof} ) {
         $self->_get_next;
     }
-    return splice @{ $self->{_buffer} }, 0, $size;
+    my @results = splice @{ $self->{_buffer} }, 0, $size;
+    return $self->{_as_json}
+        ? $self->{_es}->transport->JSON->encode( \@results )
+        : $size == 1 ? $results[0]
+        :              @results;
 }
 
 #===================================
