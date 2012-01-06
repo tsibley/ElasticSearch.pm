@@ -53,6 +53,7 @@ sub run_test_suite {
             version
             cluster_state
             cluster_health
+            cluster_settings
             nodes
             module_options
             deflate
