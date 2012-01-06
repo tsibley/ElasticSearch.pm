@@ -689,12 +689,7 @@ sub count {
             postfix => '_count',
             %Query_Defn,
             qs    => { routing => ['flatten'] },
-            fixup => sub {
-                _query_fixup(@_);
-                my $args = $_[1];
-                $args->{data}{match_all} = {}
-                    unless %{ $args->{data} };
-            },
+            fixup => \&_query_fixup,
         },
         @_
     );
