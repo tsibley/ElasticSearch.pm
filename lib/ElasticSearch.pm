@@ -493,6 +493,18 @@ ID and a new document is always created.
 If C<version> is passed, and the current version in ElasticSearch is
 different, then a C<Conflict> error will be thrown.
 
+=item *
+
+C<data> can also be a raw JSON encoded string (but ensure that it is correctly
+encoded, otherwise you see errors when trying to retrieve it from ElasticSearch).
+
+    $es->index(
+        index   => 'foo',
+        type    =>  'bar',
+        id      =>  1,
+        data    =>  '{"foo":"bar"}'
+    );
+
 =back
 
 See also: L<http://www.elasticsearch.org/guide/reference/api/index_.html>,
@@ -745,6 +757,18 @@ results directly to C<bulk()>.
 
 The C<index> and C<type> parameters, if not specified, are inherited from
 the top level bulk request.
+
+C<data> can also be a raw JSON encoded string (but ensure that it is correctly
+encoded, otherwise you see errors when trying to retrieve it from ElasticSearch).
+
+    actions => [{
+        index => {
+            index   => 'foo',
+            type    =>  'bar',
+            id      =>  1,
+            data    =>  '{"foo":"bar"}'
+        }
+    }]
 
 =head4 C<delete> action
 

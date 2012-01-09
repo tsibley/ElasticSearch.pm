@@ -83,4 +83,39 @@ is $es->index(
     refresh      => 1
 )->{_version}, 10, ' - create version_type external';
 
+# RAW JSON DATA
+ok $es->index(
+    index => 'es_test_1',
+    type  => 'type_1',
+    id    => 6,
+    data  => '{"text": "bar","num":124}'
+    ),
+    'Index JSON';
+
+ok $r= $es->get(
+    index => 'es_test_1',
+    type  => 'type_1',
+    id    => 6
+    )->{_source},
+    ' - get doc';
+
+ok $r->{text} eq 'bar' && $r->{num} == 124, ' - doc OK';
+
+ok $es->create(
+    index => 'es_test_1',
+    type  => 'type_1',
+    id    => 7,
+    data  => '{"text": "baz","num":125}'
+    ),
+    'Create JSON';
+
+ok $r= $es->get(
+    index => 'es_test_1',
+    type  => 'type_1',
+    id    => 7
+    )->{_source},
+    ' - get doc';
+
+ok $r->{text} eq 'baz' && $r->{num} == 125, ' - doc OK';
+
 1

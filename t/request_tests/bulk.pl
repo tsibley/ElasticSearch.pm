@@ -161,4 +161,43 @@ ok $r->[2]{index}{_index} eq 'es_test_2'
     && $r->[2]{index}{_type} eq 'test'
     && $r->[2]{index}{_id} == 7, ' - doc 3';
 
+# Raw JSON data
+
+ok $es->bulk(
+    actions => [ {
+            index => {
+                index => 'es_test_1',
+                type  => 'type_1',
+                id    => 6,
+                data  => '{"text": "bar","num":124}'
+            }
+        },
+        {   create => {
+                index => 'es_test_1',
+                type  => 'type_1',
+                id    => 7,
+                data  => '{"text": "baz","num":125}'
+            }
+        }
+    ]
+    ),
+    'Bulk raw JSON';
+
+ok $r= $es->get(
+    index => 'es_test_1',
+    type  => 'type_1',
+    id    => 6
+    )->{_source},
+    ' - get doc 1';
+
+ok $r->{text} eq 'bar' && $r->{num} == 124, ' - doc 1 OK';
+
+ok $r= $es->get(
+    index => 'es_test_1',
+    type  => 'type_1',
+    id    => 7
+    )->{_source},
+    ' - get doc 2';
+
+ok $r->{text} eq 'baz' && $r->{num} == 125, ' - doc 2 OK';
 1
