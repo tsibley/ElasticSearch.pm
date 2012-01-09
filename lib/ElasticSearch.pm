@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.47';
+our $VERSION = '0.48';
 our $DEBUG   = 0;
 
 #===================================
@@ -152,7 +152,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.41, tested against ElasticSearch server version 0.17.6.
+Version 0.48, tested against ElasticSearch server version 0.18.6.
 
 =head1 DESCRIPTION
 
@@ -2025,7 +2025,7 @@ See: L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.htm
 Returns any cluster wide settings that have been set with
 L</"update_cluster_settings">.
 
-See L<https://github.com/elasticsearch/elasticsearch/issues/1266>
+See L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-settings.html>
 
 
 =head3 update_cluster_settings()
@@ -2046,7 +2046,7 @@ For example:
 C<persistent> settings will survive a full cluster restart. C<transient>
 settings won't.
 
-See L<https://github.com/elasticsearch/elasticsearch/issues/1266>
+See L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-settings.html>
 
 =head3 nodes()
 
