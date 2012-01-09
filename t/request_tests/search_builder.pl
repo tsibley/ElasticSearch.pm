@@ -21,6 +21,9 @@ bless $em, 'ElasticSearch::SB::Mock';
 
 # SEARCH
 
+SKIP: {
+skip "You must have ElasticSearch::SearchBuilder to run these tests", 1 unless eval { require ElasticSearch::SearchBuilder; 1 };
+
 eq_or_diff $em->search( queryb => 'foo' )->{query},
     { text => { _all => 'foo' } }, 'search-queryb';
 eq_or_diff $em->search( filterb => 'foo' )->{filter},
@@ -154,5 +157,6 @@ eq_or_diff $em->aliases(
     ]
     },
     , 'aliases filterb';
+} # SKIP
 
 1
