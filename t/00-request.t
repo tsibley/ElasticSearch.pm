@@ -222,7 +222,7 @@ sub index_test_docs {
 
         );
 
-    $es->bulk_index( \@rows, { refresh => 1 } );
+    $es->bulk_index( docs => \@rows, refresh => 1 );
 
 }
 

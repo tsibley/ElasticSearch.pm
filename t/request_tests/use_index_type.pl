@@ -14,7 +14,7 @@ ok $r = $es->index( id => 1, data => { text => 'foo' } ),
 is $r->{_index}, 'es_test_3', ' - index ok';
 is $r->{_type},  'type_3',    ' - type ok';
 
-ok $r= $es->bulk_index( { id => 2, data => { text => 'foo' } } )
+ok $r= $es->bulk_index( [{ id => 2, data => { text => 'foo' } } ])
     ->{results}[0]{index}, 'bulk with defaults';
 is $r->{_index}, 'es_test_3', ' - index ok';
 is $r->{_type},  'type_3',    ' - type ok';

@@ -695,61 +695,104 @@ L<http://www.elasticsearch.org/guide/reference/api/delete.html>
 
 =head3 bulk()
 
+    $result = $es->bulk( [ actions ] )
+
     $result = $es->bulk(
-        [
-            { create => { index => 'foo', type => 'bar', id => 123,
-                          data => { text => 'foo bar'},
+        actions     => [ actions ]                  # required
 
-                          # optional
-                          routing       => $routing,
-                          parent        => $parent,
-                          percolate     => $percolate,
-                          version       => $version,
-                          version_type  => 'internal' | 'external'
-            }},
-
-            { index  => { index => 'foo', type => 'bar', id => 123,
-                          data => { text => 'foo bar'},
-
-                          # optional
-                          routing       => $routing,
-                          parent        => $parent,
-                          percolate     => $percolate,
-                          version       => $version,
-                          version_type  => 'internal' | 'external'
-            }},
-
-            { delete => { index => 'foo', type => 'bar', id => 123,
-
-                          # optional
-                          routing       => $routing,
-                          parent        => $parent,
-                          version       => $version
-            }},
-
-        ],
-        consistency     => 'quorum' | 'one' | 'all'     # optional
-        refresh         => 0 | 1                        # optional
+        index       => 'foo',                       # optional
+        type        => 'bar',                       # optional
+        consistency => 'quorum' |  'one' | 'all'    # optional
+        refresh     => 0 | 1,                       # optional
+        replication => 'sync' | 'async',            # optional
     );
 
-Perform multiple C<index>,C<create> or C<delete> operations in a single
-request.  In my benchmarks, this is 10 times faster than serial operations.
 
-For the above example, the C<$result> will look like:
+Perform multiple C<index>, C<create> and C<delete> actions in a single request.
+This is about 10x as fast as performing each action in a separate request.
+
+Each C<action> is a HASH ref with a key indicating the action type (C<index>,
+C<create> or C<delete>), whose value is another HASH ref containing the
+associated metadata.
+
+The C<index> and C<type> parameters can be specified for each individual action,
+or inherited from the top level C<index> and C<type> parameters, as shown
+above.
+
+NOTE: C<bulk()> also accepts the C<_index>, C<_type>, C<_id>, C<_source>,
+C<_parent>, C<_routing> and C<_version> parameters so that you can pass search
+results directly to C<bulk()>.
+
+=head4 C<index> and C<create> actions
+
+    { index  => {
+        index           => 'foo',
+        type            => 'bar',
+        id              => 123,
+        data            => { text => 'foo bar'},
+
+        # optional
+        routing         => $routing,
+        parent          => $parent,
+        percolate       => $percolate,
+        timestamp       => $timestamp,
+        ttl             => $ttl,
+        version         => $version,
+        version_type    => 'internal' | 'external'
+    }}
+
+    { create  => { ... same options as for 'index' }}
+
+The C<index> and C<type> parameters, if not specified, are inherited from
+the top level bulk request.
+
+=head4 C<delete> action
+
+    { delete  => {
+        index           => 'foo',
+        type            => 'bar',
+        id              => 123,
+
+        # optional
+        routing         => $routing,
+        parent          => $parent,
+        version         => $version,
+        version_type    => 'internal' | 'external'
+    }}
+
+The C<index> and C<type> parameters, if not specified, are inherited from
+the top level bulk request.
+
+=head4 Return values
+
+The L</"bulk()"> method returns a HASH ref containing:
 
     {
         actions => [ the list of actions you passed in ],
-        results => [
-             { create => { _id => 123, _index => "foo", _type => "bar", _version => 1 } },
-             { index  => { _id => 123, _index => "foo", _type => "bar", _version => 2 } },
-             { delete => { _id => 123, _index => "foo", _type => "bar", _version => 3 } },
-        ]
+        results => [ the result of each of the actions ],
+        errors  => [ a list of any errors              ]
     }
 
-where each row in C<results> corresponds to the same row in C<actions>.
-If there are any errors for individual rows, then the C<$result> will contain
-a key C<errors> which contains an array of each error and the associated
-action, eg:
+The C<results> ARRAY ref contains the same values that would be returned
+for individiual C<index>/C<create>/C<delete> statements, eg:
+
+    results => [
+         { create => { _id => 123, _index => "foo", _type => "bar", _version => 1 } },
+         { index  => { _id => 123, _index => "foo", _type => "bar", _version => 2 } },
+         { delete => { _id => 123, _index => "foo", _type => "bar", _version => 3 } },
+    ]
+
+The C<errors> key is only present if an error has occured, so you can do:
+
+    $results = $es->bulk(\@actions);
+    if ($results->{errors}) {
+        # handle errors
+    }
+
+Each error element contains the C<error> message plus the C<action> that
+triggered the error.  Each C<result> element will also contain the error
+message., eg:
+
 
     $result = {
         actions => [
@@ -782,33 +825,41 @@ action, eg:
 
     };
 
-NOTE: C<bulk()> also accepts the C<_index>, C<_type>, C<_id>, C<_source>,
-C<_parent>, C<_routing> and C<_version> parameters so that you can pass search
-results directly to C<bulk()>.
-
 See L<http://www.elasticsearch.org/guide/reference/api/bulk.html> for
 more details.
 
 =head3 bulk_index(), bulk_create(), bulk_delete()
 
-These are convenience methods which allow you to pass just the data, without
-the C<index>, C<create> or C<index> action for each record, eg:
+These are convenience methods which allow you to pass just the metadata, without
+the C<index>, C<create> or C<index> action for each record.
 
-    $es->bulk_index([
-        { id => 123, index => 'bar', type => 'bar', data => { text=>'foo'} },
-        { id => 124, index => 'bar', type => 'bar', data => { text=>'bar'} },
-    ],  { refresh => 1 });
+These methods accept the same parameters as the L</"bulk()"> method, except
+that the C<actions> parameter is replaced by C<docs>, eg:
 
-is the equivalent of:
+    $result = $es->bulk_index( [ docs ] );
 
-    $es->bulk([
-        { index =>
-            { id => 123, index => 'bar', type => 'bar', data => { text=>'foo'}}
-        },
-        { index =>
-            { id => 124, index => 'bar', type => 'bar', data => { text=>'bar'}}
-        }
-    ],  { refresh => 1 });
+    $result = $es->bulk_index(
+        docs        => [ docs ],                    # required
+
+        index       => 'foo',                       # optional
+        type        => 'bar',                       # optional
+        consistency => 'quorum' |  'one' | 'all'    # optional
+        refresh     => 0 | 1,                       # optional
+        replication => 'sync' | 'async',            # optional
+    );
+
+For instance:
+
+    $es->bulk_index(
+        index   => 'foo',
+        type    => 'bar',
+        refresh => 1,
+        docs    => [
+            { id => 123,                data => { text=>'foo'} },
+            { id => 124, type => 'baz', data => { text=>'bar'} },
+        ]
+    );
+
 
 =head3 reindex()
 
