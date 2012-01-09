@@ -870,6 +870,17 @@ sub index_stats {
 }
 
 #===================================
+sub index_segments {
+#===================================
+    shift()->_do_action(
+        'index_segments',
+        {   cmd     => CMD_index,
+            postfix => '_segments',
+        },
+        @_
+    );
+}
+
 sub create_index {
 #===================================
     shift()->_do_action(

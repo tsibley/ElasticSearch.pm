@@ -1362,6 +1362,18 @@ Throws a C<Missing> exception if the specified indices do not exist.
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-stats.html>
 
 
+=head3 index_segments()
+
+    $result = $es->index_segments(
+        index           => multi,
+    );
+
+Returns low-level Lucene segments information for the specified indices.
+
+Throws a C<Missing> exception if the specified indices do not exist.
+
+See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-segments.html>
+
 =head3 create_index()
 
     $result = $es->create_index(

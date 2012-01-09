@@ -65,6 +65,7 @@ sub run_test_suite {
             create_index
             index_status
             index_stats
+            index_segments
             update_settings
             index_admin
             analyze

@@ -9,6 +9,7 @@ Revision history for ElasticSearch
         Fixed a bug in index_stats and addded 'get' stats and groups.
         Added 'fields' to clear_cache
         Corrected spelling of 'quorom' to 'quorum'
+        Added index_segments()
 0.47    2011-10-24
         Merged patch from AVAR, which ensures that the servers are used in
         random order.
