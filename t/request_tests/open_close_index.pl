@@ -14,7 +14,7 @@ throws_ok sub { $es->count( index => 'es_test_1', match_all => {} ) },
 
 ok $es->open_index( index => 'es_test_1' )->{ok}, 'Opened index';
 
-wait_for_es(3);
+wait_for_es();
 
 is $es->count( index => 'es_test_1', match_all => {} )->{count}, 1,
     ' - index reopened';
