@@ -74,7 +74,8 @@ sub new {
 NO_HOME
 
     my $transport = $params{transport};
-    my $port      = $params{port} || ( $transport eq 'thrift' ? 9500 : 9200 );
+    my $port      = delete $params{port}
+        || ( $transport eq 'thrift' ? 9500 : 9200 );
     my $instances = delete $params{instances};
     my $plugin    = $ElasticSearch::Transport::Transport{$transport}
         or die "Unknown transport '$transport'";
