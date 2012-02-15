@@ -24,6 +24,13 @@ throws_ok {
 }
 qr/ ElasticSearch::Error::Conflict/, ' - create conflict';
 
+ok $es->create(
+    index   => 'es_test_1',
+    type    => 'type_1',
+    data    => { text => 'foo', num => 123 },
+    refresh => 1
+)->{_id} ne '_create', 'Create document without ID';
+
 ok $es->index(
     index   => 'es_test_1',
     type    => 'type_1',

@@ -216,30 +216,7 @@ sub set {
 sub create {
 #===================================
     my ( $self, $params ) = parse_params(@_);
-
-    $self->_index(
-        'create',
-        {   cmd   => CMD_INDEX_TYPE_id,
-            data  => { data => 'data' },
-            fixup => sub {
-                my $data = $_[1]{data}{data};
-                $_[1]{data} = ref $data eq 'HASH' ? $data : \$data;
-            },
-            postfix => '_create',
-            qs      => {
-                refresh   => [ 'boolean', 1 ],
-                timeout   => ['duration'],
-                routing   => ['string'],
-                parent    => ['string'],
-                percolate => ['string'],
-                timestamp => ['duration'],
-                ttl       => ['int'],
-                version   => ['int'],
-                version_type => [ 'enum', [ 'internal', 'external' ] ],
-            },
-        },
-        $params
-    );
+    $self->_index( 'create', \%Index_Defn, { %$params, create => 1 } );
 }
 
 #===================================
