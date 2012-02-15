@@ -2053,11 +2053,17 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-sett
 
     $result = $es->nodes(
         nodes       => multi,
-        settings    => 1 | 0        # optional
+        settings    => 0 | 1,
+        http        => 0 | 1,
+        jvm         => 0 | 1,
+        network     => 0 | 1,
+        os          => 0 | 1,
+        process     => 0 | 1,
+        thread_pool => 0 | 1,
+        transport   => 0 | 1
     );
 
-Returns information about one or more nodes or servers in the cluster. If
-C<settings> is C<true>, then it includes the node settings information.
+Returns information about one or more nodes or servers in the cluster.
 
 See: L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-nodes-info.html>
 

@@ -1357,7 +1357,16 @@ sub nodes {
         'nodes',
         {   prefix => '_cluster/nodes',
             cmd    => CMD_nodes,
-            qs     => { settings => [ 'boolean', 1 ] }
+            qs     => {
+                settings    => [ 'boolean', 1 ],
+                http        => [ 'boolean', 1 ],
+                jvm         => [ 'boolean', 1 ],
+                network     => [ 'boolean', 1 ],
+                os          => [ 'boolean', 1 ],
+                process     => [ 'boolean', 1 ],
+                thread_pool => [ 'boolean', 1 ],
+                transport   => [ 'boolean', 1 ],
+            },
         },
         @_
     );

@@ -26,9 +26,28 @@ is_deeply [ keys %{ $r->{nodes} } ], \@nodes, ' - retrieved the same nodes';
 
 ok !$es->nodes()->{nodes}{$first}{settings}, ' - without settings';
 
-isa_ok $es->nodes( settings => 1 )->{nodes}{$first}{settings}, 'HASH',
-    ' - with settings';
+ok $r= $es->nodes(
+    settings    => 1,
+    http        => 1,
+    jvm         => 1,
+    network     => 1,
+    os          => 1,
+    process     => 1,
+    thread_pool => 1,
+    transport   => 1
+    )->{nodes}{$first},
+    ' - with flags';
 
+ok $r->{settings}
+    && $r->{http}
+    && $r->{jvm}
+    && $r->{network}
+    && $r->{os}
+    && $r->{process}
+    && $r->{thread_pool}
+    && $r->{transport}, ' - all info';
+
+return 1;
 isa_ok $r= $es->nodes_stats->{nodes}, 'HASH', ' - nodes_stats';
 
 ok $r->{$first}{jvm}, ' - stats detail';
