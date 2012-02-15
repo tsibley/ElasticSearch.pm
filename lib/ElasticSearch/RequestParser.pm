@@ -1380,6 +1380,19 @@ sub nodes_stats {
         {   prefix  => '_cluster/nodes',
             postfix => 'stats',
             cmd     => CMD_nodes,
+            qs      => {
+                indices     => [ 'boolean', 1, 0 ],
+                clear       => [ 'boolean', 1 ],
+                all         => [ 'boolean', 1 ],
+                fs          => [ 'boolean', 1 ],
+                http        => [ 'boolean', 1 ],
+                jvm         => [ 'boolean', 1 ],
+                network     => [ 'boolean', 1 ],
+                os          => [ 'boolean', 1 ],
+                process     => [ 'boolean', 1 ],
+                thread_pool => [ 'boolean', 1 ],
+                transport   => [ 'boolean', 1 ],
+            },
         },
         @_
     );

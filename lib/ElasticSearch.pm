@@ -2071,6 +2071,19 @@ See: L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-nodes-info
 
     $result = $es->nodes_stats(
         node    => multi,
+
+        indices     => 1 | 0,
+        clear       => 0 | 1,
+        all         => 0 | 1,
+        fs          => 0 | 1,
+        http        => 0 | 1,
+        jvm         => 0 | 1,
+        network     => 0 | 1,
+        os          => 0 | 1,
+        process     => 0 | 1,
+        thread_pool => 0 | 1,
+        transport   => 0 | 1,
+
     );
 
 Returns various statistics about one or more nodes in the cluster.

@@ -47,8 +47,51 @@ ok $r->{settings}
     && $r->{thread_pool}
     && $r->{transport}, ' - all info';
 
-return 1;
-isa_ok $r= $es->nodes_stats->{nodes}, 'HASH', ' - nodes_stats';
+ok $r= $es->nodes_stats->{nodes}{$first}, ' - nodes_stats';
 
-ok $r->{$first}{jvm}, ' - stats detail';
+ok $r->{indices}, ' - has indices';
+ok !$r->{jvm}, ' - no jvm';
+
+ok $r = $es->nodes_stats( clear => 1, jvm => 1 )->{nodes}{$first},
+    ' - nodes_stats jvm';
+ok !$r->{indices}, ' - no indices';
+ok $r->{jvm}, ' - has jvm';
+
+ok $r= $es->nodes_stats(
+    indices     => 1,
+    clear       => 1,
+    fs          => 1,
+    http        => 1,
+    indices     => 1,
+    jvm         => 1,
+    network     => 1,
+    os          => 1,
+    process     => 1,
+    thread_pool => 1,
+    transport   => 1,
+)->{nodes}{$first}, ' - nodes_stats all flags';
+
+ok $r->{fs}
+    && $r->{http}
+    && $r->{indices}
+    && $r->{jvm}
+    && $r->{network}
+    && $r->{os}
+    && $r->{process}
+    && $r->{thread_pool}
+    && $r->{transport}, ' - all stats';
+
+ok $r= $es->nodes_stats( all => 1 )->{nodes}{$first},
+    ' - nodes_stats all flag';
+
+ok $r->{fs}
+    && $r->{http}
+    && $r->{indices}
+    && $r->{jvm}
+    && $r->{network}
+    && $r->{os}
+    && $r->{process}
+    && $r->{thread_pool}
+    && $r->{transport}, ' - all stats';
+
 1
