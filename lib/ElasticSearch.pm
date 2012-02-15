@@ -1372,7 +1372,8 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
         indexing        => 1|0,
         get             => 1|0,
 
-        clear           => 0|1,         # clears default docs,store,indexing,get,search
+        all             => 0|1,  # returns all stats
+        clear           => 0|1,  # clears default docs,store,indexing,get,search
 
         flush           => 0|1,
         merge           => 0|1

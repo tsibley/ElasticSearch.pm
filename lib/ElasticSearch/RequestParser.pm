@@ -846,6 +846,7 @@ sub index_stats {
                 get      => [ 'boolean', 1, 0 ],
                 search   => [ 'boolean', 1, 0 ],
                 clear    => [ 'boolean', 1 ],
+                all      => [ 'boolean', 1 ],
                 merge    => [ 'boolean', 1 ],
                 flush    => [ 'boolean', 1 ],
                 refresh  => [ 'boolean', 1 ],

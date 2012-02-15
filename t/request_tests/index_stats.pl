@@ -61,7 +61,21 @@ ok $r->{docs}
     && $r->{refresh},
     ' - all stats';
 
-ok $es->search( index => 'es_test_1', stats => 'foo' ), ' - search with stats';
+ok $r= $es->index_stats( all => 1 )->{_all}{indices}{es_test_1},
+    ' - all flag';
+
+$r = $r->{total};
+ok $r->{docs}
+    && $r->{store}
+    && $r->{flush}
+    && $r->{get}
+    && $r->{indexing}
+    && $r->{merges}
+    && $r->{refresh},
+    ' - all stats';
+
+ok $es->search( index => 'es_test_1', stats => 'foo' ),
+    ' - search with stats';
 ok $r= $es->index_stats( clear => 1, search => 1, groups => 'foo' )
     ->{_all}{primaries}{search}{groups}{foo}, ' - stats with groups';
 
