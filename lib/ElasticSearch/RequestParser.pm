@@ -31,6 +31,9 @@ use constant {
     CMD_nodes           => [ node  => MULTI_BLANK ],
     CMD_NAME            => [ name  => ONE_REQ ],
     CMD_INDEX_PERC      => [ index => ONE_REQ, percolator => ONE_REQ ],
+
+    CONSISTENCY => [ 'enum', [ 'one', 'quorum', 'all' ] ],
+    REPLICATION => [ 'enum', [ 'async', 'sync' ] ],
 };
 
 our %QS_Format = (
@@ -255,13 +258,13 @@ sub delete {
         {   method => 'DELETE',
             cmd    => CMD_INDEX_TYPE_ID,
             qs     => {
-                consistency => [ 'enum', [ 'one', 'quorum', 'all' ] ],
+                consistency    => CONSISTENCY,
                 ignore_missing => [ 'boolean', 1 ],
                 refresh        => [ 'boolean', 1 ],
                 parent         => ['string'],
                 routing        => ['string'],
                 version        => ['int'],
-                replication => [ 'enum', [ 'async', 'sync' ] ],
+                replication    => REPLICATION,
             }
         },
         @_
@@ -311,9 +314,9 @@ sub _bulk {
             method  => 'POST',
             postfix => '_bulk',
             qs      => {
-                consistency => [ 'enum', [ 'one', 'quorum', 'all' ] ],
-                replication => [ 'enum', [ 'sync', 'async' ] ],
-                refresh => [ 'boolean', 1 ],
+                consistency => CONSISTENCY,
+                replication => REPLICATION,
+                refresh     => [ 'boolean', 1 ],
             },
             data  => { actions => 'actions' },
             fixup => sub {
@@ -679,9 +682,9 @@ sub delete_by_query {
             method  => 'DELETE',
             postfix => '_query',
             qs      => {
-                consistency => [ 'enum', [ 'one', 'quorum', 'all' ] ],
-                replication => [ 'enum', [ 'async', 'sync' ] ],
-                routing => ['flatten'],
+                consistency => CONSISTENCY,
+                replication => REPLICATION,
+                routing     => ['flatten'],
             },
             %Query_Defn,
             fixup => sub {
