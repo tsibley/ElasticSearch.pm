@@ -42,6 +42,7 @@ sub send_request {
     my $type
         = $code eq '409'          ? 'Conflict'
         : $code eq '404'          ? 'Missing'
+        : $code eq '403'          ? 'ClusterBlocked'
         : $msg  eq 'read timeout' ? 'Timeout'
         : $msg =~ /Can't connect|Server closed connection/ ? 'Connection'
         :                                                    'Request';

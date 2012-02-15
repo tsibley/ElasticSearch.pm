@@ -10,7 +10,7 @@ my $r;
 ok $es->close_index( index => 'es_test_1' )->{ok}, 'Closed index';
 
 throws_ok sub { $es->count( index => 'es_test_1', match_all => {} ) },
-    qr/ElasticSearch::Error::Missing/, ' - index missing';
+    qr/ElasticSearch::Error::ClusterBlocked/, ' - cluster blocked';
 
 ok $es->open_index( index => 'es_test_1' )->{ok}, 'Opened index';
 
