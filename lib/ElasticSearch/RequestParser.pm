@@ -1147,6 +1147,7 @@ sub put_mapping {
         if !$params->{mapping} && grep { exists $params->{$_} }
             keys %{ $defn{deprecated} };
 
+    my $type = $params->{type} || $self->{_default}{type};
     $self->_do_action(
         'put_mapping',
         {   method  => 'PUT',
@@ -1157,7 +1158,7 @@ sub put_mapping {
             fixup => sub {
                 my $args = $_[1];
                 my $mapping = $args->{data}{mapping} || $args->{data};
-                $args->{data} = { $params->{type} => $mapping };
+                $args->{data} = { $type => $mapping };
             },
         },
         $params
