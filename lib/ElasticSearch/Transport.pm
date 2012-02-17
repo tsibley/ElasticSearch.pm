@@ -80,7 +80,7 @@ sub request {
             and last;
 
         my $error = $@ || 'Unknown error';
-        next if !$single_server && $self->_should_retry( $srvr, $error );
+        next if !$single_server && $self->should_retry( $srvr, $error );
         $error = $self->_handle_error( $srvr, $params, $error )
             or return;
         die $error;
@@ -119,7 +119,7 @@ sub _response {
 }
 
 #===================================
-sub _should_retry {
+sub should_retry {
 #===================================
     my $self   = shift;
     my $server = shift;
