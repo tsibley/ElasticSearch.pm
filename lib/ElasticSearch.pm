@@ -999,11 +999,18 @@ and L</"search()">.
 =head3 analyze()
 
     $result = $es->analyze(
-      index         =>  single,
       text          =>  $text_to_analyze,           # required
+      index         =>  single,                     # optional
 
-      # optional
+      # either
+      field         =>  'type.fieldname',           # requires index
+
       analyzer      =>  $analyzer,
+
+      tokenizer     => $tokenizer,
+      filters       => \@filters,
+
+      # other options
       format        =>  'detailed' | 'text',
       prefer_local  =>  1 | 0
     );
@@ -1011,21 +1018,30 @@ and L</"search()">.
 The C<analyze()> method allows you to see how ElasticSearch is analyzing
 the text that you pass in, eg:
 
-    $result = $es->analyze( text => 'The Man', index => 'foo')
+    $result = $es->analyze( text => 'The Man' )
 
-returns:
+    $result = $es->analyze(
+        text        => 'The Man',
+        analyzer    => 'simple'
+    );
 
-    {
-      tokens => [
-        {
-          end_offset        => 7,
-          position          => 2,
-          start_offset      => 4,
-          token             => "man",
-          type              => "<ALPHANUM>",
-        },
-      ],
-    }
+    $result = $es->analyze(
+        text        => 'The Man',
+        tokenizer   => 'keyword',
+        filters     => ['lowercase'],
+    );
+
+    $result = $es->analyze(
+        text        => 'The Man',
+        index       => 'my_index',
+        analyzer    => 'my_custom_analyzer'
+    );
+
+    $result = $es->analyze(
+        text        => 'The Man',
+        index       => 'my_index',
+        field       => 'my_type.my_field',
+    );
 
 See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-analyze.html> for
 more.

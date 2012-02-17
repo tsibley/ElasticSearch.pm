@@ -18,6 +18,7 @@ use constant {
     CMD_INDEX_TYPE_ID => [ index => ONE_REQ, type => ONE_REQ, id => ONE_REQ ],
     CMD_INDEX_TYPE_id => [ index => ONE_REQ, type => ONE_REQ, id => ONE_OPT ],
     CMD_INDEX_type_ID => [ index => ONE_REQ, type => ONE_ALL, id => ONE_REQ ],
+    CMD_Index           => [ index => ONE_OPT ],
     CMD_index           => [ index => MULTI_BLANK ],
     CMD_INDICES         => [ index => MULTI_REQ ],
     CMD_INDEX           => [ index => ONE_REQ ],
@@ -254,11 +255,14 @@ sub analyze {
     shift()->_do_action(
         'analyze',
         {   method  => 'GET',
-            cmd     => CMD_INDEX,
+            cmd     => CMD_Index,
             postfix => '_analyze',
             qs      => {
                 text         => ['string'],
                 analyzer     => ['string'],
+                tokenizer    => ['string'],
+                filters      => ['flatten'],
+                field        => ['string'],
                 format       => [ 'enum', [ 'detailed', 'text' ] ],
                 prefer_local => [ 'boolean', undef, 0 ],
             }
