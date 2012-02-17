@@ -1,5 +1,6 @@
 Revision history for ElasticSearch
-0.48
+
+0.48    2012-02-17
         BREAKING CHANGE:
         Updated the bulk* methods to support index, type, timestamp and ttl
         args.  As a result, the method signatures have changed.
@@ -7,14 +8,34 @@ Revision history for ElasticSearch
         ENHANCEMENTS:
          - index(), create() and the index/create bulk actions now accept
            a JSON encoded string as a value for the 'data' param.
+         - added update()
          - Added 'fields' to clear_cache
          - Added index_segments()
+         - Added validate_query()
+         - Added ClusterBlock exception (code 403)
+         - Added NotReady exception (code 503)
+         - index_stats() now supports the 'all' flag
+         - Added params to nodes():
+           - http, jvm, network, os, process, thread_pool, transport
+         - Added params to nodes_stats():
+           - indices, clear, all, fs, http, jvm, network, os, process,
+             thread_pool, transport
+         - Added params to analyze():
+           - tokenizer, filters, field
+         - Added param 'partial_fields' to search()
+         - ElasticSearch::TestServer will now die if it can't find the
+           PID of the started ES process
+         - Added drain_buffer(), refill_buffer() and facets() to
+           ElasticSearch::ScrolledSearch
 
         BUG FIXES:
          - Fixed support for as_json in ScrolledSearch
          - Fixed implicit IO::Handle bug when trying to log in older Perls
          - Fixed a bug in index_stats and addded 'get' stats and groups.
          - Corrected spelling of 'quorom' to 'quorum'
+         - create() now uses the index op_type instead of /_create to
+           fix a bug when creating a doc without an ID
+         - put_mapping wasn't respecting a type set with use_type()
 
 0.47    2011-10-24
         Merged patch from AVAR, which ensures that the servers are used in
