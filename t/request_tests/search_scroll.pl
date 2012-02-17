@@ -38,13 +38,15 @@ for my $tranche ( 1 .. 14 ) {
 
 # SCROLLED SEARCH
 isa_ok $r = $es->scrolled_search(
-    q      => 'foo bar',
-    scroll => '2m'
+    query  => { query_string => { query => 'foo bar' } },
+    scroll => '2m',
+    facets => { foo => { terms => { field => 'text' } } },
     ),
     'ElasticSearch::ScrolledSearch';
 
 is $r->total, 25, ' - total';
 ok $r->max_score > 0, ' - max_score';
+ok $r->facets->{foo}, ' - facets';
 
 my @docs;
 is scalar( @docs = $r->next() ), 1, ' - next()';
@@ -55,14 +57,16 @@ ok $r->eof, ' - eof';
 
 # SCROLLED SEARCH AS JSON
 isa_ok $r = $es->scrolled_search(
-    q       => 'foo bar',
-    scroll  => '2m',
+    query  => { query_string => { query => 'foo bar' } },
+    scroll => '2m',
+    facets  => { foo => { terms => { field => 'text' } } },
     as_json => 1,
     ),
     'ElasticSearch::ScrolledSearch';
 
 is $r->total, 25, ' - total';
 ok $r->max_score > 0, ' - max_score';
+ok $r->facets, ' - facets';
 
 my $json = $es->transport->JSON;
 is scalar( @{ $json->decode( $r->next() ) } ), 1, ' - next()';
@@ -71,4 +75,24 @@ is scalar( @{ $json->decode( $r->next(100) ) } ), 22, ' - next(100)';
 is scalar( @{ $json->decode( $r->next() ) } ), 0, ' - eof next()';
 
 ok $r->eof, ' - eof';
+
+# BUFFER
+ok $r
+    = $es->scrolled_search( q => 'foo bar', size => 1,
+    search_type => 'scan' ),
+    ' - prepare buffer';
+
+my $cur = 0 + @{ $r->{_buffer} };
+my $tot = 0;
+
+while ( !$r->eof ) {
+    my @docs = $r->drain_buffer;
+    $tot += @docs;
+    ok @docs == $cur, " - buffer drained: $cur";
+    $cur = $r->refill_buffer;
+    ok $cur <= 15, " - buffer refilled: $cur";
+}
+ok !$r->refill_buffer, ' - buffer empty';
+ok 25 == $tot, ' - all docs drained';
+
 1;
