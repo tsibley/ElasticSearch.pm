@@ -14,6 +14,9 @@ package ElasticSearch::Error;
 @ElasticSearch::Error::Missing::ISA
     = ( 'ElasticSearch::Error::Request', __PACKAGE__ );
 
+@ElasticSearch::Error::NotReady::ISA
+    = ( 'ElasticSearch::Error::Connection', __PACKAGE__ );
+
 use strict;
 use warnings FATAL => 'all', NONFATAL => 'redefine';
 
@@ -80,7 +83,14 @@ The request timed out
 
 =item * ElasticSearch::Error::Connection
 
-There was an error connecting to the current server
+There was an error connecting to the current node. The request will be
+retried on another node.
+
+=item * ElasticSearch::Error::NotReady
+
+The current node is not yet able to serve requests. The request will be
+retried on another node. C<ElasticSearch::Error::NotReady> inherits from
+C<ElasticSearch::Error::Connection>.
 
 =item * ElasticSearch::Error::ClusterBlocked
 

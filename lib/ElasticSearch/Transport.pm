@@ -143,9 +143,13 @@ sub should_retry {
     warn "Error connecting to '$server' : "
         . ( $error->{-text} || 'Unknown' ) . "\n\n";
 
-    $self->no_refresh
-        ? $self->_remove_server($server)
-        : $self->{_refresh_in} = 0;
+    if ( $self->no_refresh || $error->isa('ElasticSearch::Error::NotReady') )
+    {
+        $self->_remove_server($server);
+    }
+    else {
+        $self->{_refresh_in} = 0;
+    }
 
     return 1;
 }
