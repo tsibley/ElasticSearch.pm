@@ -154,7 +154,9 @@ RUNNING
         else {
             sleep 1;
             open my $pid_fh, '<', $pid_file->filename;
-            push @$PIDs, <$pid_fh>;
+            my $pid = <$pid_fh>;
+            die "ES is running, but no PID found" unless $pid;
+            push @$PIDs, $pid;
         }
         $new_SIGINT->() if $int_caught;
     }
