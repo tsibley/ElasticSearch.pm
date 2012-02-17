@@ -343,15 +343,15 @@ sub http_uri {
 #===================================
 sub inflate {
 #===================================
-    my $self = shift;
+    my $self    = shift;
     my $content = shift;
     my $output;
-        require IO::Uncompress::Inflate;
+    require IO::Uncompress::Inflate;
 
-        no warnings 'once';
-        IO::Uncompress::Inflate::inflate( \$content, \$output, Transparent => 0 )
-            or die "Couldn't inflate response: "
-                . $IO::Uncompress::Inflate::InflateError;
+    no warnings 'once';
+    IO::Uncompress::Inflate::inflate( \$content, \$output, Transparent => 0 )
+        or die "Couldn't inflate response: "
+        . $IO::Uncompress::Inflate::InflateError;
     return $output;
 }
 
