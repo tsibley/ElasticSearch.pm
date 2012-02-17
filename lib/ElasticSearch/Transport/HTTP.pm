@@ -39,13 +39,12 @@ sub send_request {
 
     my $msg  = $server_response->message;
     my $code = $server_response->code;
-    my $type
-        = $code eq '409'          ? 'Conflict'
-        : $code eq '404'          ? 'Missing'
-        : $code eq '403'          ? 'ClusterBlocked'
-        : $msg  eq 'read timeout' ? 'Timeout'
+    my $type = $self->code_to_error($code)
+        || (
+          $msg eq 'read timeout' ? 'Timeout'
         : $msg =~ /Can't connect|Server closed connection/ ? 'Connection'
-        :                                                    'Request';
+        : 'Request'
+        );
     my $error_params = {
         server      => $server,
         status_code => $code,

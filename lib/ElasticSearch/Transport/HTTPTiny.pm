@@ -55,13 +55,12 @@ sub send_request {
         $content = '';
     }
 
-    my $type
-        = $code eq '409' ? 'Conflict'
-        : $code eq '404' ? 'Missing'
-        : $code eq '403' ? 'ClusterBlocked'
-        : $msg =~ /Timed out/         ? 'Timeout'
+    my $type = $self->code_to_error($code)
+        || (
+          $msg =~ /Timed out/         ? 'Timeout'
         : $msg =~ /$Connection_Error/ ? 'Connection'
-        :                               'Request';
+        : 'Request'
+        );
 
     my $error_params = {
         server      => $server,

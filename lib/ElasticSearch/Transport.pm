@@ -542,6 +542,21 @@ sub http_status {
     return $Statuses{$code} || 'Unknown code ' . $code;
 }
 
+my %Code_To_Error = (
+    409 => 'Conflict',
+    404 => 'Missing',
+    403 => 'ClusterBlocked',
+    503 => 'NotReady'
+);
+
+#===================================
+sub code_to_error {
+#===================================
+    my $self = shift;
+    my $code = shift || return;
+    return $Code_To_Error{$code};
+}
+
 #===================================
 sub register {
 #===================================
