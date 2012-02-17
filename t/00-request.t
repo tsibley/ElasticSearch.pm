@@ -110,6 +110,7 @@ sub run_test_suite {
             search_explain
             search_sort
             search_fields
+            search_partial_fields
             search_script_fields
             search_highlight
             search_scroll

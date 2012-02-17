@@ -1066,6 +1066,7 @@ more.
         explain         => 1 | 0,
         facets          => { facets },
         fields          => [$field_1,$field_n],
+        partial_fields  => { my_field => { include => 'foo.bar.* }},
         from            => $start_from
         highlight       => { highlight }
         indices_boost   => { index_1 => 1.5,... },

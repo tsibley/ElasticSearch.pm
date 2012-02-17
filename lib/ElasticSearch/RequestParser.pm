@@ -524,8 +524,13 @@ my %SearchQS = (
 my %Search_Defn = (
     cmd     => CMD_index_type,
     postfix => '_search',
-    data    => { %Search_Data, query => ['query'], queryb => ['queryb'] },
-    qs      => {
+    data    => {
+        %Search_Data,
+        query          => ['query'],
+        queryb         => ['queryb'],
+        partial_fields => ['partial_fields']
+    },
+    qs => {
         %SearchQS,
         scroll  => ['duration'],
         stats   => ['flatten'],
@@ -576,7 +581,6 @@ my %Query_Defn = (
     data => {
         query  => ['query'],
         queryb => ['queryb'],
-
     },
     deprecated => {
         bool               => ['bool'],
