@@ -419,7 +419,7 @@ sub _bulk_request {
             my $request = $json->encode( { $action => \%metadata } ) . "\n";
             if ($data) {
                 $data = $json->encode($data) if ref $data eq 'HASH';
-                $request .= $data . "\n"
+                $request .= $data . "\n";
             }
             $json_docs .= $request;
         }
@@ -476,7 +476,7 @@ sub _to_dsl {
     foreach my $clause (@_) {
         while ( my ( $old, $new ) = each %$ops ) {
             my $src = delete $clause->{$old} or next;
-            die "Cannot specify $old and $new parameters"
+            die "Cannot specify $old and $new parameters.\n"
                 if $clause->{$new};
             $builder ||= $self->builder;
             my $method = $new eq 'query' ? 'query' : 'filter';
