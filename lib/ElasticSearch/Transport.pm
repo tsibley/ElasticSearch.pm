@@ -20,6 +20,13 @@ our %Transport = (
     'aecurl'   => 'ElasticSearch::Transport::AECurl',
 );
 
+our %Min_Versions = (
+    'ElasticSearch::Transport::Thrift' => '0.03',
+    'ElasticSearch::Transport::Curl'   => '0.04',
+    'ElasticSearch::Transport::AEHTTP' => '0.03',
+    'ElasticSearch::Transport::AECurl' => '0.03',
+);
+
 #===================================
 sub new {
 #===================================
@@ -34,6 +41,12 @@ sub new {
         );
 
     eval "require  $transport_class" or $class->throw( "Internal", $@ );
+    if ( my $min = $Min_Versions{$transport_class} ) {
+        my $version = $transport_class->VERSION;
+        $class->throw( 'Internal',
+            "$transport_class v$min required but v$version installed." )
+            unless $version ge $min;
+    }
 
     my $self = bless {
         _JSON         => JSON->new(),
