@@ -88,6 +88,7 @@ sub run_test_suite {
             index_and_create
             get
             delete
+            update
             uri_escape
             )
     );

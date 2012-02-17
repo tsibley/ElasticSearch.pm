@@ -561,6 +561,41 @@ you also set C<version_type> to C<external>.
 
 See also: L</"index()">
 
+=head3 update()
+
+    $result = $es->update(
+        index             => single,
+        type              => single,
+        id                => single,
+
+        # required
+        script            => $script,
+
+        # optional
+        params            => { params },
+        consistency       => 'quorum' | 'one' | 'all'
+        ignore_missing    => 0 | 1
+        parent            => $parent,
+        percolate         => $percolate,
+        retry_on_conflict => 2,
+        routing           => $routing,
+        timeout           => '10s',
+        replication       => 'sync' | 'async'
+    )
+
+The C<update()> method accepts a script which will update a single doc without
+having to retrieve and reindex the doc yourself, eg:
+
+    $es->update(
+        index   => 'test',
+        type    => 'foo',
+        id      => 123,
+        script  => 'ctx._source.tags+=[tag]',
+        params  => { tag => 'red' }
+    );
+
+See L<http://www.elasticsearch.org/guide/reference/api/update.html> for more.
+
 =head3 get()
 
     $result = $es->get(

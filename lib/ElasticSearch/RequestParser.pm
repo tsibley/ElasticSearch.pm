@@ -229,6 +229,33 @@ sub _index {
 }
 
 #===================================
+sub update {
+#===================================
+    shift()->_do_action(
+        'update',
+        {   method  => 'POST',
+            cmd     => CMD_INDEX_TYPE_ID,
+            postfix => '_update',
+            data => {
+                script=>'script',
+                params=>['params'],
+            },
+            qs      => {
+                consistency       => CONSISTENCY,
+                ignore_missing    => [ 'boolean', 1 ],
+                parent            => ['string'],
+                percolate         => ['string'],
+                retry_on_conflict => ['int'],
+                routing           => ['string'],
+                timeout           => ['duration'],
+                replication       => REPLICATION,
+            }
+        },
+        @_
+    );
+}
+
+#===================================
 sub delete {
 #===================================
     shift()->_do_action(
