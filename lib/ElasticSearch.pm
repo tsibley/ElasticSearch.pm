@@ -1340,6 +1340,23 @@ for more details.
 See L<http://www.elasticsearch.org/guide/reference/api/more-like-this.html>
 and L<http://www.elasticsearch.org/guide/reference/query-dsl/mlt-query.html>
 
+=head3 validate_query()
+
+    $bool = $es->validate_query(
+        index   => multi,
+        type    => multi,
+
+        query   => { native query }
+      | queryb  => { search builder query }
+      | q       => $query_string
+    );
+
+Returns true if the passed in C<query> (native ES query),
+C<queryb> (SearchBuilder style query) or C<q> (Lucene query string) is valid.
+Otherwise returns false.
+
+See L<https://github.com/elasticsearch/elasticsearch/pull/1574>
+
 =cut
 
 =head2 Index Admin methods

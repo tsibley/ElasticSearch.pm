@@ -120,6 +120,7 @@ sub run_test_suite {
             more_like_this
             search_highlight
             delete_by_query
+            validate_query
             )
     );
 

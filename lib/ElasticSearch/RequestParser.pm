@@ -627,6 +627,37 @@ sub searchqs { shift()->_do_action( 'searchqs', \%SearchQS_Defn, @_ ) }
 #===================================
 
 #===================================
+sub validate_query {
+#===================================
+    shift->_do_action(
+        'validate_query',
+        {   cmd     => CMD_index_type,
+            postfix => '_validate/query',
+            data    => {
+                query  => ['query'],
+                queryb => ['queryb'],
+            },
+            qs    => { q => ['string'] },
+            fixup => sub {
+                my $args = $_[1];
+                if ( defined $args->{qs}{q} ) {
+                    die "Cannot specify q and query/queryb parameters.\n"
+                        if %{ $args->{data} };
+                    delete $args->{data};
+                }
+                else {
+                    eval { _query_fixup(@_); 1 } or do {
+                        die $@ if $@ =~ /Cannot specify queryb and query/;
+                    };
+                }
+            },
+            post_process => sub { !!shift->{valid} }
+        },
+        @_
+    );
+}
+
+#===================================
 sub scroll {
 #===================================
     shift()->_do_action(
