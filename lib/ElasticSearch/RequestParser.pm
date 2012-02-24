@@ -162,7 +162,7 @@ sub mget {
             'Use of the ids param with mget() requires an index' )
             if $params->{ids};
     }
-    return [] unless @{ $params->{docs} };
+
     my $filter;
     $self->_do_action(
         'mget',
@@ -173,7 +173,10 @@ sub mget {
                 fields         => ['flatten'],
                 filter_missing => [ 'boolean', 1 ],
             },
-            fixup => sub { $filter = delete $_[1]->{qs}{filter_missing} },
+            fixup => sub {
+                $_[1]->{skip} = [] unless @{ $_[1]{data}{docs} };
+                $filter = delete $_[1]->{qs}{filter_missing};
+            },
             post_process => sub {
                 my $result = shift;
                 my $docs   = $result->{docs};
@@ -320,7 +323,6 @@ sub _bulk {
 #===================================
     my ( $self, $method, $params ) = @_;
     my $actions = $params->{actions} || [];
-    return { actions => [], results => [] } unless @$actions;
 
     $self->_do_action(
         $method,
@@ -337,6 +339,8 @@ sub _bulk {
                 die "Cannot specify type without index"
                     if $params->{type} && !$params->{index};
                 $_[1]->{data} = $self->_bulk_request($actions);
+                $_[1]->{skip} = { actions => [], results => [] }
+                    unless ${ $_[1]->{data} };
             },
             post_process => sub { $self->_bulk_response( $actions, @_ ) },
         },
@@ -1622,7 +1626,9 @@ sub _do_action {
             { params => $original_params }
         );
     }
-
+    if ( my $skip = $args{skip} ) {
+        return $self->transport->skip_request( $args{as_json}, $skip );
+    }
     return $self->request( \%args );
 }
 

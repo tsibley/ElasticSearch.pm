@@ -53,6 +53,7 @@ ok keys %{ $r->[0]{fields} } == 2
 ok keys %{ $r->[1]{fields} } == 1 && $r->[1]{fields}{text}, ' - specific';
 
 is_deeply $r = $es->mget( docs => [] ), [], ' - no docs';
+is $r = $es->mget( docs => [], as_json => 1 ), "[]\n", ' - no docs json';
 
 throws_ok { $es->mget( type => 'foo' ) } qr/Cannot specify a type for mget/,
     ' - type without index';

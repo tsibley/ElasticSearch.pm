@@ -20,4 +20,7 @@ ok $r = $es->bulk_index(
     ' - bulk as JSON';
 isa_ok $json->decode($r), 'HASH', ' - is JSON';
 
+is_deeply $json->decode( $es->bulk( actions => [], as_json => 1 ) ),
+    { actions => [], results => [] }, ' - no actions';
+
 1;

@@ -132,6 +132,16 @@ sub _response {
 }
 
 #===================================
+sub skip_request {
+#===================================
+    my $self = shift;
+    my $as_json = shift;
+    my $result = shift;
+    return $result unless $as_json;
+    return $self->JSON->encode($result);
+}
+
+#===================================
 sub should_retry {
 #===================================
     my $self   = shift;
