@@ -1291,6 +1291,76 @@ See also L</"search()">,
 L<http://www.elasticsearch.org/guide/reference/api/count.html>
 and L<http://www.elasticsearch.org/guide/reference/query-dsl>
 
+=head3 msearch()
+
+    $results = $es->msearch(
+        index   => multi,
+        type    => multi,
+        queries => \@queries | \%queries
+    );
+
+With L</"msearch()"> you can run multiple searches in parallel. C<queries>
+can contain either an array of queries, or a hash of named queries.  C<$results>
+will return either an array or hash of results, depending on what you pass in.
+
+The top-level C<index> and C<type> parameters define default values which
+will be used for each query, although these can be overridden in the
+query parameters:
+
+    $results = $es->msearch(
+        index   => 'my_index',
+        type    => 'my_type',
+        queries => {
+            first   => {
+                query => { match_all: {}}   # my_index/my_type
+            },
+            second  => {
+                index => 'other_index',
+                query => { match_all: {}}   # other_index/my_type
+            },
+        }
+    )
+
+In the above example, C<$results> would look like:
+
+    {
+        first  => { hits => ... },
+        second => { hits => ... }
+    }
+
+A query can contain the following options:
+
+    {
+          index          => 'index_name' | ['index_1',...],
+          type           => 'type_name'  | ['type_1',...],
+
+          query          => { native query },
+          queryb         => { search_builder query },
+          filter         => { native filter },
+          filterb        => { search_builder filter },
+
+          facets         => { facets },
+          from           => 0,
+          size           => 10,
+          sort           => { sort },
+          highlight      => { highlight },
+          fields         => [ 'field1', ... ],
+
+          explain        => 0 | 1,
+          indices_boost  => { index_1 => 5, ... },
+          min_score      => 2,
+          partial_fields => { partial fields },
+          preference     => '_local' | '_primary' | $string,
+          routing        => 'routing' | ['route_1',...],
+          script_fields  => { script fields },
+          search_type    => $search_type,
+          stats          => 'group_1' | ['group_1','group_2'],
+          timeout        => '30s',
+          track_scores   => 0 | 1,
+          version        => 0 | 1,
+    }
+
+See L<http://www.elasticsearch.org/guide/reference/api/multi-search.html>.
 
 =head3 delete_by_query()
 

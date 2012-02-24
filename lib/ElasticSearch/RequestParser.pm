@@ -505,7 +505,7 @@ sub _bulk_response {
 }
 
 ##################################
-## QUERIES
+## DSL FIXUP
 ##################################
 
 #===================================
@@ -525,6 +525,40 @@ sub _to_dsl {
         }
     }
 }
+
+#===================================
+sub _data_fixup {
+#===================================
+    my $self = shift;
+    my $data = shift;
+    $self->_to_dsl( { queryb => 'query', filterb => 'filter' }, $data );
+    my @facets = values %{ $data->{facets} || {} };
+    if (@facets) {
+        $self->_to_dsl( {
+                queryb        => 'query',
+                filterb       => 'filter',
+                facet_filterb => 'facet_filter'
+            },
+            @facets,
+        );
+    }
+}
+
+#===================================
+sub _query_fixup {
+#===================================
+    my $self = shift;
+    my $args = shift;
+    $self->_to_dsl( { queryb => 'query' }, $args->{data} );
+    if ( my $query = delete $args->{data}{query} ) {
+        my ( $k, $v ) = %$query;
+        $args->{data}{$k} = $v;
+    }
+}
+
+##################################
+## QUERIES
+##################################
 
 my %Search_Data = (
     explain       => ['explain'],
@@ -560,22 +594,7 @@ my %Search_Defn = (
         stats       => ['flatten'],
         version     => [ 'boolean', 1 ]
     },
-    fixup => sub {
-        my $self = shift;
-        my $args = shift;
-        $self->_to_dsl( { queryb => 'query', filterb => 'filter' },
-            $args->{data}, );
-        my @facets = values %{ $args->{data}{facets} || {} };
-        if (@facets) {
-            $self->_to_dsl( {
-                    queryb        => 'query',
-                    filterb       => 'filter',
-                    facet_filterb => 'facet_filter'
-                },
-                @facets,
-            );
-        }
-    }
+    fixup => sub { $_[0]->_data_fixup( $_[1]->{data} ) },
 );
 
 my %SearchQS_Defn = (
@@ -645,21 +664,101 @@ my %Query_Defn = (
 );
 
 #===================================
-sub _query_fixup {
-#===================================
-    my $self = shift;
-    my $args = shift;
-    $self->_to_dsl( { queryb => 'query' }, $args->{data} );
-    if ( my $query = delete $args->{data}{query} ) {
-        my ( $k, $v ) = %$query;
-        $args->{data}{$k} = $v;
-    }
-}
-
-#===================================
 sub search   { shift()->_do_action( 'search',   \%Search_Defn,   @_ ) }
 sub searchqs { shift()->_do_action( 'searchqs', \%SearchQS_Defn, @_ ) }
 #===================================
+
+#===================================
+sub msearch {
+#===================================
+    my $self    = shift;
+    my $params  = $self->parse_params(@_);
+    my $queries = $params->{queries} || [];
+
+    my $order;
+    if ( ref $queries eq 'HASH' ) {
+        $order = {};
+        my $i = 0;
+        my @queries;
+        for ( sort keys %$queries ) {
+            $order->{$_} = $i++;
+            push @queries, $queries->{$_};
+        }
+        $queries = \@queries;
+    }
+
+    $self->_do_action(
+        'msearch',
+        {   cmd     => CMD_index_type,
+            method  => 'GET',
+            postfix => '_msearch',
+            data    => { queries => 'queries' },
+            fixup   => sub {
+                my ( $self, $args ) = @_;
+                $args->{data} = $self->_msearch_queries($queries);
+                $args->{skip} = $order ? {} : [] unless ${ $args->{data} };
+            },
+            post_process => sub {
+                my $responses = shift->{responses};
+                return $responses unless $order;
+                return {
+                    map { $_ => $responses->[ $order->{$_} ] }
+                        keys %$order
+                };
+            },
+        },
+        $params
+    );
+}
+
+my %MSearch = (
+    ( map { $_ => 'h' } 'index', 'type', keys %{ $Search_Defn{qs} } ),
+    ( map { $_ => 'b' } 'version', keys %{ $Search_Defn{data} } )
+);
+delete $MSearch{scroll};
+
+#===================================
+sub _msearch_queries {
+#===================================
+    my $self    = shift;
+    my $queries = shift;
+
+    my $json      = $self->transport->JSON;
+    my $indenting = $json->get_indent;
+    $json->indent(0);
+
+    my $json_docs = '';
+    my $error;
+    eval {
+        for my $query (@$queries)
+        {
+            die "'queries' must contain HASH refs\n"
+                unless ref $query eq 'HASH';
+
+            my %request = ( h => {}, b => {} );
+            for ( keys %$query ) {
+                my $dest = $MSearch{$_}
+                    or die "Unknown param for msearch: $_\n";
+                $request{$dest}{$_} = $query->{$_};
+            }
+
+            # flatten arrays
+            for (qw(index type stats routing)) {
+                $request{h}{$_} = join ",", @{ $request{h}{$_} }
+                    if ref $request{h}{$_} eq 'ARRAY';
+            }
+            $self->_data_fixup( $request{b} );
+            $json_docs .= $json->encode( $request{h} ) . "\n"
+                . $json->encode( $request{b} ) . "\n";
+        }
+        1;
+    } or $error = $@ || 'Unknown error';
+
+    $json->indent($indenting);
+    die $error if $error;
+
+    return \$json_docs;
+}
 
 #===================================
 sub validate_query {

@@ -118,6 +118,7 @@ sub run_test_suite {
             search_indices_boost
             search_custom_score
             searchqs
+            msearch
             count
             more_like_this
             search_highlight
