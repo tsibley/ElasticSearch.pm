@@ -209,7 +209,6 @@ my %Index_Defn = (
 sub index {
 #===================================
     my ( $self, $params ) = parse_params(@_);
-
     $self->_index( 'index', \%Index_Defn, $params );
 }
 
@@ -217,7 +216,6 @@ sub index {
 sub set {
 #===================================
     my ( $self, $params ) = parse_params(@_);
-
     $self->_index( 'set', \%Index_Defn, $params );
 }
 
@@ -244,11 +242,11 @@ sub update {
         {   method  => 'POST',
             cmd     => CMD_INDEX_TYPE_ID,
             postfix => '_update',
-            data => {
-                script=>'script',
-                params=>['params'],
+            data    => {
+                script => 'script',
+                params => ['params'],
             },
-            qs      => {
+            qs => {
                 consistency       => CONSISTENCY,
                 ignore_missing    => [ 'boolean', 1 ],
                 parent            => ['string'],
@@ -1057,7 +1055,6 @@ sub get_aliases {
                     for (@$aliases) {
                         push @{ $aliases{aliases}{$_} }, $index;
                     }
-
                 }
                 return \%aliases;
             },
@@ -1141,6 +1138,7 @@ sub refresh_index {
         @_
     );
 }
+
 #===================================
 sub optimize_index {
 #===================================
