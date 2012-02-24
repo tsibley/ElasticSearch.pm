@@ -35,6 +35,14 @@ use constant {
 
     CONSISTENCY => [ 'enum', [ 'one', 'quorum', 'all' ] ],
     REPLICATION => [ 'enum', [ 'async', 'sync' ] ],
+    SEARCH_TYPE => [
+        'enum',
+        [   'dfs_query_then_fetch', 'dfs_query_and_fetch',
+            'query_then_fetch',     'query_and_fetch',
+            'count',                'scan'
+        ]
+    ],
+
 };
 
 our %QS_Format = (
@@ -532,22 +540,6 @@ my %Search_Data = (
     track_scores  => ['track_scores'],
 );
 
-my %SearchQS = (
-    search_type => [
-        'enum',
-        [ qw(
-                dfs_query_then_fetch    dfs_query_and_fetch
-                query_then_fetch        query_and_fetch
-                count                   scan
-                )
-        ]
-    ],
-    preference => ['string'],
-    routing    => ['flatten'],
-    scroll     => ['duration'],
-    timeout    => ['duration'],
-);
-
 my %Search_Defn = (
     cmd     => CMD_index_type,
     postfix => '_search',
@@ -558,10 +550,13 @@ my %Search_Defn = (
         partial_fields => ['partial_fields']
     },
     qs => {
-        %SearchQS,
-        scroll  => ['duration'],
-        stats   => ['flatten'],
-        version => [ 'boolean', 1 ]
+        search_type => SEARCH_TYPE,
+        preference  => ['string'],
+        routing     => ['flatten'],
+        timeout     => ['duration'],
+        scroll      => ['duration'],
+        stats       => ['flatten'],
+        version     => [ 'boolean', 1 ]
     },
     fixup => sub {
         my $self = shift;
@@ -585,7 +580,6 @@ my %SearchQS_Defn = (
     cmd     => CMD_index_type,
     postfix => '_search',
     qs      => {
-        %SearchQS,
         q                => ['string'],
         df               => ['string'],
         analyze_wildcard => [ 'boolean', 1 ],
@@ -596,10 +590,14 @@ my %SearchQS_Defn = (
         from                     => ['int'],
         lowercase_expanded_terms => [ 'boolean', 1 ],
         min_score                => ['float'],
+        preference               => ['string'],
+        routing                  => ['flatten'],
         scroll                   => ['duration'],
+        search_type              => SEARCH_TYPE,
         size                     => ['int'],
         'sort'                   => ['flatten'],
         stats                    => ['flatten'],
+        timeout                  => ['duration'],
         version                  => [ 'boolean', 1 ],
     },
 );
@@ -763,9 +761,9 @@ sub mlt {
         {   cmd    => CMD_INDEX_TYPE_ID,
             method => 'GET',
             qs     => {
-                %SearchQS,
                 mlt_fields         => ['flatten'],
                 pct_terms_to_match => [ 'float', 'percent_terms_to_match' ],
+                preference         => ['string'],
                 min_term_freq      => ['int'],
                 max_query_terms    => ['int'],
                 stop_words         => ['flatten'],
@@ -774,11 +772,14 @@ sub mlt {
                 min_word_len       => ['int'],
                 max_word_len       => ['int'],
                 boost_terms        => ['float'],
+                routing            => ['flatten'],
                 search_indices     => ['flatten'],
                 search_from        => ['int'],
                 search_size        => ['int'],
+                search_type        => SEARCH_TYPE,
                 search_types       => ['flatten'],
                 search_scroll      => ['string'],
+                timeout            => ['duration'],
             },
             postfix => '_mlt',
             data    => \%Search_Data,
