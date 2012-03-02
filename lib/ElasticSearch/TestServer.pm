@@ -5,7 +5,7 @@ use warnings;
 use ElasticSearch();
 use POSIX 'setsid';
 use IO::Socket();
-use File::Temp 0.20 ();
+use File::Temp 0.22 ();
 use File::Spec::Functions qw(catfile);
 use YAML qw(DumpFile);
 use File::Path qw(rmtree);
@@ -156,6 +156,7 @@ RUNNING
             open my $pid_fh, '<', $pid_file->filename;
             my $pid = <$pid_fh>;
             die "ES is running, but no PID found" unless $pid;
+            chomp $pid;
             push @$PIDs, $pid;
         }
         $new_SIGINT->() if $int_caught;
@@ -180,14 +181,21 @@ RUNNING
         die "Couldn't start $instances nodes for transport $transport";
     }
 
-    my $es = $class->SUPER::new(
-        %params,
-        servers     => $server,
-        trace_calls => $params{trace_calls},
-        transport   => $transport,
-        pids        => $PIDs,
-        tmpdir      => $dirname,
-    );
+    my $es = eval {
+        $class->SUPER::new(
+            %params,
+            servers     => $server,
+            trace_calls => $params{trace_calls},
+            transport   => $transport,
+            pids        => $PIDs,
+            tmpdir      => $dirname,
+        );
+    };
+    unless ($es) {
+        my $error = $@;
+        $class->_shutdown_servers( $PIDs, $dirname );
+        die $error;
+    }
 
     my $attempts = 10;
     while (1) {
@@ -232,7 +240,10 @@ sub _shutdown_servers {
     $PIDs = $self->pids   unless defined $PIDs;
     $dir  = $self->tmpdir unless defined $dir;
 
+    return unless $PIDs;
+
     kill 9, @$PIDs;
+    sleep 1;
 
     while (1) { last if wait == -1 }
     if ( defined $dir ) {
