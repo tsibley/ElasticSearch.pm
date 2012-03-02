@@ -23,8 +23,8 @@ our %Transport = (
 our %Min_Versions = (
     'ElasticSearch::Transport::Thrift' => '0.03',
     'ElasticSearch::Transport::Curl'   => '0.04',
-    'ElasticSearch::Transport::AEHTTP' => '0.03',
-    'ElasticSearch::Transport::AECurl' => '0.03',
+    'ElasticSearch::Transport::AEHTTP' => '0.04',
+    'ElasticSearch::Transport::AECurl' => '0.04',
 );
 
 #===================================
@@ -134,9 +134,9 @@ sub _response {
 #===================================
 sub skip_request {
 #===================================
-    my $self = shift;
+    my $self    = shift;
     my $as_json = shift;
-    my $result = shift;
+    my $result  = shift;
     return $result unless $as_json;
     return $self->JSON->encode($result);
 }

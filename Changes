@@ -1,4 +1,11 @@
 Revision history for ElasticSearch
+0.50    2012-03-02
+        - Added msearch()
+        - The short-circuit functions for bulk/mget weren't working correctly
+          either with as_json or async backends
+        - Fixed bug in TestServer where it wasn't shutting down ES correctly
+          if it failed to create a new ES.pm object
+
 0.49    2012-02-17
         Don't pass a custom port param through to ElasticSearch::TestServer
 
