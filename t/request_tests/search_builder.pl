@@ -6,6 +6,7 @@ use Test::Exception;
 
 use strict;
 use warnings;
+no warnings 'redefine';
 
 our $es;
 my $r;

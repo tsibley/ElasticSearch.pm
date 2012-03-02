@@ -4,6 +4,8 @@ use Test::More;
 
 use strict;
 use warnings;
+no warnings 'redefine';
+
 our $es;
 my $r;
 
