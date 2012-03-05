@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.51    2012-03-05
+        index() and create() were missing consistency and replication parameters
+
 0.50    2012-03-02
         - Added msearch()
         - The short-circuit functions for bulk/mget weren't working correctly

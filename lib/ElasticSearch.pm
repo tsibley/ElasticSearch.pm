@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.50';
+our $VERSION = '0.51';
 our $DEBUG   = 0;
 
 #===================================
@@ -152,7 +152,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.50, tested against ElasticSearch server version 0.19.0.
+Version 0.51, tested against ElasticSearch server version 0.19.0.
 
 =head1 DESCRIPTION
 
