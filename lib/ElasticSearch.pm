@@ -452,10 +452,12 @@ and L<http://www.elasticsearch.org/guide/reference/modules/thrift.html>
         },
 
         # optional
+        consistency  => 'quorum' | 'one' | 'all',
         create       => 0 | 1,
         parent       => $parent,
         percolate    => $percolate,
         refresh      => 0 | 1,
+        replication  => 'sync' | 'async',
         routing      => $routing,
         timeout      => eg '1m' or '10s'
         version      => int,
@@ -527,9 +529,11 @@ C<set()> is a synonym for L</"index()">
         },
 
         # optional
+        consistency  => 'quorum' | 'one' | 'all',
         parent       => $parent,
         percolate    => $percolate,
         refresh      => 0 | 1,
+        replication  => 'sync' | 'async',
         routing      => $routing,
         timeout      => eg '1m' or '10s',
         version      => int,
