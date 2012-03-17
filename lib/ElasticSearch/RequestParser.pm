@@ -1140,33 +1140,13 @@ sub aliases {
 #===================================
 sub get_aliases {
 #===================================
-    shift()->_do_action(
-        'get_aliases',
-        {   cmd    => CMD_NONE,
-            prefix => '_cluster/state',
-            qs     => { index => ['flatten'], },
-            fixup  => sub {
-                my $qs = $_[1]->{qs};
-                $qs->{"filter_$_"} = 1 for qw(blocks nodes routing_table);
-                $qs->{filter_indices} = delete $qs->{index};
-            },
-            post_process => sub {
-                my $results = shift;
-                my $indices = $results->{metadata}{indices};
-                my %aliases = ( indices => {}, aliases => {} );
-                foreach my $index ( keys %$indices ) {
-                    my $aliases = $indices->{$index}{aliases};
-                    $aliases{indices}{$index} = $aliases;
-                    for (@$aliases) {
-                        push @{ $aliases{aliases}{$_} }, $index;
-                    }
-                }
-                return \%aliases;
-            },
+    shift->_do_action(
+        'aliases',
+        {   postfix => '_aliases',
+            cmd     => CMD_index,
         },
         @_
     );
-
 }
 
 #===================================

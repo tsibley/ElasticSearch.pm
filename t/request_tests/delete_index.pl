@@ -23,5 +23,5 @@ throws_ok { $es->delete_index( index => [] ) } qr/Param 'index' is required/,
 ok $es->delete_index( index => '_all' ), 'Delete all indices';
 wait_for_es();
 
-is scalar keys %{ $es->get_aliases->{indices} }, 0, ' - all indices deleted';
+is scalar keys %{ $es->get_aliases }, 0, ' - all indices deleted';
 1

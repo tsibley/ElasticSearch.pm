@@ -1660,8 +1660,10 @@ L</"INTEGRATION WITH ElasticSearch::SearchBuilder"> for more details.
 
     $result = $es->aliases( actions => [
         { add    => {
-            index   => 'foo',
-            alias   => 'baz',
+            index           => 'foo',
+            alias           => 'baz',
+            index_routing   => '1',
+            search_routing  => '1,2',
             filterb => { foo => 'bar' }
         }}
     ]);
@@ -1672,20 +1674,30 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.htm
 
     $result = $es->get_aliases( index => multi )
 
-Returns a hashref listing all indices and their corresponding aliases, and
-all aliases and their corresponding indices, eg:
+Returns a hashref listing all indices and their corresponding aliases, eg:
 
     {
-      aliases => {
-         bar => ["foo"],
-         baz => ["foo"],
-      },
-      indices => { foo => ["baz", "bar"] },
+       "foo" : {
+          "aliases" : {
+             "foo_1" : {
+                "search_routing" : "1,2",
+                "index_routing" : "1"
+                "filter" : {
+                   "term" : {
+                      "foo" : "bar"
+                   }
+                }
+             },
+             "foo_2" : {}
+          }
+       }
     }
 
 If you pass in the optional C<index> argument, which can be an index name
-or an alias name, then it will only return the indices and aliases related
+or an alias name, then it will only return the indices related
 to that argument.
+
+See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.html>
 
 =head3 open_index()
 
