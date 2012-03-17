@@ -1131,7 +1131,7 @@ sub aliases {
                 my $args    = shift;
                 my @actions = map { values %$_ } @{ $args->{data}{actions} };
                 $self->_to_dsl( { filterb => 'filter' }, @actions );
-                }
+            },
         },
         $params
     );
@@ -1338,13 +1338,9 @@ sub mapping {
     $self->_do_action(
         'mapping',
         {   method  => 'GET',
-            cmd     => CMD_index_then_type,
+            cmd     => CMD_index_type,
             postfix => '_mapping',
-            fixup   => sub {
-                die "Cannot specify type without index"
-                    if $params->{type} && !$params->{index};
-            },
-            qs => { ignore_missing => [ 'boolean', 1 ], }
+            qs      => { ignore_missing => [ 'boolean', 1 ], }
         },
         $params
     );
