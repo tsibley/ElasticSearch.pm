@@ -1,4 +1,13 @@
 Revision history for ElasticSearch
+0.52    2012-03-17
+        BREAKING CHANGE:
+         - get_alias() now uses the native GET alias request, and its output
+           format has changed.
+
+        Bug fix:
+         - put_mapping() incorrectly required a single index. Now it
+           can contain zero or more indices
+
 0.51    2012-03-05
         index() and create() were missing consistency and replication parameters
 
