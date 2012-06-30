@@ -31,7 +31,8 @@ sub send_request {
     $request->add_content_utf8( $params->{data} )
         if defined $params->{data};
 
-    my $server_response = $self->client->request($request);
+    my $client          = $self->client;
+    my $server_response = $client->request($request);
     my $content         = $server_response->decoded_content;
     $content = decode_utf8($content) if defined $content;
 
@@ -54,6 +55,10 @@ sub send_request {
     if ( $type eq 'Request' or $type eq 'Conflict' or $type eq 'Missing' ) {
         $error_params->{content} = $content;
     }
+
+    $client->conn_cache->drop
+        if $method eq 'HEAD';
+
     $self->throw( $type, $msg . ' (' . $code . ')', $error_params );
 }
 
