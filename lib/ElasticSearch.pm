@@ -1187,8 +1187,11 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         explain                  => 1 | 0,
         fields                   => [$field_1,$field_n],
         from                     => $start_from,
+        lenient                  => 0 | 1,
         lowercase_expanded_terms => 0 | 1,
         preference               => '_local' | '_primary' | $string,
+        quote_analyzer           => $analyzer,
+        quote_field_suffix       => '.unstemmed',
         routing                  => [$routing, ...]
         search_type              => $search_type
         size                     => $no_of_results
