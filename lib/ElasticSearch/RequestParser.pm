@@ -1516,9 +1516,15 @@ sub cluster_state {
 #===================================
 sub current_server_version {
 #===================================
-    shift()
-        ->_do_action( 'current_server_version',
-        { cmd => CMD_NONE, prefix => '' } )->{version};
+    shift()->_do_action(
+        'current_server_version',
+        {   cmd          => CMD_NONE,
+            prefix       => '',
+            post_process => sub {
+                return shift->{version};
+            },
+        }
+    );
 }
 
 #===================================

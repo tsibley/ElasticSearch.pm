@@ -662,6 +662,7 @@ See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.h
     );
 
 Returns true or false depending on whether the doc exists.
+
 =head3 mget()
 
     $docs = $es->mget(
@@ -2298,7 +2299,7 @@ See: L</"KNOWN ISSUES">
 
     $version = $es->current_server_version()
 
-Returns a HASH containing the version C<number> string, the build C<date> and
+Returns a HASH containing the version C<number> string and
 whether or not the current server is a C<snapshot_build>.
 
 =cut
