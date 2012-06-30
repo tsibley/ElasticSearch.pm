@@ -1,4 +1,23 @@
 Revision history for ElasticSearch
+0.54    2012-06-30
+        NEW FEATURES
+         - Added exists()
+        ENHANCEMENTS
+         - An ElasticSearch::Error::Conflict object now contains the latest
+           version number
+         - delete_mapping() now throws an error when the index or type is
+         - get() now accepts a 'parent' param
+         - searchqs() now accecpts 'lenient', 'quote_analyzer' and
+           'quote_field_suffix' params
+         - msearch() now accepts a 'search_type' param
+        BUG FIXES
+         - Removed dependencies on Module::Build and base
+           missing
+         - Worked around bug https://github.com/elasticsearch/elasticsearch/issues/2072
+           in ES which causes the default HTTP backend to hang by returning
+           a response body to a HEAD request
+         - Fixed current_server_version() to work with async backends
+
 0.53    2012-04-14
         Bug fix:
          - the timestamp param to index() should be a 'string', not
