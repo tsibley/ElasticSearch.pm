@@ -107,6 +107,10 @@ There was a versioning conflict while performing an index/create/delete
 operation.  C<ElasticSearch::Error::Conflict> inherits from
 C<ElasticSearch::Error::Request>.
 
+The lastest version number is available as:
+
+    $error->{-vars}{current_version};
+
 =item * ElasticSearch::Error::Missing
 
 Tried to get/delete a document or index that doesn't exist.
