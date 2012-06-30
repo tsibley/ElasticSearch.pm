@@ -86,6 +86,7 @@ sub run_test_suite {
     run_tests( qw(
             index_and_create
             get
+            exists
             delete
             update
             uri_escape
