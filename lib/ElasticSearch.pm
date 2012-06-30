@@ -648,6 +648,20 @@ exception is thrown, unless C<ignore_missing> is true.
 
 See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.html>
 
+=head3 exists()
+
+    $bool = $es->exists(
+        index           => single,
+        type            => single,
+        id              => single,
+
+        preference      => '_local' | '_primary' | $string,
+        refresh         => 0 | 1,
+        routing         => $routing,
+        parent          => $parent,
+    );
+
+Returns true or false depending on whether the doc exists.
 =head3 mget()
 
     $docs = $es->mget(

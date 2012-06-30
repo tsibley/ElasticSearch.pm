@@ -141,6 +141,25 @@ sub get {
 }
 
 #===================================
+sub exists : method {
+#===================================
+    shift()->_do_action(
+        'exists',
+        {   method => 'HEAD',
+            cmd    => CMD_INDEX_TYPE_ID,
+            qs     => {
+                preference => ['string'],
+                refresh    => [ 'boolean', 1 ],
+                routing    => ['string'],
+                parent     => ['string'],
+            },
+            fixup => sub { $_[1]->{qs}{ignore_missing} = 1 }
+        },
+        @_
+    );
+}
+
+#===================================
 sub mget {
 #===================================
     my ( $self, $params ) = parse_params(@_);
