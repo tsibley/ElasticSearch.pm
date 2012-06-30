@@ -69,7 +69,11 @@ throws_ok { test_dynamic('strict') } qr/StrictDynamicMappingException/,
 ok $es->delete_mapping( index => 'es_test_1', type => 'type_1' )->{ok},
     'Delete mapping';
 
-ok $es->delete_mapping( index => 'es_test_1', type => 'type_1' ),
+ok !$es->delete_mapping(
+    index          => 'es_test_1',
+    type           => 'type_1',
+    ignore_missing => 1
+    ),
     ' - ignores missing';
 
 ok $es->put_mapping(
@@ -122,7 +126,11 @@ throws_ok { test_dynamic('strict') } qr/StrictDynamicMappingException/,
 ok $es->delete_mapping( index => 'es_test_1', type => 'type_1' )->{ok},
     'Delete mapping (depr)';
 
-ok $es->delete_mapping( index => 'es_test_1', type => 'type_1' ),
+ok !$es->delete_mapping(
+    index          => 'es_test_1',
+    type           => 'type_1',
+    ignore_missing => 1
+    ),
     ' - ignores missing (depr)';
 
 #===================================
