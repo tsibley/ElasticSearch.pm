@@ -1302,18 +1302,19 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
 =head3 msearch()
 
     $results = $es->msearch(
-        index   => multi,
-        type    => multi,
-        queries => \@queries | \%queries
+        index       => multi,
+        type        => multi,
+        queries     => \@queries | \%queries,
+        search_type => $search_type,
     );
 
 With L</"msearch()"> you can run multiple searches in parallel. C<queries>
 can contain either an array of queries, or a hash of named queries.  C<$results>
 will return either an array or hash of results, depending on what you pass in.
 
-The top-level C<index> and C<type> parameters define default values which
-will be used for each query, although these can be overridden in the
-query parameters:
+The top-level C<index>, C<type> and C<search_type> parameters define default
+values which will be used for each query, although these can be overridden in
+the query parameters:
 
     $results = $es->msearch(
         index   => 'my_index',

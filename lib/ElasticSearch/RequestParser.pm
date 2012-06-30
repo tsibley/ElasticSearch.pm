@@ -698,6 +698,7 @@ sub msearch {
         {   cmd     => CMD_index_type,
             method  => 'GET',
             postfix => '_msearch',
+            qs      => { search_type => SEARCH_TYPE },
             data    => { queries => 'queries' },
             fixup   => sub {
                 my ( $self, $args ) = @_;
