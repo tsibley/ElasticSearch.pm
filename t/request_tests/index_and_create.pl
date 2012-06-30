@@ -61,6 +61,18 @@ throws_ok {
 }
 qr/ ElasticSearch::Error::Conflict/, ' - index conflict 2';
 
+is eval {
+    $es->index(
+        index   => 'es_test_1',
+        type    => 'type_1',
+        id      => 1,
+        version => 1,
+        data    => { text => 'foo', num => 123 }
+    );
+    }
+    || $@->{-vars}{current_version}, 2,
+    'Conflict error has current version';
+
 ok $es->index(
     index   => 'es_test_1',
     type    => 'type_1',
