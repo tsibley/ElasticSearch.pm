@@ -612,6 +612,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/update.html> for more.
         preference      => '_local' | '_primary' | $string,
         refresh         => 0 | 1,
         routing         => $routing,
+        parent          => $parent,
         ignore_missing  => 0 | 1,
 
     );

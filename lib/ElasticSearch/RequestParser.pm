@@ -133,6 +133,7 @@ sub get {
                 preference     => ['string'],
                 refresh        => [ 'boolean', 1 ],
                 routing        => ['string'],
+                parent         => ['string'],
             },
         },
         @_
