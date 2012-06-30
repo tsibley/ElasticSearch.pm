@@ -10,7 +10,7 @@ use File::Spec::Functions qw(catfile);
 use YAML qw(DumpFile);
 use File::Path qw(rmtree);
 
-use base 'ElasticSearch';
+use parent 'ElasticSearch';
 
 =head1 NAME
 
