@@ -97,7 +97,13 @@ sub run_test_suite {
     run_tests('mapping');
 
     drop_indices();
-    run_tests( 'bulk', 'as_json', 'use_index_type' );
+    run_tests( qw(
+            bulk
+            bulk_errors
+            as_json
+            use_index_type
+            )
+    );
 
     create_indices();
     index_test_docs();

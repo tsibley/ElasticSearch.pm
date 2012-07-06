@@ -100,7 +100,10 @@ sub reindex {
     while (1) {
         my $doc = $source->next();
         if ( !$doc or @docs == $bulk_size ) {
-            my $results = $self->bulk_index( \@docs );
+            my $results = $self->bulk_index(
+                docs => \@docs,
+                map { $_ => $params->{$_} } qw(on_conflict on_error),
+            );
             $results = $results->recv
                 if ref $results ne 'HASH'
                     && $results->isa('AnyEvent::CondVar');
@@ -772,6 +775,9 @@ L<http://www.elasticsearch.org/guide/reference/api/delete.html>
         consistency => 'quorum' |  'one' | 'all'    # optional
         refresh     => 0 | 1,                       # optional
         replication => 'sync' | 'async',            # optional
+
+        on_conflict => sub {...} | 'IGNORE'         # optional
+        on_error    => sub {...} | 'IGNORE'         # optional
     );
 
 
@@ -841,6 +847,58 @@ encoded, otherwise you see errors when trying to retrieve it from ElasticSearch)
 
 The C<index> and C<type> parameters, if not specified, are inherited from
 the top level bulk request.
+
+=head4 Error handlers
+
+The C<on_conflict> and C<on_error> parameters accept either a coderef or the
+string C<'IGNORE'>.  Normally, any errors are returned under the C<errors>
+key (see L</Return values>).
+
+The logic works as follows:
+
+=over
+
+=item *
+
+If the error is a versioning conflict error and there is an C<on_conflict>
+handler, then call the handler and move on to the next document
+
+=item *
+
+If the error is still unhandled, and we have an C<on_error> handler, then call
+it and move on to the next document.
+
+=item *
+
+If no handler exists, then add the error to the C<@errors> array which is
+returned by L</bulk()>
+
+=back
+
+Setting C<on_conflict> or C<on_error> to C<'IGNORE'> is the equivalent
+of passing an empty no-op handler.
+
+The handler callbacks are called as:
+
+    $handler->( $action, $document, $error );
+
+For instance:
+
+=over
+
+=item $action
+
+    "index"
+
+=item $document
+
+    { id => 1, data => { count => "foo" }}
+
+=item $error
+
+    "MapperParsingException[Failed to parse [count]]; ... etc ... "
+
+=back
 
 =head4 Return values
 
@@ -925,6 +983,9 @@ that the C<actions> parameter is replaced by C<docs>, eg:
         consistency => 'quorum' |  'one' | 'all'    # optional
         refresh     => 0 | 1,                       # optional
         replication => 'sync' | 'async',            # optional
+
+        on_conflict => sub {...} | 'IGNORE'         # optional
+        on_error    => sub {...} | 'IGNORE'         # optional
     );
 
 For instance:
@@ -950,6 +1011,9 @@ For instance:
         dest_index  => $index,
         quiet       => 0 | 1,
         transform   => sub {....},
+
+        on_conflict => sub {...} | 'IGNORE'
+        on_error    => sub {...} | 'IGNORE'
     )
 
 C<reindex()> is a utility method which can be used for reindexing data
@@ -987,6 +1051,10 @@ printed to C<STDOUT>
 C<transform> should be a sub-ref which will be called for each doc, allowing
 you to transform some element of the doc, or to skip the doc by returning
 C<undef>.
+
+=item *
+
+See L</Error handlers> for an explanation C<on_conflict> and C<on_error>.
 
 =back
 

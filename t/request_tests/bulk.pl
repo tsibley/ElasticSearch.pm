@@ -200,4 +200,6 @@ ok $r= $es->get(
     ' - get doc 2';
 
 ok $r->{text} eq 'baz' && $r->{num} == 125, ' - doc 2 OK';
+
+
 1

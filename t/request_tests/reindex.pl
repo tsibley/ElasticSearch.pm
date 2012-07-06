@@ -1,6 +1,7 @@
 #!perl
 
 use Test::More;
+use Test::Exception;
 use strict;
 use warnings;
 our $es;
@@ -41,5 +42,29 @@ my $first = $r->{hits}{hits}[0];
 is $r->{hits}{total},      6,    ' - skip docs';
 is $first->{_source}{num}, 1011, ' - transform';
 is $first->{_version}, 1, ' - version';
+
+throws_ok sub {
+    $es->reindex(
+        source => $es->scrolled_search(
+            index       => 'es_test_1',
+            search_type => 'scan',
+            version     => 1,
+            scroll      => '2m'
+        ),
+        dest_index => 'es_test_3'
+    );
+}, qr/VersionConflictEngineException/, 'Reindexing version conflicts';
+
+ok $es->reindex(
+    source => $es->scrolled_search(
+        index       => 'es_test_1',
+        search_type => 'scan',
+        version     => 1,
+        scroll      => '2m'
+    ),
+    dest_index  => 'es_test_3',
+    on_conflict => 'IGNORE'
+    ),
+    'Reindexing ignore version conflicts';
 
 1;
