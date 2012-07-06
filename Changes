@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+0.55    2012-07-06
+        ENHANCEMENTS
+        - Added on_conflict and on_error callbacks to bulk actions and reindex()
+
 0.54    2012-06-30
         NEW FEATURES
          - Added exists()
