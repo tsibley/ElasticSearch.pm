@@ -6,6 +6,7 @@ bench_data.json
 /.project
 /Build.PL
 /.includepath
+/doc
 /.project
 /MYMETA.yml
 log.*
