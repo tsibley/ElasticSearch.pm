@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+0.57    2012-07-31
+        Minor changes to ElasticSearch::TestServer to make it work consistently
+        on Travis CI
+
 0.56    2012-07-31
         BUG FIXES
          - Trying to bulk create a doc that already exists should also trigger
