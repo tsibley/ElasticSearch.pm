@@ -10,7 +10,7 @@ no warnings 'redefine';
 
 ### RIVER ###
 ok $es->create_river( type => 'dummy', river => 'foo' )->{ok}, 'Create river';
-wait_for_es(1);
+wait_for_es(2);
 is $es->get_river( river => 'foo' )->{_type}, 'foo', 'Get river';
 is $es->river_status( river => 'foo' )->{_id}, '_status', 'River status';
 ok $es->delete_river( river => 'foo' )->{ok}, 'Delete river';
