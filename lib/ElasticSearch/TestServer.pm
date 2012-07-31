@@ -199,7 +199,7 @@ RUNNING
 
     my $attempts = 10;
     while (1) {
-        eval { $es->refresh_servers; 1 } && last;
+        eval { @{ $es->refresh_servers } == $instances } && last;
         die("**** Couldn't connect to ElasticSearch at $server ****\n")
             unless --$attempts;
         print "Connection failed. Retrying\n";
