@@ -1,4 +1,9 @@
 Revision history for ElasticSearch
+0.56    2012-07-31
+        BUG FIXES
+         - Trying to bulk create a doc that already exists should also trigger
+           a conflict error, not a general error.
+
 0.55    2012-07-06
         ENHANCEMENTS
         - Added on_conflict and on_error callbacks to bulk actions and reindex()

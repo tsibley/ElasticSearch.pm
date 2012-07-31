@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.55';
+our $VERSION = '0.56';
 our $DEBUG   = 0;
 
 #===================================
@@ -106,7 +106,7 @@ sub reindex {
             );
             $results = $results->recv
                 if ref $results ne 'HASH'
-                    && $results->isa('AnyEvent::CondVar');
+                && $results->isa('AnyEvent::CondVar');
             if ( my $err = $results->{errors} ) {
                 my @errors = splice @$err, 0, 5;
                 push @errors, sprintf "...and %d more", scalar @$err
@@ -155,7 +155,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.55, tested against ElasticSearch server version 0.19.8.
+Version 0.56, tested against ElasticSearch server version 0.19.8.
 
 =head1 DESCRIPTION
 
@@ -2548,8 +2548,8 @@ start them up from the command line.
 
 =head1 BUGS
 
-This is a beta module, so there will be bugs, and the API is likely to
-change in the future, as the API of ElasticSearch itself changes.
+This is a stable AP - but it will evolve as the API of ElasticSearch itself
+changes.
 
 If you have any suggestions for improvements, or find any bugs, please report
 them to L<http://github.com/clintongormley/ElasticSearch.pm/issues>.
@@ -2578,8 +2578,27 @@ L<http://cpanratings.perl.org/d/ElasticSearch>
 
 L<https://metacpan.org/module/ElasticSearch>
 
+=item * IRC
+
+The L<#elasticsearch|irc://irc.freenode.net/elasticsearch> channel on
+C<irc.freenode.net>.
+
+=item * Mailing list
+
+The main L<ElasticSearch mailing list|http://www.elasticsearch.org/community/forum/>.
+
 =back
 
+=head1 TEST SUITE
+
+The full test suite requires a live ElasticSearch cluster to run.  CPAN
+testers doesn't support this.  You can see full test results here:
+L<http://travis-ci.org/#!/clintongormley/ElasticSearch/builds>.
+
+To run the full test suite locally, run it as:
+
+    perl Makefile.PL
+    ES_HOME=/path/to/elasticsearch make test
 
 =head1 ACKNOWLEDGEMENTS
 
