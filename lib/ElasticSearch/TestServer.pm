@@ -86,6 +86,7 @@ NO_HOME
     my %config = (
         cluster => { name => 'es_test' },
         gateway => { type => 'local', expected_nodes => $instances },
+        network => { host => 'localhost' },
         "$protocol.port" => "$port-" . ( $port + $instances - 1 ),
         %{ $params{config} || {} }
     );
