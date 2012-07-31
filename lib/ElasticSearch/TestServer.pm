@@ -85,7 +85,7 @@ NO_HOME
 
     my %config = (
         cluster => { name => 'es_test' },
-        gateway => { type => 'local' },
+        gateway => { type => 'local', expected_nodes => $instances },
         "$protocol.port" => "$port-" . ( $port + $instances - 1 ),
         %{ $params{config} || {} }
     );
@@ -197,7 +197,7 @@ RUNNING
         die $error;
     }
 
-    my $attempts = 10;
+    my $attempts = 20;
     while (1) {
         eval { @{ $es->refresh_servers } == $instances } && last;
         die("**** Couldn't connect to ElasticSearch at $server ****\n")
