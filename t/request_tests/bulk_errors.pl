@@ -39,9 +39,15 @@ my %args = (
     index   => 'es_test_1',
     type    => 'test',
     refresh => 1,
-    docs    => [
-        { id => 1, data => { text => 'foo', num => 1 }, _version => 2 },
-        { id => 2, data => { text => 'bar', num => 'xxx' } },
+    actions => [ {
+            index => {
+                id       => 1,
+                data     => { text => 'foo', num => 1 },
+                _version => 2
+            }
+        },
+        { index  => { id => 2, data => { text => 'bar', num => 'xxx' } } },
+        { create => { id => 1, data => { text => 'foo', num => 1 } } },
     ]
 );
 
@@ -50,44 +56,41 @@ my $conflict = 0;
 my $general  = 0;
 
 # No handlers
-ok $r = $es->bulk_index(%args), 'No handlers';
-check_errors( $r, [ 'conflict', 'general' ], {} );
+ok $r = $es->bulk(%args), 'No handlers';
+check_errors( $r, [ 'conflict', 'general', 'conflict' ], {} );
 
 # On conflict handler
-ok $r = $es->bulk_index( %args, on_conflict => \&on_conflict ),
-    'Conflict handler';
-check_errors( $r, ['general'], { conflict => 1 } );
+ok $r = $es->bulk( %args, on_conflict => \&on_conflict ), 'Conflict handler';
+check_errors( $r, ['general'], { conflict => 2 } );
 
 # On error handler
-ok $r = $es->bulk_index( %args, on_error => \&on_error ), 'Error handler';
-check_errors( $r, [], { general => 2 } );
+ok $r = $es->bulk( %args, on_error => \&on_error ), 'Error handler';
+check_errors( $r, [], { general => 3 } );
 
 # Both handlers
-ok $r = $es->bulk_index(
+ok $r = $es->bulk(
     %args,
     on_error    => \&on_error,
     on_conflict => \&on_conflict
     ),
     'Both handlers';
-check_errors( $r, [], { conflict => 1, general => 1 } );
+check_errors( $r, [], { conflict => 2, general => 1 } );
 
 # Ignore conflict
-ok $r = $es->bulk_index( %args, on_conflict => 'IGNORE' ), 'Ignore conflict ';
+ok $r = $es->bulk( %args, on_conflict => 'IGNORE' ), 'Ignore conflict ';
 check_errors( $r, ['general'], {} );
 
 # Ignore error
-ok $r = $es->bulk_index( %args, on_error => 'IGNORE' ),
-    'Ignore error handler';
+ok $r = $es->bulk( %args, on_error => 'IGNORE' ), 'Ignore error handler';
 check_errors( $r, [], {} );
 
 # Ignore both
-ok $r
-    = $es->bulk_index( %args, on_error => 'IGNORE', on_conflict => 'IGNORE' ),
+ok $r = $es->bulk( %args, on_error => 'IGNORE', on_conflict => 'IGNORE' ),
     'Ignore both handlers';
 check_errors( $r, [], {} );
 
 # Ignore conflict, handle error
-ok $r = $es->bulk_index(
+ok $r = $es->bulk(
     %args,
     on_error    => \&on_error,
     on_conflict => 'IGNORE'
@@ -96,22 +99,31 @@ ok $r = $es->bulk_index(
 check_errors( $r, [], { conflict => 0, general => 1 } );
 
 # Handle conflict, ignore error
-ok $r = $es->bulk_index(
+ok $r = $es->bulk(
     %args,
     on_error    => 'IGNORE',
     on_conflict => \&on_conflict
     ),
     'Handle conflict, ignore error';
-check_errors( $r, [], { conflict => 1, general => 0 } );
+check_errors( $r, [], { conflict => 2, general => 0 } );
 
 #===================================
 sub on_conflict {
 #===================================
     my ( $action, $doc, $error ) = @_;
     $conflict++;
-    is $action, 'index', ' - on_conflict action';
-    is $doc->{_version}, 2, ' - on_conflict version';
-    like $error, qr/VersionConflictEngineException/, ' - on_conflict error';
+    if ( $action eq 'index' ) {
+        is $action, 'index', ' - on_conflict action';
+        is $doc->{_version}, 2, ' - on_conflict version';
+        like $error, qr/VersionConflictEngineException/,
+            ' - on_conflict error';
+    }
+    else {
+        is $action, 'create', ' - on_conflict action';
+        like $error, qr/DocumentAlreadyExistsException/,
+            ' - on_conflict error';
+
+    }
 }
 
 #===================================
@@ -119,10 +131,19 @@ sub on_error {
 #===================================
     my ( $action, $doc, $error ) = @_;
     $general++;
-    is $action, 'index', ' - on_error action';
-    ok $doc->{data}{num}, ' - on_error data';
-    like $error, qr/MapperParsingException|VersionConflictEngineException/,
-        ' - on_error error';
+    if ( $action eq 'index' ) {
+        is $action, 'index', ' - on_error action';
+        ok $doc->{data}{num}, ' - on_error data';
+        like $error, qr/
+            MapperParsingException
+          | VersionConflictEngineException
+        /x, ' - on_error error';
+    }
+    else {
+        is $action, 'create', ' - on_error action';
+        ok $doc->{data}{num}, ' - on_error data';
+        like $error, qr/DocumentAlreadyExistsException/, ' - on_error error';
+    }
 }
 
 #===================================
@@ -135,7 +156,7 @@ sub check_errors {
     for (@$errors) {
         my $re
             = $_ eq 'conflict'
-            ? qr/VersionConflictEngineException/
+            ? qr/VersionConflictEngineException|DocumentAlreadyExistsException/
             : qr/NumberFormatException/;
 
         like $r->{errors}[ $i++ ]{error}, $re, " - $_ error";

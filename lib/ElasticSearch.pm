@@ -860,7 +860,8 @@ The logic works as follows:
 
 =item *
 
-If the error is a versioning conflict error and there is an C<on_conflict>
+If the error is a versioning conflict error, or if you try to C<create> a doc
+whose ID already exists,  and there is an C<on_conflict>
 handler, then call the handler and move on to the next document
 
 =item *
