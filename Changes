@@ -1,4 +1,10 @@
 Revision history for ElasticSearch
+0.58    2012-08-09
+        Added a _method_name parameter to reindex() so that objects other
+        than ScrolledSearch can be passed as the $source.  The scrolling
+        defaults to $source->next, but with $method_name will be called
+        as $source->$method_name.
+
 0.57    2012-07-31
         Minor changes to ElasticSearch::TestServer to make it work consistently
         on Travis CI
