@@ -91,6 +91,7 @@ sub reindex {
     my $verbose    = !$params->{quiet};
     my $dest_index = $params->{dest_index};
     my $bulk_size  = $params->{bulk_size} || 1000;
+    my $method     = $params->{_method_name} || 'next';
 
     local $| = $verbose;
     printf( "Reindexing %d docs\n", $source->total )
@@ -98,7 +99,7 @@ sub reindex {
 
     my @docs;
     while (1) {
-        my $doc = $source->next();
+        my $doc = $source->$method();
         if ( !$doc or @docs == $bulk_size ) {
             my $results = $self->bulk_index(
                 docs => \@docs,
