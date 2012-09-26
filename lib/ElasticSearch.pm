@@ -511,6 +511,17 @@ encoded, otherwise you see errors when trying to retrieve it from ElasticSearch)
         data    =>  '{"foo":"bar"}'
     );
 
+=item *
+
+C<timeout> for all CRUD methods and L</"search()"> is a query timeout,
+specifying the amount of time ElasticSearch will spend (roughly) processing a
+query. Units can be concatenated with the integer value, e.g., C<500ms> or
+C<1s>.
+
+See also: L<http://www.elasticsearch.org/guide/reference/api/search/request-body.html>
+
+Note: this is distinct from the transport timeout, see L</"timeout()">.
+
 =back
 
 See also: L<http://www.elasticsearch.org/guide/reference/api/index_.html>,
