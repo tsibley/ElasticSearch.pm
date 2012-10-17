@@ -20,7 +20,10 @@ package ElasticSearch::Error;
 use strict;
 use warnings FATAL => 'all', NONFATAL => 'redefine';
 
-use overload ( '""' => 'stringify' );
+use overload (
+    '""'  => 'stringify',
+    'cmp' => 'compare',
+);
 use Data::Dumper;
 
 #===================================
@@ -43,6 +46,15 @@ sub stringify {
         : ''
         ) . ( $error->{'-stacktrace'} || '' );
     return $msg;
+}
+
+#===================================
+sub compare {
+#===================================
+    my ( $error, $other, $swap ) = @_;
+    $error .= '';
+    ( $error, $other ) = ( $other, $error ) if $swap;
+    return $error cmp $other;
 }
 
 =head1 NAME
