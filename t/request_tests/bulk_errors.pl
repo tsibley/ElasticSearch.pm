@@ -54,6 +54,7 @@ my %args = (
 # Conflict handler
 my $conflict = 0;
 my $general  = 0;
+my $i        = 0;
 
 # No handlers
 ok $r = $es->bulk(%args), 'No handlers';
@@ -110,8 +111,9 @@ check_errors( $r, [], { conflict => 2, general => 0 } );
 #===================================
 sub on_conflict {
 #===================================
-    my ( $action, $doc, $error ) = @_;
+    my ( $action, $doc, $error, $i ) = @_;
     $conflict++;
+    ok defined $i, " - on_error doc[i] defined";
     if ( $action eq 'index' ) {
         is $action, 'index', ' - on_conflict action';
         is $doc->{_version}, 2, ' - on_conflict version';
@@ -129,8 +131,9 @@ sub on_conflict {
 #===================================
 sub on_error {
 #===================================
-    my ( $action, $doc, $error ) = @_;
+    my ( $action, $doc, $error, $i ) = @_;
     $general++;
+    ok defined $i, " - on_error doc[i] defined";
     if ( $action eq 'index' ) {
         is $action, 'index', ' - on_error action';
         ok $doc->{data}{num}, ' - on_error data';

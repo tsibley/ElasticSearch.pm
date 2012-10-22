@@ -543,10 +543,10 @@ sub _bulk_response {
                   /x
             )
         {
-            $on_conflict->( $action, $actions->[$i]{$action}, $error );
+            $on_conflict->( $action, $actions->[$i]{$action}, $error, $i );
         }
         elsif ($on_error) {
-            $on_error->( $action, $actions->[$i]{$action}, $error );
+            $on_error->( $action, $actions->[$i]{$action}, $error, $i );
         }
         else {
             push @errors, { action => $actions->[$i], error => $error };

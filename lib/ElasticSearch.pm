@@ -893,25 +893,32 @@ of passing an empty no-op handler.
 
 The handler callbacks are called as:
 
-    $handler->( $action, $document, $error );
+    $handler->( $action, $document, $error, $req_no );
 
 For instance:
 
 =over
 
-=item $action
+=item C<$action>
 
     "index"
 
-=item $document
+=item C<$document>
 
     { id => 1, data => { count => "foo" }}
 
-=item $error
+=item C<$error>
 
     "MapperParsingException[Failed to parse [count]]; ... etc ... "
 
+=item  C<$req_no>
+
+    0
+
 =back
+
+The C<$req_no> is the array index of the current C<$action> from the original
+array of C<@actions>.
 
 =head4 Return values
 
@@ -932,7 +939,8 @@ for individiual C<index>/C<create>/C<delete> statements, eg:
          { delete => { _id => 123, _index => "foo", _type => "bar", _version => 3 } },
     ]
 
-The C<errors> key is only present if an error has occured, so you can do:
+The C<errors> key is only present if an error has occured and has not been handled
+by an C<on_conflict> or C<on_error> handler, so you can do:
 
     $results = $es->bulk(\@actions);
     if ($results->{errors}) {
