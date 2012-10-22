@@ -53,8 +53,8 @@ our %QS_Format = (
     'int'    => "integer",
     string   => sub {
         my $k = shift;
-        return
-              $k eq 'preference' ? '_local | _primary | $string'
+        return $k eq 'preference'
+            ? '_local | _primary | _primary_first | $string'
             : $k eq 'percolate' || $k eq 'q' ? '$query_string'
             : $k eq 'scroll_id' ? '$scroll_id'
             : $k eq 'df'        ? '$default_field'

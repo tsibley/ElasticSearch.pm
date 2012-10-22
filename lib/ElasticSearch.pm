@@ -624,7 +624,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/update.html> for more.
 
         # optional
         fields          => 'field' or ['field1',...]
-        preference      => '_local' | '_primary' | $string,
+        preference      => '_local' | '_primary' | '_primary_first' | $string,
         refresh         => 0 | 1,
         routing         => $routing,
         parent          => $parent,
@@ -670,7 +670,7 @@ See also: L</"bulk()">, L<http://www.elasticsearch.org/guide/reference/api/get.h
         type            => single,
         id              => single,
 
-        preference      => '_local' | '_primary' | $string,
+        preference      => '_local' | '_primary' | '_primary_first' | $string,
         refresh         => 0 | 1,
         routing         => $routing,
         parent          => $parent,
@@ -1215,7 +1215,7 @@ more.
         highlight       => { highlight }
         indices_boost   => { index_1 => 1.5,... },
         min_score       => $score,
-        preference      => '_local' | '_primary' | $string,
+        preference      => '_local' | '_primary' | '_primary_first' | $string,
         routing         => [$routing, ...]
         script_fields   => { script_fields }
         search_type     => 'dfs_query_then_fetch'
@@ -1293,7 +1293,7 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         from                     => $start_from,
         lenient                  => 0 | 1,
         lowercase_expanded_terms => 0 | 1,
-        preference               => '_local' | '_primary' | $string,
+        preference               => '_local' | '_primary' | '_primary_first' | $string,
         quote_analyzer           => $analyzer,
         quote_field_suffix       => '.unstemmed',
         routing                  => [$routing, ...]
@@ -1463,7 +1463,7 @@ A query can contain the following options:
           indices_boost  => { index_1 => 5, ... },
           min_score      => 2,
           partial_fields => { partial fields },
-          preference     => '_local' | '_primary' | $string,
+          preference     => '_local' | '_primary' | '_primary_first' | $string,
           routing        => 'routing' | ['route_1',...],
           script_fields  => { script fields },
           search_type    => $search_type,
@@ -1545,7 +1545,7 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         from                 =>  {from}
         indices_boost        =>  { index_1 => 1.5,... }
         min_score            =>  $score
-        preference           =>  '_local' | '_primary' | $string
+        preference           =>  '_local' | '_primary' | '_primary_first' | $string
         routing              =>  [$routing,...]
         script_fields        =>  { script_fields }
         search_scroll        =>  '5m' | '10s',
