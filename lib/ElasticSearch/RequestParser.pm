@@ -833,7 +833,10 @@ sub validate_query {
                 query  => ['query'],
                 queryb => ['queryb'],
             },
-            qs    => { q => ['string'] },
+            qs => {
+                q       => ['string'],
+                explain => [ 'boolean', 1 ]
+            },
             fixup => sub {
                 my $args = $_[1];
                 if ( defined $args->{qs}{q} ) {
@@ -846,8 +849,7 @@ sub validate_query {
                         die $@ if $@ =~ /Cannot specify queryb and query/;
                     };
                 }
-            },
-            post_process => sub { !!shift->{valid} }
+                }
         },
         @_
     );

@@ -1584,13 +1584,16 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl/mlt-query.html>
         query   => { native query }
       | queryb  => { search builder query }
       | q       => $query_string
+
+        explain => 0 | 1
     );
 
-Returns true if the passed in C<query> (native ES query),
-C<queryb> (SearchBuilder style query) or C<q> (Lucene query string) is valid.
-Otherwise returns false.
+Returns a hashref with C<< { valid => 1} >> if the passed in C<query>
+(native ES query) C<queryb> (SearchBuilder style query) or C<q> (Lucene
+query string) is valid. Otherwise C<valid> is false. Set C<explain> to C<1>
+to include the explanation of why the query is invalid.
 
-See L<https://github.com/elasticsearch/elasticsearch/pull/1574>
+See L<http://www.elasticsearch.org/guide/reference/api/validate.html>
 
 =cut
 
