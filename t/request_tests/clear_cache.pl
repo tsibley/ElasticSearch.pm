@@ -32,7 +32,10 @@ populate_caches();
 ok $es->clear_cache( filter => 1 )->{ok}, ' - clear filter cache';
 $caches = used_caches();
 ok $caches->{field}, ' - field cache not cleared';
-ok !$caches->{filter}, ' - filter cache cleared';
+
+# filter cache not cleared immediately anymore
+# instead, scheduled for later clearance
+#ok !$caches->{filter}, ' - filter cache cleared';
 
 # cannot check for id and bloom caches yet
 
