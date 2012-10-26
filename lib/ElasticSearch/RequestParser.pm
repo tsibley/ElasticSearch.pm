@@ -849,7 +849,45 @@ sub validate_query {
                         die $@ if $@ =~ /Cannot specify queryb and query/;
                     };
                 }
+            },
+        },
+        @_
+    );
+}
+
+#===================================
+sub explain {
+#===================================
+    shift->_do_action(
+        'explain',
+        {   cmd     => CMD_INDEX_TYPE_ID,
+            postfix => '_explain',
+            data    => {
+                query  => ['query'],
+                queryb => ['queryb'],
+            },
+            qs => {
+                preference               => ['string'],
+                routing                  => ['flatten'],
+                q                        => ['string'],
+                df                       => ['string'],
+                analyzer                 => ['string'],
+                analyze_wildcard         => [ 'boolean', 1 ],
+                default_operator         => [ 'enum', [ 'OR', 'AND' ] ],
+                lowercase_expanded_terms => [ 'boolean', undef, 0 ],
+                lenient => [ 'boolean', 1 ],
+            },
+            fixup => sub {
+                my $args = $_[1];
+                if ( defined $args->{qs}{q} ) {
+                    die "Cannot specify q and query/queryb parameters.\n"
+                        if %{ $args->{data} };
+                    delete $args->{data};
                 }
+                else {
+                    $_[0]->_data_fixup( $args->{data} );
+                }
+            },
         },
         @_
     );
