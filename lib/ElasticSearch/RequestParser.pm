@@ -25,6 +25,7 @@ use constant {
     CMD_INDEX_TYPE      => [ index => ONE_REQ, type => ONE_REQ ],
     CMD_INDEX_type      => [ index => ONE_REQ, type => MULTI_BLANK ],
     CMD_index_TYPE      => [ index => MULTI_ALL, type => ONE_REQ ],
+    CMD_index_types     => [ index => MULTI_ALL, type => MULTI_REQ ],
     CMD_INDICES_TYPE    => [ index => MULTI_REQ, type => ONE_REQ ],
     CMD_index_type      => [ index => MULTI_ALL, type => MULTI_BLANK ],
     CMD_index_then_type => [ index => ONE_OPT, type => ONE_OPT ],
@@ -1447,6 +1448,19 @@ sub mapping {
 }
 
 #===================================
+sub type_exists {
+#===================================
+    shift()->_do_action(
+        'type_exists',
+        {   method => 'HEAD',
+            cmd    => CMD_index_types,
+            fixup  => sub { $_[1]->{qs}{ignore_missing} = 1 }
+        },
+        @_
+    );
+}
+
+#===================================
 sub clear_cache {
 #===================================
     shift()->_do_action(
@@ -1831,7 +1845,10 @@ sub _usage {
             : $type == ONE_OPT ? "\$$key"
             :                    "\$$key | [\$${key}_1,\$${key}_n]";
 
-        my $required = $type == ONE_REQ ? 'required' : 'optional';
+        my $required
+            = ( $type == ONE_REQ or $type == MULTI_REQ )
+            ? 'required'
+            : 'optional';
         $usage .= sprintf( "  - %-26s =>  %-45s # %s\n",
             $key, $arg_format, $required );
     }

@@ -2092,6 +2092,19 @@ index (or indices) that the alias points to.
 
 See also: L<http://www.elasticsearch.org/guide/reference/api/admin-indices-get-mapping.html>
 
+=head3 type_exists()
+
+    $result = $e->type_exists(
+        index => multi,             # optional
+        type  => multi,             # required
+    );
+
+Returns C<< {ok => 1} >> if all specified types exist in all specified indices,
+or an empty list if they doesn't.
+
+See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-types-exists.html>
+
+
 =cut
 
 =head2 River admin methods

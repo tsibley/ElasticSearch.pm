@@ -94,7 +94,17 @@ sub run_test_suite {
     );
 
     drop_indices();
-    run_tests('mapping');
+    run_tests( qw(
+            mapping
+            )
+    );
+
+    drop_indices();
+    create_indices();
+    run_tests( qw(
+            type_exists
+            )
+    );
 
     drop_indices();
     run_tests( qw(
