@@ -156,7 +156,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.58, tested against ElasticSearch server version 0.19.11.
+Version 0.58, tested against ElasticSearch server version 0.20.0.RC1.
 
 =head1 DESCRIPTION
 
