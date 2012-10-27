@@ -592,8 +592,10 @@ See also: L</"index()">
 
         # optional
         params            => { params },
-        consistency       => 'quorum' | 'one' | 'all'
-        ignore_missing    => 0 | 1
+        upsert            => { new_doc },
+        consistency       => 'quorum' | 'one' | 'all',
+        fields            => ['_source'],
+        ignore_missing    => 0 | 1,
         parent            => $parent,
         percolate         => $percolate,
         retry_on_conflict => 2,
@@ -612,6 +614,9 @@ having to retrieve and reindex the doc yourself, eg:
         script  => 'ctx._source.tags+=[tag]',
         params  => { tag => 'red' }
     );
+
+You can also pass a new doc which will be inserted if the doc does not
+already exist, via the C<upsert> paramater.
 
 See L<http://www.elasticsearch.org/guide/reference/api/update.html> for more.
 

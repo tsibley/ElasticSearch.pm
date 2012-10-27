@@ -283,9 +283,11 @@ sub update {
             data    => {
                 script => 'script',
                 params => ['params'],
+                upsert => ['upsert'],
             },
             qs => {
                 consistency       => CONSISTENCY,
+                fields            => ['flatten'],
                 ignore_missing    => [ 'boolean', 1 ],
                 parent            => ['string'],
                 percolate         => ['string'],
