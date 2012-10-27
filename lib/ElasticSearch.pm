@@ -2398,6 +2398,46 @@ Returns various statistics about one or more nodes in the cluster.
 
 See: L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-nodes-stats.html>
 
+=head3 cluster_reroute()
+
+    $result = $es->cluster_reroute(
+        commands => [
+            { move => {
+                  index     => 'test',
+                  shard     => 0,
+                  from_node => 'node1',
+                  to_node   => 'node2',
+            }},
+            { allocate => {
+                  index         => 'test',
+                  shard         => 1,
+                  node          => 'node3',
+                  allow_primary => 0 | 1
+            }},
+            { cancel => {
+                  index         => 'test',
+                  shard         => 2,
+                  node          => 'node4',
+                  allow_primary => 0 | 1
+            }},
+        ],
+        dry_run  => 0 | 1
+    );
+
+The L</cluster_reroute> command allows you to explicitly affect shard allocation
+within a cluster. For example, a shard can be moved from one node to another,
+an allocation can be cancelled, or an unassigned shard can be explicitly
+allocated on a specific node.
+
+B<NOTE:> after executing the commands, the cluster will automatically
+rebalance itself if it is out of balance.  Use the C<dry_run> parameter
+to see what the final outcome will be after automatic rebalancing, before
+executing the real L</cluster_reroute> call.
+
+Without any C<\@commands>, the current cluster routing will be returned.
+
+See L<http://www.elasticsearch.org/guide/reference/api/admin-cluster-reroute.html>
+
 =head3 shutdown()
 
     $result = $es->shutdown(

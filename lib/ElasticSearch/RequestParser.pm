@@ -1748,6 +1748,25 @@ sub update_cluster_settings {
     );
 }
 
+#===================================
+sub cluster_reroute {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+    $params->{commands} = [ $params->{commands} ]
+        if $params->{commands} and ref( $params->{commands} ) ne 'ARRAY';
+
+    $self->_do_action(
+        'cluster_reroute',
+        {   prefix => '_cluster/reroute',
+            cmd    => [],
+            method => 'POST',
+            data   => { commands => ['commands'] },
+            qs     => { dry_run => [ 'boolean', 1 ], },
+        },
+        $params
+    );
+}
+
 ##################################
 ## FLAGS
 ##################################
