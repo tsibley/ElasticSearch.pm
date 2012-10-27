@@ -27,11 +27,14 @@ test_explain(
         analyzer                 => 'default',
         default_operator         => 'AND',
         df                       => 'num',
+        fields                   => ['num'],
         lenient                  => 1,
         lowercase_expanded_terms => 1,
         preference               => '_local',
     }
 );
+
+is $r->{get}{fields}{num}, 18, ' - has fields';
 
 throws_ok { $es->explain( %args, routing => '18', q => 'num:18' ) }
 qr/Missing/, ' - doc not found';

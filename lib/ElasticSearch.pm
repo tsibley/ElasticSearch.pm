@@ -1587,14 +1587,15 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl/mlt-query.html>
       | queryb                     => { search builder query }
       | q                          => $query_string,
 
-        analyze_wildcard           => 1 | 0
-        analyzer                   => $string
-        default_operator           => OR | AND
+        analyze_wildcard           => 1 | 0,
+        analyzer                   => $string,
+        default_operator           => 'OR' | 'AND',
         df                         => $default_field
-        lenient                    => 1 | 0
-        lowercase_expanded_terms   => 1 | 0
-        preference                 => _local | _primary | _primary_first | $string
-        routing                    => 'scalar' or ['scalar_1', 'scalar_n']
+        fields                     => ['_source'],
+        lenient                    => 1 | 0,
+        lowercase_expanded_terms   => 1 | 0,
+        preference                 => _local | _primary | _primary_first | $string,
+        routing                    => $routing
     );
 
 The L<explain()> method is very useful for debugging queries.  It will run
