@@ -593,14 +593,19 @@ sub _data_fixup {
     my $self = shift;
     my $data = shift;
     $self->_to_dsl( { queryb => 'query', filterb => 'filter' }, $data );
-    my @facets = values %{ $data->{facets} || {} };
-    if (@facets) {
+
+    my $facets = $data->{facets} or return;
+    die "(facets) must be a HASH ref" unless ref $facets eq 'HASH';
+    $facets = $data->{facets} = {%$facets};
+    for ( values %$facets ) {
+        die "All (facets) must be HASH refs" unless ref $_ eq 'HASH';
+        $_ = my $facet = {%$_};
         $self->_to_dsl( {
                 queryb        => 'query',
                 filterb       => 'filter',
                 facet_filterb => 'facet_filter'
             },
-            @facets,
+            $facet
         );
     }
 }
@@ -1233,8 +1238,14 @@ sub aliases {
             fixup  => sub {
                 my $self    = shift;
                 my $args    = shift;
-                my @actions = map { values %$_ } @{ $args->{data}{actions} };
-                $self->_to_dsl( { filterb => 'filter' }, @actions );
+                my @actions = @{ $args->{data}{actions} };
+                for (@actions) {
+                    my ( $key, $value ) = %$_;
+                    $value = {%$value};
+                    $self->_to_dsl( { filterb => 'filter' }, $value );
+                    $_ = { $key => $value };
+                }
+                $args->{data}{actions} = \@actions;
             },
         },
         $params
