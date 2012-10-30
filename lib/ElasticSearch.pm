@@ -1216,8 +1216,9 @@ more.
         facets          => { facets },
         fields          => [$field_1,$field_n],
         partial_fields  => { my_field => { include => 'foo.bar.*' }},
-        from            => $start_from
-        highlight       => { highlight }
+        from            => $start_from,
+        highlight       => { highlight }.
+        ignore_indices  => 'none' | 'missing',
         indices_boost   => { index_1 => 1.5,... },
         min_score       => $score,
         preference      => '_local' | '_primary' | '_primary_first' | $string,
@@ -1296,6 +1297,7 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         explain                  => 1 | 0,
         fields                   => [$field_1,$field_n],
         from                     => $start_from,
+        ignore_indices           => 'none' | 'missing',
         lenient                  => 0 | 1,
         lowercase_expanded_terms => 0 | 1,
         preference               => '_local' | '_primary' | '_primary_first' | $string,
@@ -1379,6 +1381,7 @@ and L</"scroll()">.
 
         # optional
         routing         => [$routing,...]
+        ignore_indices  => 'none' | 'missing',
 
         # one of:
         query           => { native query },
@@ -1466,6 +1469,7 @@ A query can contain the following options:
 
           explain        => 0 | 1,
           indices_boost  => { index_1 => 5, ... },
+          ignore_indices => 'none' | 'missing',
           min_score      => 2,
           partial_fields => { partial fields },
           preference     => '_local' | '_primary' | '_primary_first' | $string,
@@ -1612,14 +1616,15 @@ See L<http://www.elasticsearch.org/guide/reference/api/search/explain.html>
 =head3 validate_query()
 
     $bool = $es->validate_query(
-        index   => multi,
-        type    => multi,
+        index          => multi,
+        type           => multi,
 
-        query   => { native query }
-      | queryb  => { search builder query }
-      | q       => $query_string
+        query          => { native query }
+      | queryb         => { search builder query }
+      | q              => $query_string
 
-        explain => 0 | 1
+        explain        => 0 | 1,
+        ignore_indices => 'none' | 'missing',
     );
 
 Returns a hashref with C<< { valid => 1} >> if the passed in C<query>
@@ -1639,6 +1644,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/validate.html>
         index           => multi,
         recovery        => 0 | 1,
         snapshot        => 0 | 1,
+        ignore_indices  => 'none' | 'missing',
     );
 
 Returns the status of
@@ -1668,7 +1674,8 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
         merge           => 0|1
         refresh         => 0|1,
 
-        level           => 'shards'
+        level           => 'shards',
+        ignore_indices  => 'none' | 'missing',
     );
 
 Throws a C<Missing> exception if the specified indices do not exist.
@@ -1680,6 +1687,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-stats.html>
 
     $result = $es->index_segments(
         index           => multi,
+        ignore_indices  => 'none' | 'missing',
     );
 
 Returns low-level Lucene segments information for the specified indices.
@@ -1933,8 +1941,9 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-templates.h
 
     $result = $es->flush_index(
         index           => multi,
-        full            => 0 | 1,       # optional
-        refresh         => 0 | 1,       # optional
+        full            => 0 | 1,
+        refresh         => 0 | 1,
+        ignore_indices  => 'none' | 'missing',
     );
 
 Flushes one or more indices, which frees
@@ -1955,6 +1964,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-flush.html>
 
     $result = $es->refresh_index(
         index           => multi,
+        ignore_indices  => 'none' | 'missing',
     );
 
 Explicitly refreshes one or more indices, making all operations performed
@@ -1979,6 +1989,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-refresh.htm
         refresh             => 0 | 1,  # refresh after optmization
         wait_for_merge      => 1 | 0,  # wait for merge to finish
         max_num_segments    => int,    # number of segments to optimize to
+        ignore_indices      => 'none' | 'missing',
     )
 
 Throws a C<Missing> exception if the specified indices do not exist.
@@ -1989,6 +2000,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-optimize.ht
 
     $result = $es->gateway_snapshot(
         index           => multi,
+        ignore_indices  => 'none' | 'missing',
     );
 
 Explicitly performs a snapshot through the gateway of one or more indices
@@ -2016,7 +2028,8 @@ C<snapshot_index()> is a synonym for L</"gateway_snapshot()">
         field_data      => 0 | 1,
         filter          => 0 | 1,
         id              => 0 | 1,
-        fields          => 'field1' | ['field1','fieldn',...]
+        fields          => 'field1' | ['field1','fieldn',...],
+        ignore_indices  => 'none' | 'missing',
     );
 
 Clears the caches for the specified indices. By default, clears all caches,
@@ -2118,8 +2131,9 @@ See also: L<http://www.elasticsearch.org/guide/reference/api/admin-indices-get-m
 =head3 type_exists()
 
     $result = $e->type_exists(
-        index => multi,             # optional
-        type  => multi,             # required
+        index          => multi,             # optional
+        type           => multi,             # required
+        ignore_indices => 'none' | 'missing',
     );
 
 Returns C<< {ok => 1} >> if all specified types exist in all specified indices,

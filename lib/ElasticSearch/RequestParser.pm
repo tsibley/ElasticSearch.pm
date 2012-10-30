@@ -44,6 +44,7 @@ use constant {
             'count',                'scan'
         ]
     ],
+    IGNORE_INDICES => [ 'enum', [ 'missing', 'none' ] ],
 
 };
 
@@ -667,13 +668,14 @@ my %Search_Defn = (
         partial_fields => ['partial_fields']
     },
     qs => {
-        search_type => SEARCH_TYPE,
-        preference  => ['string'],
-        routing     => ['flatten'],
-        timeout     => ['duration'],
-        scroll      => ['duration'],
-        stats       => ['flatten'],
-        version     => [ 'boolean', 1 ]
+        search_type    => SEARCH_TYPE,
+        ignore_indices => IGNORE_INDICES,
+        preference     => ['string'],
+        routing        => ['flatten'],
+        timeout        => ['duration'],
+        scroll         => ['duration'],
+        stats          => ['flatten'],
+        version        => [ 'boolean', 1 ]
     },
     fixup => sub { $_[0]->_data_fixup( $_[1]->{data} ) },
 );
@@ -690,6 +692,7 @@ my %SearchQS_Defn = (
         explain                  => [ 'boolean', 1 ],
         fields                   => ['flatten'],
         from                     => ['int'],
+        ignore_indices           => IGNORE_INDICES,
         lenient                  => [ 'boolean', 1 ],
         lowercase_expanded_terms => [ 'boolean', 1 ],
         min_score                => ['float'],
@@ -857,8 +860,9 @@ sub validate_query {
                 queryb => ['queryb'],
             },
             qs => {
-                q       => ['string'],
-                explain => [ 'boolean', 1 ]
+                q              => ['string'],
+                explain        => [ 'boolean', 1 ],
+                ignore_indices => IGNORE_INDICES,
             },
             fixup => sub {
                 my $args = $_[1];
@@ -973,7 +977,10 @@ sub count {
         {   %Search_Defn,
             postfix => '_count',
             %Query_Defn,
-            qs    => { routing => ['flatten'] },
+            qs => {
+                routing        => ['flatten'],
+                ignore_indices => IGNORE_INDICES,
+            },
             fixup => \&_query_fixup,
         },
         @_
@@ -1118,8 +1125,9 @@ sub index_status {
         {   cmd     => CMD_index,
             postfix => '_status',
             qs      => {
-                recovery => [ 'boolean', 1 ],
-                snapshot => [ 'boolean', 1 ]
+                recovery       => [ 'boolean', 1 ],
+                snapshot       => [ 'boolean', 1 ],
+                ignore_indices => IGNORE_INDICES,
             },
         },
         @_
@@ -1147,6 +1155,7 @@ sub index_stats {
                 types    => ['flatten'],
                 groups   => ['flatten'],
                 level => [ 'enum', [qw(shards)] ],
+                ignore_indices => IGNORE_INDICES,
             },
         },
         @_
@@ -1160,6 +1169,7 @@ sub index_segments {
         'index_segments',
         {   cmd     => CMD_index,
             postfix => '_segments',
+            qs      => { ignore_indices => IGNORE_INDICES, }
         },
         @_
     );
@@ -1407,8 +1417,9 @@ sub flush_index {
             cmd     => CMD_index,
             postfix => '_flush',
             qs      => {
-                refresh => [ 'boolean', 1 ],
-                full    => [ 'boolean', 1 ],
+                refresh        => [ 'boolean', 1 ],
+                full           => [ 'boolean', 1 ],
+                ignore_indices => IGNORE_INDICES,
             },
         },
         @_
@@ -1422,7 +1433,8 @@ sub refresh_index {
         'refresh_index',
         {   method  => 'POST',
             cmd     => CMD_index,
-            postfix => '_refresh'
+            postfix => '_refresh',
+            qs      => { ignore_indices => IGNORE_INDICES, }
         },
         @_
     );
@@ -1443,6 +1455,7 @@ sub optimize_index {
                 refresh          => [ 'boolean', undef, 0 ],
                 flush            => [ 'boolean', undef, 0 ],
                 wait_for_merge   => [ 'boolean', undef, 0 ],
+                ignore_indices   => IGNORE_INDICES,
             },
         },
         @_
@@ -1456,7 +1469,8 @@ sub snapshot_index {
         'snapshot_index',
         {   method  => 'POST',
             cmd     => CMD_index,
-            postfix => '_gateway/snapshot'
+            postfix => '_gateway/snapshot',
+            qs      => { ignore_indices => IGNORE_INDICES, }
         },
         @_
     );
@@ -1557,6 +1571,7 @@ sub type_exists {
         'type_exists',
         {   method => 'HEAD',
             cmd    => CMD_index_types,
+            qs     => { ignore_indices => IGNORE_INDICES, },
             fixup  => sub { $_[1]->{qs}{ignore_missing} = 1 }
         },
         @_
@@ -1572,11 +1587,12 @@ sub clear_cache {
             cmd     => CMD_index,
             postfix => '_cache/clear',
             qs      => {
-                id         => [ 'boolean', 1 ],
-                filter     => [ 'boolean', 1 ],
-                field_data => [ 'boolean', 1 ],
-                bloom      => [ 'boolean', 1 ],
-                fields     => ['flatten'],
+                id             => [ 'boolean', 1 ],
+                filter         => [ 'boolean', 1 ],
+                field_data     => [ 'boolean', 1 ],
+                bloom          => [ 'boolean', 1 ],
+                fields         => ['flatten'],
+                ignore_indices => IGNORE_INDICES,
             }
         },
         @_
