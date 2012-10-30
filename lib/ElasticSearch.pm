@@ -1696,6 +1696,7 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-segments.ht
         # optional
         settings    => {...},
         mappings    => {...},
+        warmers     => {...},
     );
 
 Creates a new index, optionally passing index settings and mappings, eg:
@@ -1721,6 +1722,21 @@ Creates a new index, optionally passing index settings and mappings, eg:
                     user    => { type => 'string' },
                     content => { type => 'string' },
                     date    => { type => 'date'   }
+                }
+            }
+        },
+        warmers => {
+            warmer_1 => {
+                types  => ['tweet'],
+                source => {
+                    queryb => { date    => { gt => '2012-01-01' }},
+                    facets => {
+                        content => {
+                            terms => {
+                                field=>'content'
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1874,6 +1890,7 @@ L<http://www.elasticsearch.org/guide/reference/api/admin-indices-open-close.html
         template => $template,  # required
         mappings => {...},      # optional
         settings => {...},      # optional
+        warmers  => {...},      # optional
     );
 
 Index templates allow you to define templates that will automatically be
@@ -2112,6 +2129,71 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-types-exist
 
 
 =cut
+
+=head2 Warmer methods
+
+Index warming allow you to run typical search requests to "warm up"
+new segments before they become available for search.
+Warmup searches typically include requests that require heavy loading of
+data, such as faceting or sorting on specific fields.
+
+=head3 create_warmer()
+
+    $es->create_warmer(
+        warmer        => $warmer,
+        index         => multi,
+        type          => multi,
+
+        # optional
+
+        query         => { raw query }
+      | queryb        => { search builder query },
+
+        filter        => { raw filter }
+      | filterb       => { search builder filter},
+
+        facets        => { facets },
+        script_fields => { script fields },
+        sort          => { sort },
+    );
+
+Create an index warmer called C<$warmer>: a search which is run whenever a
+matching C<index>/C<type> segment is about to be brought online.
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1913> for more.
+
+=head2 warmer()
+
+    $result = $es->warmer(
+        index          => multi,       # optional
+        warmer         => $warmer,     # optional
+
+        ignore_missing => 0 | 1
+    );
+
+Returns any matching registered warmers. The C<$warmer> can be blank,
+the name of a particular warmer, or use wilcards, eg C<"warmer_*">. Throws
+an error if no matching warmer is found, and C<ignore_missing> is false.
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1913> for more.
+
+=head2 delete_warmer()
+
+    $result = $es->delete_warmer(
+        index          => multi,       # required
+        warmer         => $warmer,     # required
+
+        ignore_missing => 0 | 1
+    );
+
+Deletes any matching registered warmers. The C<index> parameter is
+required and can be set to C<_all> to match all indices. The C<$warmer> can be
+the name of a particular warmer, or use wilcards, eg C<"warmer_*">
+or C<"*"> for any warmer. Throws an error if no matching warmer is found,
+and C<ignore_missing> is false.
+
+See L<https://github.com/elasticsearch/elasticsearch/issues/1913> for more.
+
 
 =head2 River admin methods
 

@@ -10,7 +10,23 @@ my $r;
 ok $es->create_index_template(
     name     => 'mytemplate',
     template => 'test*',
-    settings => { number_of_shards => 1 }
+    settings => { number_of_shards => 1 },
+    warmers  => {
+        warmer_1 => {
+            types  => [ 'type_1', 'type_2' ],
+            source => {
+                queryb  => { foo => 1 },
+                filterb => { foo => 1 },
+                facets  => {
+                    bar => {
+                        filterb       => { bar => 1 },
+                        facet_filterb => { bar => 2 }
+                    }
+                    }
+
+            }
+        }
+    }
     ),
     'index template - create';
 
@@ -23,6 +39,28 @@ is $r->{test1}{settings}{'index.number_of_shards'}, 1,
     ' - index 1 has 1 shard';
 is $r->{std1}{settings}{'index.number_of_shards'}, 5,
     ' - index 2 has 5 shards';
+
+is_deeply $es->warmer,
+    {
+    "test1" => {
+        "warmers" => {
+            "warmer_1" => {
+                "source" => {
+                    "filter" => { "term" => { "foo" => 1 } },
+                    "query"  => { "text" => { "foo" => 1 } },
+                    "facets" => {
+                        "bar" => {
+                            "filter"       => { "term" => { "bar" => 1 } },
+                            "facet_filter" => { "term" => { "bar" => 2 } }
+                        }
+                    }
+                },
+                "types" => [ "type_1", "type_2" ]
+            }
+        }
+    }
+    },
+    ' - warmer created';
 
 $es->delete_index( index => 'test1' );
 $es->delete_index( index => 'std1' );

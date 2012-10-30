@@ -20,6 +20,7 @@ use constant {
     CMD_INDEX_type_ID => [ index => ONE_REQ, type => ONE_ALL, id => ONE_REQ ],
     CMD_Index           => [ index => ONE_OPT ],
     CMD_index           => [ index => MULTI_BLANK ],
+    CMD_indices         => [ index => MULTI_ALL ],
     CMD_INDICES         => [ index => MULTI_REQ ],
     CMD_INDEX           => [ index => ONE_REQ ],
     CMD_INDEX_TYPE      => [ index => ONE_REQ, type => ONE_REQ ],
@@ -622,6 +623,20 @@ sub _query_fixup {
     }
 }
 
+#===================================
+sub _warmer_fixup {
+#===================================
+    my ( $self, $args ) = @_;
+    my $warmers = $args->{data}{warmers} or return;
+    $warmers = $args->{data}{warmers} = {%$warmers};
+    for ( values %$warmers ) {
+        $_ = {%$_};
+        my $source = $_->{source} or next;
+        $_->{source} = $source = {%$source};
+        $self->_data_fixup($source);
+    }
+}
+
 ##################################
 ## QUERIES
 ##################################
@@ -1159,9 +1174,11 @@ sub create_index {
             cmd     => CMD_INDEX,
             postfix => '',
             data    => {
-                settings => [ 'settings', 'defn' ],
+                settings => ['settings'],
                 mappings => ['mappings'],
+                warmers  => ['warmers'],
             },
+            fixup => \&_warmer_fixup
         },
         @_
     );
@@ -1265,6 +1282,76 @@ sub get_aliases {
 }
 
 #===================================
+sub create_warmer {
+#===================================
+    shift()->_do_action(
+        'create_warmer',
+        {   method  => 'PUT',
+            cmd     => CMD_index_type,
+            postfix => '_warmer/',
+            data    => {
+                warmer        => 'warmer',
+                facets        => ['facets'],
+                filter        => ['filter'],
+                filterb       => ['filterb'],
+                script_fields => ['script_fields'],
+                'sort'        => ['sort'],
+                query         => ['query'],
+                queryb        => ['queryb'],
+            },
+            fixup => sub {
+                my ( $self, $args ) = @_;
+                $args->{cmd} .= delete $args->{data}{warmer};
+                $self->_data_fixup( $args->{data} );
+            },
+        },
+        @_
+    );
+}
+
+#===================================
+sub warmer {
+#===================================
+    my ( $self, $params ) = parse_params(@_);
+    $params->{warmer} = '*'
+        unless defined $params->{warmer} and length $params->{warmer};
+
+    $self->_do_action(
+        'warmer',
+        {   method  => 'GET',
+            cmd     => CMD_indices,
+            postfix => '_warmer/',
+            data    => { warmer => ['warmer'] },
+            qs      => { ignore_missing => [ 'boolean', 1 ] },
+            fixup   => sub {
+                my ( $self, $args ) = @_;
+                $args->{cmd} .= delete $args->{data}{warmer};
+            },
+        },
+        $params
+    );
+}
+
+#===================================
+sub delete_warmer {
+#===================================
+    shift()->_do_action(
+        'delete_warmer',
+        {   method  => 'DELETE',
+            cmd     => CMD_INDICES,
+            postfix => '_warmer/',
+            data    => { warmer => 'warmer' },
+            qs      => { ignore_missing => [ 'boolean', 1 ] },
+            fixup   => sub {
+                my ( $self, $args ) = @_;
+                $args->{cmd} .= delete $args->{data}{warmer};
+            },
+        },
+        @_
+    );
+}
+
+#===================================
 sub create_index_template {
 #===================================
     shift()->_do_action(
@@ -1275,8 +1362,10 @@ sub create_index_template {
             data   => {
                 template => 'template',
                 settings => ['settings'],
-                mappings => ['mappings']
+                mappings => ['mappings'],
+                warmers  => ['warmers'],
             },
+            fixup => \&_warmer_fixup
         },
         @_
     );

@@ -95,15 +95,13 @@ sub run_test_suite {
     );
 
     drop_indices();
-    run_tests( qw(
-            mapping
-            )
-    );
+    run_tests('mapping');
 
     drop_indices();
     create_indices();
     run_tests( qw(
             type_exists
+            warmers
             )
     );
 
