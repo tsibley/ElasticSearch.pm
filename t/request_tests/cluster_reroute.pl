@@ -73,7 +73,7 @@ ok $shards= $es->cluster_reroute(
 is $shards->[0]{state}, 'RELOCATING', ' - real run node relocating';
 is $shards->[0]{relocating_node}, $node3, ' - real run new node';
 
-wait_for_es(2);
+wait_for_es(3);
 
 ok $shards
     = $es->cluster_reroute()

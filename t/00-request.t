@@ -5,6 +5,7 @@ use Test::Exception;
 use lib 't/request_tests';
 
 our $instances = 3;
+our $es_version;
 
 BEGIN {
     use_ok 'ElasticSearch'             || print "Bail out!";
@@ -337,7 +338,7 @@ sub get_backends {
     my $transport = $ENV{ES_TRANSPORT} || 'http';
     $transport = 'http'
         unless $transport eq 'all'
-            or grep { $transport eq $_ } @backends;
+        or grep { $transport eq $_ } @backends;
 
     my $note = ' (Set ES_TRANSPORT=' . join( '|', 'all', @backends ) . ')';
     if ( $transport eq 'all' ) {

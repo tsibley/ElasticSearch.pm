@@ -3,7 +3,7 @@
 use Test::More;
 use strict;
 use warnings;
-our $es;
+our ($es,$es_version);
 my $r;
 
 ### CREATE INDEX ###
@@ -82,6 +82,9 @@ is $r->{mappings}{type_1}{_source}{enabled}, 0, ' - mappings stored';
 is $r->{mappings}{type_1}{properties}{text}{analyzer}, 'my_analyzer',
     ' - analyzer mapped';
 
+SKIP: {
+    skip "Warmers only supported in 0.20",2
+        if $es_version lt '0.20';
 ok $r= $es->warmer( index => 'es_test_2' )->{es_test_2}, ' - warmer created';
 is_deeply $r,
     {
@@ -103,4 +106,6 @@ is_deeply $r,
     },
     ' - warmer passed through searchbuilder';
 
+
+}
 1

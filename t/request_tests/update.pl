@@ -3,7 +3,7 @@
 use Test::More;
 use strict;
 use warnings;
-our $es;
+our ( $es, $es_version );
 my $r;
 
 ok $es->update(
@@ -35,33 +35,38 @@ ok $es->update(
     || 1,
     ' - all opts';
 
-ok $r= $es->update(
-    index  => 'es_test_1',
-    type   => 'type_1',
-    id     => 1000,
-    script => 'ctx._source.extra="foo"',
-    upsert => { bar => 'baz' },
-    fields => ['_source']
-    ),
-    ' - upsert missing';
+SKIP: {
+    skip "upsert only supported in version 0.20", 6
+        if $es_version lt '0.20';
+    ok $r= $es->update(
+        index  => 'es_test_1',
+        type   => 'type_1',
+        id     => 1000,
+        script => 'ctx._source.extra="foo"',
+        upsert => { bar => 'baz' },
+        fields => ['_source']
+        ),
+        ' - upsert missing';
 
 TODO: {
-    local $TODO = "Upsert doesn't respect fields parameter yet. See #2362";
-    is $r->{get}{_source}{bar}, 'baz', ' - doc upserted';
-    ok !$r->{get}{_source}{extra}, ' - script not run';
+        local $TODO
+            = "Upsert doesn't respect fields parameter yet. See #2362";
+        is $r->{get}{_source}{bar}, 'baz', ' - doc upserted';
+        ok !$r->{get}{_source}{extra}, ' - script not run';
+    }
+
+    ok $r= $es->update(
+        index  => 'es_test_1',
+        type   => 'type_1',
+        id     => 1000,
+        script => 'ctx._source.extra="foo"',
+        upsert => { bar => 'baz' },
+        fields => ['_source']
+        ),
+        ' - upsert existing';
+
+    is $r->{get}{_source}{bar},   'baz', ' - doc upserted';
+    is $r->{get}{_source}{extra}, 'foo', ' - script run';
 }
-
-ok $r= $es->update(
-    index  => 'es_test_1',
-    type   => 'type_1',
-    id     => 1000,
-    script => 'ctx._source.extra="foo"',
-    upsert => { bar => 'baz' },
-    fields => ['_source']
-    ),
-    ' - upsert existing';
-
-is $r->{get}{_source}{bar},   'baz', ' - doc upserted';
-is $r->{get}{_source}{extra}, 'foo', ' - script run';
 
 1
