@@ -1,4 +1,24 @@
 Revision history for ElasticSearch
+0.59    2012-10-31
+        BREAKING CHANGE:
+        Added the 'explain' parameter to validate_query(), which now returns
+        a hash instead of true|false
+
+        BUG FIXES:
+        The queryb->query, filterb->filter SearchBuilder conversions no longer
+        change the original parameters
+
+        ENHANCEMENTS:
+        Added cluster_reroute()
+        Added type_exists()
+        Added warmer APIs
+        Added explain API
+        Added upsert to update()
+        Added ignore_indices param to search(), searchqs() and msearch()
+        Bulk error handlers now receive the element number of the error
+        to identify the original item in the array (required for Elastic::Model)
+        Errors now have string comparison overloaded
+
 0.58    2012-08-09
         Added a _method_name parameter to reindex() so that objects other
         than ScrolledSearch can be passed as the $source.  The scrolling
