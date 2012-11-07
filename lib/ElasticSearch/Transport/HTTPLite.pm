@@ -33,6 +33,7 @@ sub send_request {
     $client->method($method);
     if ( my $data = $params->{data} ) {
         utf8::encode($data);
+        $self->check_content_length( \$data );
         $client->{content} = $data;
     }
 

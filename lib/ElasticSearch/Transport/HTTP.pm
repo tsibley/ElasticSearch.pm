@@ -28,8 +28,10 @@ sub send_request {
     $request->header( 'Accept-Encoding' => 'deflate' )
         if $self->deflate;
 
-    $request->add_content_utf8( $params->{data} )
-        if defined $params->{data};
+    if ( defined $params->{data} ) {
+        $request->add_content_utf8( $params->{data} );
+        $self->check_content_length( $request->content_ref );
+    }
 
     my $client          = $self->client;
     my $server_response = $client->request($request);

@@ -31,6 +31,7 @@ sub send_request {
     my $opts = {};
     if ( my $data = $params->{data} ) {
         utf8::encode($data);
+        $self->check_content_length( \$data );
         $opts = {
             content => $data,
             headers =>
