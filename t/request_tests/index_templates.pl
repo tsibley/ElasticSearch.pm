@@ -50,8 +50,8 @@ SKIP: {
             "warmers" => {
                 "warmer_1" => {
                     "source" => {
-                        "filter" => { "term" => { "foo" => 1 } },
-                        "query"  => { "text" => { "foo" => 1 } },
+                        "filter" => { "term"  => { "foo" => 1 } },
+                        "query"  => { "match" => { "foo" => 1 } },
                         "facets" => {
                             "bar" => {
                                 "filter" => { "term" => { "bar" => 1 } },

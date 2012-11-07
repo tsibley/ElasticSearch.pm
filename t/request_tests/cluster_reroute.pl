@@ -68,7 +68,7 @@ ok $shards= $es->cluster_reroute(
         }
     }
     )->{state}{routing_table}{indices}{es_test_1}{shards}{0},
-    ' - dry run';
+    ' - real reroute';
 
 is $shards->[0]{state}, 'RELOCATING', ' - real run node relocating';
 is $shards->[0]{relocating_node}, $node3, ' - real run new node';

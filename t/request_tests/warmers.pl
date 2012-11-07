@@ -83,20 +83,17 @@ SKIP: {
         ),
         'ignore delete missing index';
 
-SKIP: {
-        skip "Deleting missing warmer hangs in 0.21.0 BETA", 2;
-        throws_ok {
-            $es->delete_warmer( index => 'es_test_2', warmer => 'bad*' );
-        }
-        qr/Missing/, 'delete missing wildcard';
-
-        ok !$es->delete_warmer(
-            index          => 'es_test_2',
-            warmer         => 'bad*',
-            ignore_missing => 1
-            ),
-            'ignore delete missing wildcard';
+    throws_ok {
+        $es->delete_warmer( index => 'es_test_2', warmer => 'bad*' );
     }
+    qr/Missing/, 'delete missing wildcard';
+
+    ok !$es->delete_warmer(
+        index          => 'es_test_2',
+        warmer         => 'bad*',
+        ignore_missing => 1
+        ),
+        'ignore delete missing wildcard';
     ok $es->delete_warmer( index => 'es_test_2', warmer => 'warm*' ),
         ' delete wildcard';
     ok $r = $es->warmer(), 'get all warmers';
@@ -118,8 +115,8 @@ SKIP: {
         ->{es_test_1}{warmers}{warmer_2},
         {
         "source" => {
-            "filter" => { "term" => { "foo" => 1 } },
-            "query"  => { "text" => { "foo" => 1 } },
+            "filter" => { "term"  => { "foo" => 1 } },
+            "query"  => { "match" => { "foo" => 1 } },
             "facets" => {
                 "bar" => {
                     "filter"       => { "term" => { "bar" => 1 } },

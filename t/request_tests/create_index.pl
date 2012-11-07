@@ -3,7 +3,7 @@
 use Test::More;
 use strict;
 use warnings;
-our ($es,$es_version);
+our ( $es, $es_version );
 my $r;
 
 ### CREATE INDEX ###
@@ -49,8 +49,8 @@ ok $r = $es->create_index(
         type_1 => {
             _source    => { enabled => 0 },
             properties => {
-                text => { type => 'string', analyzer => 'my_analyzer' },
-                num  => { type => 'integer' }
+                match => { type => 'string', analyzer => 'my_analyzer' },
+                num   => { type => 'integer' }
             }
         }
     },
@@ -79,33 +79,33 @@ is $r->{settings}{'index.number_of_shards'}, 3, ' - number of shards stored';
 is $r->{settings}{'index.analysis.filter.my_filter.stopwords.0'}, 'foo',
     ' - analyzer stored';
 is $r->{mappings}{type_1}{_source}{enabled}, 0, ' - mappings stored';
-is $r->{mappings}{type_1}{properties}{text}{analyzer}, 'my_analyzer',
+is $r->{mappings}{type_1}{properties}{match}{analyzer}, 'my_analyzer',
     ' - analyzer mapped';
 
 SKIP: {
-    skip "Warmers only supported in 0.20",2
+    skip "Warmers only supported in 0.20", 2
         if $es_version lt '0.20';
-ok $r= $es->warmer( index => 'es_test_2' )->{es_test_2}, ' - warmer created';
-is_deeply $r,
-    {
-    "warmers" => {
-        "warmer_1" => {
-            "source" => {
-                "filter" => { "term" => { "foo" => 1 } },
-                "query"  => { "text" => { "foo" => 1 } },
-                "facets" => {
-                    "bar" => {
-                        "filter"       => { "term" => { "bar" => 1 } },
-                        "facet_filter" => { "term" => { "foo" => 2 } }
+    ok $r= $es->warmer( index => 'es_test_2' )->{es_test_2},
+        ' - warmer created';
+    is_deeply $r,
+        {
+        "warmers" => {
+            "warmer_1" => {
+                "source" => {
+                    "filter" => { "term"  => { "foo" => 1 } },
+                    "query"  => { "match" => { "foo" => 1 } },
+                    "facets" => {
+                        "bar" => {
+                            "filter"       => { "term" => { "bar" => 1 } },
+                            "facet_filter" => { "term" => { "foo" => 2 } }
+                        }
                     }
-                }
+                },
+                "types" => ["type_1"]
             },
-            "types" => ["type_1"]
         },
-    },
-    },
-    ' - warmer passed through searchbuilder';
-
+        },
+        ' - warmer passed through searchbuilder';
 
 }
 1
