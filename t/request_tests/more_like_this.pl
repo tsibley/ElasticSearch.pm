@@ -14,8 +14,7 @@ is $es->mlt(
     mlt_fields    => ['text'],
     min_term_freq => 1,
     min_doc_freq  => 1
-    )->{hits}{total},
-    4,
+    )->{hits}{total}, 4,
     'more_like_this';
 
 1

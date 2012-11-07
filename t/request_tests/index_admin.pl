@@ -11,7 +11,7 @@ my $r;
 ok $es->index_exists(), 'Index exists';
 ok $es->index_exists( index => 'es_test_1' ), ' - one';
 ok $es->index_exists( index => [ 'es_test_1', 'es_test_2' ] ), ' - two';
-ok !$es->index_exists( index => ['foo'] ) , ' - missing';
+ok !$es->index_exists( index => ['foo'] ), ' - missing';
 
 #### REFRESH INDEX ###
 ok $es->refresh_index()->{ok}, 'Refresh index';

@@ -69,7 +69,7 @@ is eval {
         version => 1,
         data    => { text => 'foo', num => 123 }
     );
-    }
+}
     || $@->{-vars}{current_version}, 2,
     'Conflict error has current version';
 

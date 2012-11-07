@@ -16,19 +16,16 @@ is $es->count( terms => { text => [ 'foo', 'bar' ] } )->{count}, 25,
 is $es->count( in => { text => [ 'foo', 'bar' ] } )->{count}, 25, "Count: in";
 
 is $es->count( range => { num => { gte => 10, lte => 20 } } )
-    ->{count},
-    11,
+    ->{count}, 11,
     'Count: range';
 
 is $es->count( range => { num => { gt => 10, lt => 20 } } )
-    ->{count},
-    9,
+    ->{count}, 9,
     'Count: range, gt/lt';
 
 is $es->count( prefix => { text => 'ba' } )->{count}, 24, 'Count: prefix';
 
-is $es->count( wildcard => { text => 'ba?' } )->{count},
-    24,
+is $es->count( wildcard => { text => 'ba?' } )->{count}, 24,
     'Count: wildcard';
 
 is $es->count( match_all => {} )->{count}, 29, 'Count: match_all';
@@ -38,8 +35,7 @@ is $es->count(
         query         => 'foo AND bar AND -baz',
         default_field => 'text'
     }
-    )->{count},
-    4,
+    )->{count}, 4,
     'Count: query_string';
 
 is $es->count(
@@ -47,8 +43,7 @@ is $es->count(
         must =>
             [ { term => { text => 'foo' } }, { term => { text => 'bar' } } ]
     }
-    )->{count},
-    8,
+    )->{count}, 8,
     'Count: bool';
 
 is $es->count(
@@ -56,14 +51,12 @@ is $es->count(
         queries =>
             [ { term => { text => 'foo' } }, { term => { text => 'bar' } } ]
     }
-    )->{count},
-    25,
+    )->{count}, 25,
     'Count: dis_max';
 
 is $es->count(
     constant_score => { filter => { terms => { text => [ 'foo', 'bar' ] } } }
-    )->{count},
-    25,
+    )->{count}, 25,
     'Count: constant_score';
 
 is $es->count(
@@ -71,8 +64,7 @@ is $es->count(
         query  => { term => { text => 'foo' } },
         filter => { term => { text => 'bar' } }
     }
-    )->{count},
-    8,
+    )->{count}, 8,
     'Count: filtered';
 
 is $es->count( field => { text => 'foo' } )->{count}, 17, 'Count: field';
@@ -88,13 +80,11 @@ is $es->count(
 )->{count}, 16, 'Count: fuzzy';
 
 is $es->count( flt => { fields => ['text'], like_text => 'bat' } )
-    ->{count},
-    24,
+    ->{count}, 24,
     'Count: fuzzy_like_this';
 
 is $es->count( flt_field => { text => { like_text => 'fooo' } } )
-    ->{count},
-    17,
+    ->{count}, 17,
     'Count: fuzzy_like_this_field';
 
 is $es->count(
@@ -103,8 +93,7 @@ is $es->count(
         min_term_freq => 1,
         min_doc_freq  => 1
     }
-    )->{count},
-    29,
+    )->{count}, 29,
     'Count: more_like_this';
 
 is $es->count(
@@ -115,8 +104,7 @@ is $es->count(
             min_doc_freq  => 1
         }
     }
-    )->{count},
-    29,
+    )->{count}, 29,
     'Count: more_like_this';
 
 is $es->count(

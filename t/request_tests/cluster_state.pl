@@ -33,7 +33,7 @@ ok 1 == keys %{
         filter_routing_table => 1,
         filter_blocks        => 1,
         filter_indices       => 'es_test_1'
-        )->{metadata}{indices}
+    )->{metadata}{indices}
     },
     ' - filtered metadata has 1 index';
 

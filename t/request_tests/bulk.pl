@@ -84,7 +84,7 @@ is @{
                 ( 1, 3 )
         ],
         refresh => 1,
-        )->{results}
+    )->{results}
     },
     2, ' - bulk_delete';
 
@@ -200,6 +200,5 @@ ok $r= $es->get(
     ' - get doc 2';
 
 ok $r->{text} eq 'baz' && $r->{num} == 125, ' - doc 2 OK';
-
 
 1

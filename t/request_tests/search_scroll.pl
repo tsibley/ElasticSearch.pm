@@ -77,9 +77,11 @@ is scalar( @{ $json->decode( $r->next() ) } ), 0, ' - eof next()';
 ok $r->eof, ' - eof';
 
 # BUFFER
-ok $r
-    = $es->scrolled_search( q => 'foo bar', size => 1,
-    search_type => 'scan' ),
+ok $r = $es->scrolled_search(
+    q           => 'foo bar',
+    size        => 1,
+    search_type => 'scan'
+    ),
     ' - prepare buffer';
 
 my $cur = 0 + @{ $r->{_buffer} };
