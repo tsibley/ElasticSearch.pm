@@ -283,8 +283,9 @@ sub update {
             cmd     => CMD_INDEX_TYPE_ID,
             postfix => '_update',
             data    => {
-                script => 'script',
+                script => ['script'],
                 params => ['params'],
+                doc    => ['doc'],
                 upsert => ['upsert'],
             },
             qs => {

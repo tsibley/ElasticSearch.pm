@@ -48,12 +48,8 @@ SKIP: {
         ),
         ' - upsert missing';
 
-TODO: {
-        local $TODO
-            = "Upsert doesn't respect fields parameter yet. See #2362";
-        is $r->{get}{_source}{bar}, 'baz', ' - doc upserted';
-        ok !$r->{get}{_source}{extra}, ' - script not run';
-    }
+    is $r->{get}{_source}{bar}, 'baz', ' - doc upserted';
+    ok !$r->{get}{_source}{extra}, ' - script not run';
 
     ok $r= $es->update(
         index  => 'es_test_1',
@@ -67,6 +63,17 @@ TODO: {
 
     is $r->{get}{_source}{bar},   'baz', ' - doc upserted';
     is $r->{get}{_source}{extra}, 'foo', ' - script run';
+
+    ok $r= $es->update(
+        index  => 'es_test_1',
+        type   => 'type_1',
+        id     => 1000,
+        doc    => { lala => 'po' },
+        fields => ['_source']
+        ),
+        ' - update via doc';
+
+    is $r->{get}{_source}{lala}, 'po', ' - doc merged';
 }
 
 1

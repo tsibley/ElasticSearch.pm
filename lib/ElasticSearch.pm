@@ -589,6 +589,7 @@ See also: L</"index()">
 
         # required
         script            => $script,
+      | doc               => $doc
 
         # optional
         params            => { params },
@@ -604,8 +605,9 @@ See also: L</"index()">
         replication       => 'sync' | 'async'
     )
 
-The C<update()> method accepts a script which will update a single doc without
-having to retrieve and reindex the doc yourself, eg:
+The C<update()> method accepts a C<script> to update, or a C<doc> to be merged
+with, an existing doc, without having to retrieve and reindex the doc yourself,
+eg:
 
     $es->update(
         index   => 'test',
