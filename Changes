@@ -1,4 +1,11 @@
 Revision history for ElasticSearch
+0.60    2012-11-07
+        ENHANCEMENT:
+        Added a max_content_length attribute to ElasticSearch::Transport
+        to avoid posting too large a body to elasticsearch. The value
+        is auto-detected in versions 0.19.12 onwards.
+        Added doc param to update()
+
 0.59    2012-10-31
         BREAKING CHANGE:
         Added the 'explain' parameter to validate_query(), which now returns
