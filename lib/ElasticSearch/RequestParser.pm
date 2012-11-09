@@ -585,7 +585,8 @@ sub _to_dsl {
                 if $clause->{$new};
             $builder ||= $self->builder;
             my $method = $new eq 'query' ? 'query' : 'filter';
-            $clause->{$new} = $builder->$method($src)->{$method};
+            my $sub_clause = $builder->$method($src) or next;
+            $clause->{$new} = $sub_clause->{$method};
         }
     }
 }
