@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.60';
+our $VERSION = '0.61';
 our $DEBUG   = 0;
 
 #===================================

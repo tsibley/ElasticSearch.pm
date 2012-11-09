@@ -1,4 +1,8 @@
 Revision history for ElasticSearch
+0.61    2012-11-09
+        ENHANCEMENT
+        Ignore empty queryb/filterb sections
+
 0.60    2012-11-07
         ENHANCEMENT:
         Added a max_content_length attribute to ElasticSearch::Transport
