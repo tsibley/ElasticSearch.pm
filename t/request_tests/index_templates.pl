@@ -11,6 +11,7 @@ ok $es->create_index_template(
     name     => 'mytemplate',
     template => 'test*',
     settings => { number_of_shards => 1 },
+    order    => 2,
     warmers  => {
         warmer_1 => {
             types  => [ 'type_1', 'type_2' ],
@@ -22,9 +23,9 @@ ok $es->create_index_template(
                         filterb       => { bar => 1 },
                         facet_filterb => { bar => 2 }
                     }
-                    }
+                },
 
-            }
+            },
         }
     }
     ),
@@ -59,7 +60,7 @@ SKIP: {
                             }
                         }
                     },
-                    "types" => [ "type_1", "type_2" ]
+                    "types" => [ "type_1", "type_2" ],
                 }
             }
         }

@@ -1901,6 +1901,7 @@ L<http://www.elasticsearch.org/guide/reference/api/admin-indices-open-close.html
         mappings => {...},      # optional
         settings => {...},      # optional
         warmers  => {...},      # optional
+        order    => $order,     # optional
     );
 
 Index templates allow you to define templates that will automatically be

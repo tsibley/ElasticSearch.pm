@@ -1376,6 +1376,7 @@ sub create_index_template {
                 settings => ['settings'],
                 mappings => ['mappings'],
                 warmers  => ['warmers'],
+                order    => ['order'],
             },
             fixup => \&_warmer_fixup
         },
