@@ -2811,7 +2811,7 @@ To run the full test suite locally, run it as:
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Shay Bannon, the ElasticSearch author, for producing an amazingly
+Thanks to Shay Banon, the ElasticSearch author, for producing an amazingly
 easy to use search engine.
 
 =head1 LICENSE AND COPYRIGHT
