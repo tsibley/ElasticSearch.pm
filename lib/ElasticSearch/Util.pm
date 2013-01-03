@@ -44,19 +44,19 @@ sub filter_keywords {
 sub parse_params {
 #===================================
     my $self = shift;
-    my $params;
+    my %params;
     if ( @_ % 2 ) {
         $self->throw(
             "Param",
             'Expecting a HASH ref or a list of key-value pairs',
             { params => \@_ }
         ) unless ref $_[0] eq 'HASH';
-        $params = shift;
+        %params = %{ shift() };
     }
     else {
-        $params = {@_};
+        %params = @_;
     }
-    return ( $self, $params );
+    return ( $self, \%params );
 }
 
 #===================================
