@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.63    2013-02-12
+        Removed unsupported params from mlt()
+
 0.62    2013-01-03
         BUG FIX
         Don't destroy params passed in to new()
