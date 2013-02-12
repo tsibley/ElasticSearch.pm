@@ -1553,10 +1553,8 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         fields               =>  {fields}
         filter               =>  { native filter },
         filterb              =>  { search builder filter },
-        from                 =>  {from}
         indices_boost        =>  { index_1 => 1.5,... }
         min_score            =>  $score
-        preference           =>  '_local' | '_primary' | '_primary_first' | $string
         routing              =>  [$routing,...]
         script_fields        =>  { script_fields }
         search_scroll        =>  '5m' | '10s',
@@ -1565,10 +1563,8 @@ and L<http://www.elasticsearch.org/guide/reference/query-dsl>
         search_size          =>  integer,
         search_type          =>  $search_type
         search_types         =>  ['type1','type],
-        size                 =>  {size}
         sort                 =>  {sort}
         scroll               =>  '5m' | '30s'
-        timeout              =>  '10s'
     )
 
 More-like-this (mlt) finds related/similar documents. It is possible to run

@@ -999,7 +999,6 @@ sub mlt {
             qs     => {
                 mlt_fields         => ['flatten'],
                 pct_terms_to_match => [ 'float', 'percent_terms_to_match' ],
-                preference         => ['string'],
                 min_term_freq      => ['int'],
                 max_query_terms    => ['int'],
                 stop_words         => ['flatten'],
@@ -1015,11 +1014,22 @@ sub mlt {
                 search_type        => SEARCH_TYPE,
                 search_types       => ['flatten'],
                 search_scroll      => ['string'],
-                timeout            => ['duration'],
             },
             postfix => '_mlt',
-            data    => \%Search_Data,
-            fixup   => sub {
+            data    => {
+                explain       => ['explain'],
+                facets        => ['facets'],
+                fields        => ['fields'],
+                filter        => ['filter'],
+                filterb       => ['filterb'],
+                highlight     => ['highlight'],
+                indices_boost => ['indices_boost'],
+                min_score     => ['min_score'],
+                script_fields => ['script_fields'],
+                'sort'        => ['sort'],
+                track_scores  => ['track_scores'],
+            },
+            fixup => sub {
                 shift()->_to_dsl( { filterb => 'filter' }, $_[0]->{data} );
             },
         },
