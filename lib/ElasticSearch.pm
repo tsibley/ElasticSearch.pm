@@ -107,7 +107,7 @@ sub reindex {
             );
             $results = $results->recv
                 if ref $results ne 'HASH'
-                && $results->isa('AnyEvent::CondVar');
+                    && $results->isa('AnyEvent::CondVar');
             if ( my $err = $results->{errors} ) {
                 my @errors = splice @$err, 0, 5;
                 push @errors, sprintf "...and %d more", scalar @$err

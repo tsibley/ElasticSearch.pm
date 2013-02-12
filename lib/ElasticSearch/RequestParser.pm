@@ -1526,7 +1526,7 @@ sub put_mapping {
 
     $defn{deprecated}{mapping} = undef
         if !$params->{mapping} && grep { exists $params->{$_} }
-        keys %{ $defn{deprecated} };
+            keys %{ $defn{deprecated} };
 
     my $type = $params->{type} || $self->{_default}{type};
     $self->_do_action(
