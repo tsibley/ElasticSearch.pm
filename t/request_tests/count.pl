@@ -30,6 +30,8 @@ is $es->count( wildcard => { text => 'ba?' } )->{count}, 24,
 
 is $es->count( match_all => {} )->{count}, 29, 'Count: match_all';
 
+is $es->count()->{count}, 29, 'Count: match_all, implicitly ';
+
 is $es->count(
     query_string => {
         query         => 'foo AND bar AND -baz',
