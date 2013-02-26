@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.64    2013-02-26
+        Default query for count()
+
 0.63    2013-02-12
         Removed unsupported params from mlt()
 
