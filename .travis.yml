@@ -5,7 +5,7 @@ perl:
   - "5.12"
 env: PERL_CPANM_OPT="--mirror http://cpan.mirrors.travis-ci.org  --mirror http://cpan.cpantesters.org/ --mirror http://search.cpan.org/CPAN --cascade-search --notest --force --skip-satisfied" 
 before_install:
-  - curl -L  http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.20.2.tar.gz | tar -xz
+  - curl -L  http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.0.tar.gz | tar -xz
   - export ES_HOME='./elasticsearch-0.20.2'
   - "cpanm Dist::Zilla"
   - "dzil authordeps | cpanm"
