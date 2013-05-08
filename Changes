@@ -1,4 +1,7 @@
 Revision history for ElasticSearch
+0.65    2013-05-08
+        Add support for ignore_missing to get_aliases()
+
 0.64    2013-02-26
         Default query for count()
 
