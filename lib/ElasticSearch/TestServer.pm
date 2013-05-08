@@ -93,6 +93,8 @@ NO_HOME
 
     my $ip = $config{network}{host} = delete $params{ip};
     my @servers = map {"$ip:$_"} $port .. $port + $instances - 1;
+    my @publish = map {"$ip:$_"} 9300 .. 9300 + $instances - 1;
+    $config{'discovery.zen.ping.unicast.hosts'} = \@publish;
 
     foreach (@servers) {
         if ( IO::Socket::INET->new($_) ) {
