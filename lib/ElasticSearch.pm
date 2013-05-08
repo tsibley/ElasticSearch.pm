@@ -1840,7 +1840,10 @@ See L<http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.htm
 
 =head3 get_aliases()
 
-    $result = $es->get_aliases( index => multi )
+    $result = $es->get_aliases(
+        index          => multi,
+        ignore_missing => 0 | 1,
+    );
 
 Returns a hashref listing all indices and their corresponding aliases, eg:
 

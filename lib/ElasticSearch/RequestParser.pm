@@ -1301,6 +1301,7 @@ sub get_aliases {
         'aliases',
         {   postfix => '_aliases',
             cmd     => CMD_index,
+            qs      => { ignore_missing => [ 'boolean', 1 ] },
         },
         @_
     );
