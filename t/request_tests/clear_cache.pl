@@ -17,6 +17,7 @@ ok $es->clear_cache( index => [ 'es_test_1', 'es_test_2' ] )->{ok},
 $es->index(
     index => 'es_test_1',
     type  => 'foo',
+    id    => 1,
     data  => { text => 'foo bar baz', num => 1 }
 );
 wait_for_es();

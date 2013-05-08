@@ -7,6 +7,13 @@ use warnings;
 our $es;
 my $r;
 
+$es->index(
+    index => 'es_test_1',
+    type  => 'foo',
+    id    => 1,
+    data  => { text => 'foo bar baz', num => 1 }
+);
+
 ok $es->close_index( index => 'es_test_1' )->{ok}, 'Closed index';
 
 wait_for_es();

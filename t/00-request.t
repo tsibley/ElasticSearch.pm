@@ -65,17 +65,17 @@ sub run_test_suite {
     run_tests( qw(
             create_index
             index_status
-            index_stats
             index_segments
             update_settings
             index_admin
             analyze
-            clear_cache
             index_alias
             open_close_index
             delete_index
             )
     );
+    # skip clear_cache
+    # skip index_stats
 
     drop_indices();
     run_tests( qw(

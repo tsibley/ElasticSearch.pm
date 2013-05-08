@@ -15,12 +15,10 @@ is $es->count( terms => { text => [ 'foo', 'bar' ] } )->{count}, 25,
     "Count: terms";
 is $es->count( in => { text => [ 'foo', 'bar' ] } )->{count}, 25, "Count: in";
 
-is $es->count( range => { num => { gte => 10, lte => 20 } } )
-    ->{count}, 11,
+is $es->count( range => { num => { gte => 10, lte => 20 } } )->{count}, 11,
     'Count: range';
 
-is $es->count( range => { num => { gt => 10, lt => 20 } } )
-    ->{count}, 9,
+is $es->count( range => { num => { gt => 10, lt => 20 } } )->{count}, 9,
     'Count: range, gt/lt';
 
 is $es->count( prefix => { text => 'ba' } )->{count}, 24, 'Count: prefix';
@@ -76,17 +74,17 @@ is $es->count(
         text => {
             value          => 'bart',
             prefix_length  => 1,
-            min_similarity => 0.4
+            min_similarity => 0.2
         }
     }
-)->{count}, 16, 'Count: fuzzy';
+)->{count}, 24, 'Count: fuzzy';
 
-is $es->count( flt => { fields => ['text'], like_text => 'bat' } )
-    ->{count}, 24,
+is $es->count( flt => { fields => ['text'], like_text => 'bat' } )->{count},
+    24,
     'Count: fuzzy_like_this';
 
-is $es->count( flt_field => { text => { like_text => 'fooo' } } )
-    ->{count}, 17,
+is $es->count( flt_field => { text => { like_text => 'fooo' } } )->{count},
+    17,
     'Count: fuzzy_like_this_field';
 
 is $es->count(
