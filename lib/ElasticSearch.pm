@@ -7,7 +7,7 @@ use ElasticSearch::Error();
 use ElasticSearch::RequestParser;
 use ElasticSearch::Util qw(throw parse_params);
 
-our $VERSION = '0.65';
+our $VERSION = '0.66';
 our $DEBUG   = 0;
 
 #===================================
@@ -46,7 +46,7 @@ sub builder {
             or $self->throw( 'Param', "No builder_class specified" );
         eval "require $class; 1"
             or $self->throw( 'Internal',
-            "Couldn't load clas $class: " . ( $@ || 'Unknown error' ) );
+            "Couldn't load class $class: " . ( $@ || 'Unknown error' ) );
         $self->{_builder} = $class->new(@_);
     }
     return $self->{_builder};
@@ -156,7 +156,7 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 =head1 VERSION
 
-Version 0.65, tested against ElasticSearch server version 0.90.0.
+Version 0.66, tested against ElasticSearch server version 0.90.0.
 
 =head1 DEPRECATION
 
