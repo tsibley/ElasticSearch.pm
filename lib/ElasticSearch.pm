@@ -158,6 +158,11 @@ ElasticSearch - An API for communicating with ElasticSearch
 
 Version 0.65, tested against ElasticSearch server version 0.90.0.
 
+=head1 DEPRECATION
+
+This module is being deprecated in favour of the new official client
+L<Elasticsearch|https://metacpan.org/release/Elasticsearch>.
+
 =head1 DESCRIPTION
 
 ElasticSearch is an Open Source (Apache 2 license), distributed, RESTful
