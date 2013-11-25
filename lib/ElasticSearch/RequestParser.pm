@@ -1969,6 +1969,9 @@ sub _do_action {
         1;
     } or $error = $@ || 'Unknown error';
 
+    $args{method} = 'POST'
+        if $args{method} eq 'GET' and $args{data};
+
     $args{post_process} = $defn->{post_process};
     if ($error) {
         die $error if ref $error;

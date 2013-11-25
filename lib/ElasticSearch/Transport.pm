@@ -216,6 +216,9 @@ sub _tidy_params {
         : $self->JSON->encode($data)
         if $data;
 
+    $params->{method} = 'POST'
+        if $params->{method} eq 'GET' and $data;
+
     return { data => $data, map { $_ => $params->{$_} } qw(method cmd qs) };
 }
 
